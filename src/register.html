@@ -7,58 +7,90 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="bg-white p-8 rounded-xl shadow-lg w-[420px]">
+<div class="bg-white p-8 rounded-xl shadow-lg w-[450px]">
 
     <h2 class="text-2xl font-bold text-center mb-6">Đăng ký tài khoản</h2>
 
-    <!-- CHỌN LOẠI -->
+    <!-- LOẠI TÀI KHOẢN -->
     <div class="mb-4">
-        <label class="font-medium">Loại tài khoản:</label>
-        <select id="accountType" onchange="changeType()" 
-            class="w-full mt-2 px-3 py-2 border rounded">
+        <label class="block font-medium mb-1">Loại tài khoản</label>
+        <select id="accountType" onchange="changeType()"
+            class="w-full px-3 py-2 border rounded" required>
             <option value="personal">Cá nhân</option>
             <option value="business">Doanh nghiệp</option>
         </select>
     </div>
 
-    <!-- FORM CÁ NHÂN -->
+    <!-- CÁ NHÂN -->
     <div id="personalForm">
-        <input type="text" placeholder="Họ và tên"
-            class="w-full mb-3 px-3 py-2 border rounded">
 
-        <input type="date"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Họ và tên</label>
+            <input id="fullName" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
 
-        <input type="text" placeholder="Số điện thoại"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Ngày sinh</label>
+            <input id="dob" type="date"
+                class="w-full px-3 py-2 border rounded">
+        </div>
 
-        <input type="text" placeholder="Số CCCD"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Số điện thoại</label>
+            <input id="phone" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Số CCCD</label>
+            <input id="cccd" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
+
     </div>
 
-    <!-- FORM DOANH NGHIỆP -->
+    <!-- DOANH NGHIỆP -->
     <div id="businessForm" class="hidden">
-        <input type="text" placeholder="Tên doanh nghiệp"
-            class="w-full mb-3 px-3 py-2 border rounded">
 
-        <input type="text" placeholder="Mã số thuế"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Tên doanh nghiệp</label>
+            <input id="companyName" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
 
-        <input type="text" placeholder="Địa chỉ"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Mã số thuế</label>
+            <input id="taxCode" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-medium mb-1">Địa chỉ</label>
+            <input id="address" type="text"
+                class="w-full px-3 py-2 border rounded">
+        </div>
+
     </div>
 
     <!-- MẬT KHẨU -->
-    <input id="password" type="password" placeholder="Mật khẩu"
-        class="w-full mb-3 px-3 py-2 border rounded">
+    <div class="mb-4">
+        <label class="block font-medium mb-1">Mật khẩu</label>
+        <input id="password" type="password"
+            class="w-full px-3 py-2 border rounded">
+    </div>
 
-    <input id="confirmPassword" type="password" placeholder="Xác nhận mật khẩu"
-        class="w-full mb-3 px-3 py-2 border rounded">
+    <div class="mb-4">
+        <label class="block font-medium mb-1">Xác nhận mật khẩu</label>
+        <input id="confirmPassword" type="password"
+            class="w-full px-3 py-2 border rounded">
+    </div>
 
     <!-- CAPTCHA -->
-    <div class="mb-3">
+    <div class="mb-4">
+        <label class="block font-medium mb-1">CAPTCHA</label>
         <p id="captchaText" class="font-bold mb-2"></p>
-        <input id="captchaInput" type="text" placeholder="Nhập kết quả"
+        <input id="captchaInput" type="text"
             class="w-full px-3 py-2 border rounded">
     </div>
 
@@ -82,30 +114,31 @@ function generateCaptcha() {
     num2 = Math.floor(Math.random() * 10);
     result = num1 + num2;
     document.getElementById("captchaText").innerText =
-        "CAPTCHA: " + num1 + " + " + num2 + " = ?";
+        num1 + " + " + num2 + " = ?";
 }
-
 generateCaptcha();
 
 function changeType() {
     const type = document.getElementById("accountType").value;
-    const personal = document.getElementById("personalForm");
-    const business = document.getElementById("businessForm");
-
-    if (type === "personal") {
-        personal.classList.remove("hidden");
-        business.classList.add("hidden");
-    } else {
-        personal.classList.add("hidden");
-        business.classList.remove("hidden");
-    }
+    document.getElementById("personalForm").classList.toggle("hidden", type !== "personal");
+    document.getElementById("businessForm").classList.toggle("hidden", type !== "business");
 }
 
 function register() {
+    const type = document.getElementById("accountType").value;
+    const pass = document.getElementById("password").value.trim();
+    const confirm = document.getElementById("confirmPassword").value.trim();
+    const captchaInput = document.getElementById("captchaInput").value.trim();
 
-    const pass = document.getElementById("password").value;
-    const confirm = document.getElementById("confirmPassword").value;
-    const captchaInput = document.getElementById("captchaInput").value;
+    if (!pass || !confirm) {
+        alert("Vui lòng nhập mật khẩu!");
+        return;
+    }
+
+    if (pass.length < 6) {
+        alert("Mật khẩu phải ít nhất 6 ký tự!");
+        return;
+    }
 
     if (pass !== confirm) {
         alert("Mật khẩu không khớp!");
@@ -116,6 +149,27 @@ function register() {
         alert("CAPTCHA sai!");
         generateCaptcha();
         return;
+    }
+
+    if (type === "personal") {
+        const name = fullName.value.trim();
+        const dob = document.getElementById("dob").value;
+        const phone = document.getElementById("phone").value.trim();
+        const cccd = document.getElementById("cccd").value.trim();
+
+        if (!name || !dob || !phone || !cccd) {
+            alert("Vui lòng nhập đầy đủ thông tin cá nhân!");
+            return;
+        }
+    } else {
+        const company = document.getElementById("companyName").value.trim();
+        const tax = document.getElementById("taxCode").value.trim();
+        const address = document.getElementById("address").value.trim();
+
+        if (!company || !tax || !address) {
+            alert("Vui lòng nhập đầy đủ thông tin doanh nghiệp!");
+            return;
+        }
     }
 
     alert("Đăng ký thành công!");
