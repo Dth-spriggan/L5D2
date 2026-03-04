@@ -11,11 +11,19 @@
 
     <h2 class="text-2xl font-bold text-center mb-6">Đăng ký tài khoản</h2>
 
+    <!-- TÊN TÀI KHOẢN -->
+    <div class="mb-4">
+        <label class="block font-medium mb-1">Tên tài khoản</label>
+        <input id="username" type="text"
+            class="w-full px-3 py-2 border rounded"
+            placeholder="Nhập tên đăng nhập">
+    </div>
+
     <!-- LOẠI TÀI KHOẢN -->
     <div class="mb-4">
         <label class="block font-medium mb-1">Loại tài khoản</label>
         <select id="accountType" onchange="changeType()"
-            class="w-full px-3 py-2 border rounded" required>
+            class="w-full px-3 py-2 border rounded">
             <option value="personal">Cá nhân</option>
             <option value="business">Doanh nghiệp</option>
         </select>
@@ -125,11 +133,30 @@ function changeType() {
 }
 
 function register() {
+
+    const username = document.getElementById("username").value.trim();
     const type = document.getElementById("accountType").value;
     const pass = document.getElementById("password").value.trim();
     const confirm = document.getElementById("confirmPassword").value.trim();
     const captchaInput = document.getElementById("captchaInput").value.trim();
 
+    // Kiểm tra username
+    if (!username) {
+        alert("Vui lòng nhập tên tài khoản!");
+        return;
+    }
+
+    if (username.length < 4) {
+        alert("Tên tài khoản phải ít nhất 4 ký tự!");
+        return;
+    }
+
+    if (/\s/.test(username)) {
+        alert("Tên tài khoản không được chứa khoảng trắng!");
+        return;
+    }
+
+    // Kiểm tra mật khẩu
     if (!pass || !confirm) {
         alert("Vui lòng nhập mật khẩu!");
         return;
@@ -145,12 +172,14 @@ function register() {
         return;
     }
 
+    // CAPTCHA
     if (parseInt(captchaInput) !== result) {
         alert("CAPTCHA sai!");
         generateCaptcha();
         return;
     }
 
+    // Kiểm tra thông tin theo loại
     if (type === "personal") {
         const name = fullName.value.trim();
         const dob = document.getElementById("dob").value;
