@@ -1,45 +1,49 @@
-console.log("JS CONNECTED");
+// ======================
+// MỞ FORM
+// ======================
+
 function openLogin() {
-    document.getElementById("overlay").classList.remove("hidden");
-    document.getElementById("overlay").classList.add("flex");
-    document.getElementById("loginForm").classList.remove("hidden");
-    document.getElementById("registerForm").classList.add("hidden");
+    const overlay = document.getElementById("overlay");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    overlay.classList.remove("hidden");
+    overlay.classList.add("flex");
+
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
 }
 
 function openRegister() {
-    document.getElementById("overlay").classList.remove("hidden");
-    document.getElementById("overlay").classList.add("flex");
-    document.getElementById("registerForm").classList.remove("hidden");
-    document.getElementById("loginForm").classList.add("hidden");
+    const overlay = document.getElementById("overlay");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    overlay.classList.remove("hidden");
+    overlay.classList.add("flex");
+
+    registerForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
 }
 
 function closeModal() {
-    document.getElementById("overlay").classList.add("hidden");
-    document.getElementById("overlay").classList.remove("flex");
+    const overlay = document.getElementById("overlay");
+    overlay.classList.add("hidden");
+    overlay.classList.remove("flex");
 }
 
-function switchToRegister() {
-    document.getElementById("loginForm").classList.add("hidden");
-    document.getElementById("registerForm").classList.remove("hidden");
-}
 
-function switchToLogin() {
-    document.getElementById("registerForm").classList.add("hidden");
-    document.getElementById("loginForm").classList.remove("hidden");
-}
+// ======================
+// ĐĂNG KÝ
+// ======================
 
 function register() {
-    let username = document.getElementById("registerUsername").value;
-    let password = document.getElementById("registerPassword").value;
-    let confirm = document.getElementById("confirmPassword").value;
+    const username = document.getElementById("registerUsername").value.trim();
+    const password = document.getElementById("registerPassword").value;
+    const confirm = document.getElementById("confirmPassword").value;
 
     if (!username || !password) {
         alert("Vui lòng nhập đầy đủ thông tin");
-        return;
-    }
-
-    if (localStorage.getItem(username)) {
-        alert("Tên người dùng đã tồn tại!");
         return;
     }
 
@@ -48,44 +52,82 @@ function register() {
         return;
     }
 
+    if (localStorage.getItem(username)) {
+        alert("Tên người dùng đã tồn tại!");
+        return;
+    }
+
     localStorage.setItem(username, password);
     alert("Đăng ký thành công!");
-    switchToLogin();
+
+    closeModal();
 }
+
+
+// ======================
+// ĐĂNG NHẬP
+// ======================
 
 function login() {
-    let username = document.getElementById("loginUsername").value;
-    let password = document.getElementById("loginPassword").value;
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-    let storedPassword = localStorage.getItem(username);
+    const storedPassword = localStorage.getItem(username);
 
-    if (storedPassword === null) {
+    if (!storedPassword) {
         alert("Tài khoản không tồn tại!");
-    } else if (storedPassword === password) {
-        alert("Đăng nhập thành công!");
-        closeModal();
-        document.getElementById("authButtons").innerHTML = `
-            <span class="text-gray-700 font-medium">Xin chào, ${username}</span>
-            <button onclick="logout()" class="text-red-500 hover:underline">Đăng xuất</button>
-        `;
-        localStorage.setItem("loggedInUser", username);
-    } else {
-        alert("Sai mật khẩu!");
+        return;
     }
+
+    if (storedPassword !== password) {
+        alert("Sai mật khẩu!");
+        return;
+    }
+
+    localStorage.setItem("loggedInUser", username);
+
+    updateHeader(username);
+    closeModal();
 }
+
+
+// ======================
+// ĐĂNG XUẤT
+// ======================
 
 function logout() {
     localStorage.removeItem("loggedInUser");
     location.reload();
 }
 
-window.onload = function() {
-    let user = localStorage.getItem("loggedInUser");
+
+// ======================
+// CẬP NHẬT HEADER
+// ======================
+
+function updateHeader(username) {
+    const authButtons = document.getElementById("authButtons");
+
+    authButtons.innerHTML = `
+        <span class="text-gray-700 font-medium">
+            Xin chào, ${username}
+        </span>
+        <button onclick="logout()" 
+            class="text-red-500 hover:underline font-medium">
+            Đăng xuất
+        </button>
+    `;
+}
+
+
+// ======================
+// KIỂM TRA ĐĂNG NHẬP KHI LOAD
+// ======================
+
+window.onload = function () {
+    const user = localStorage.getItem("loggedInUser");
+
     if (user) {
-        document.getElementById("authButtons").innerHTML = `
-            <span class="text-gray-700 font-medium">Xin chào, ${user}</span>
-            <button onclick="logout()" class="text-red-500 hover:underline">Đăng xuất</button>
-        `;
+        updateHeader(user);
     }
-    console.log("APP RUNNING OK");
 };
