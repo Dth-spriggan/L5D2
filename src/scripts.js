@@ -1,3 +1,4 @@
+console.log("JS CONNECTED");
 function openLogin() {
     document.getElementById("overlay").classList.remove("hidden");
     document.getElementById("overlay").classList.add("flex");
