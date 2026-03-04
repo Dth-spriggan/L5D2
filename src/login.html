@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - MidCV</title>
+    <link href="./output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-xl w-96">
+        <h2 class="text-2xl font-bold mb-6 text-center">Đăng nhập</h2>
+
+        <input id="username" type="text"
+            placeholder="Tên người dùng"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input id="password" type="password"
+            placeholder="Mật khẩu"
+            class="w-full mb-4 px-3 py-2 border rounded">
+
+        <button onclick="login()"
+            class="w-full bg-blue-500 text-white py-2 rounded">
+            Đăng nhập
+        </button>
+
+        <a href="index.html"
+            class="block text-center mt-4 text-gray-500">
+            ← Quay lại trang chủ
+        </a>
+    </div>
+
+<script>
+function login() {
+    const user = localStorage.getItem("user");
+    const pass = localStorage.getItem("pass");
+
+    const inputUser = document.getElementById("username").value;
+    const inputPass = document.getElementById("password").value;
+
+    if (inputUser === user && inputPass === pass) {
+        alert("Đăng nhập thành công!");
+        window.location.href = "index.html";
+    } else {
+        alert("Sai tài khoản hoặc mật khẩu!");
+    }
+}
+</script>
+
+</body>
+</html>
