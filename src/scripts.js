@@ -1,86 +1,60 @@
-// Đợi load xong HTML rồi mới chạy JS
-document.addEventListener("DOMContentLoaded", function () {
+// Đợi HTML tải xong rồi mới chạy logic giao diện
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // ===== 1. XỬ LÝ GIAO DIỆN NAVBAR (ĐĂNG NHẬP / ĐĂNG XUẤT) =====
+    const guestMenu = document.getElementById('guest-menu');
+    const userMenu = document.getElementById('user-menu');
+    const userGreeting = document.getElementById('user-greeting');
+    const avatarBtn = document.getElementById('avatar-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
 
-    // ===== LẤY PHẦN TỬ =====
-    const overlay = document.getElementById("overlay");
-    const loginForm = document.getElementById("loginForm");
-    const registerForm = document.getElementById("registerForm");
-    const authButtons = document.getElementById("authButtons");
+    // Lệnh if này giúp tránh lỗi khi script chạy ở các trang không có Navbar
+    if (guestMenu && userMenu) {
+        
+        // Lấy thông tin phiên đăng nhập
+        const currentUserInfo = localStorage.getItem('currentUser'); 
 
-    // ===== MỞ LOGIN =====
-    window.openLogin = function () {
-        overlay.classList.remove("hidden");
-        loginForm.classList.remove("hidden");
-        registerForm.classList.add("hidden");
-    };
-
-    // ===== MỞ REGISTER =====
-    window.openRegister = function () {
-        overlay.classList.remove("hidden");
-        registerForm.classList.remove("hidden");
-        loginForm.classList.add("hidden");
-    };
-
-    // ===== ĐÓNG MODAL =====
-    window.closeModal = function () {
-        overlay.classList.add("hidden");
-        loginForm.classList.add("hidden");
-        registerForm.classList.add("hidden");
-    };
-
-    // ===== ĐĂNG KÝ =====
-    window.register = function () {
-        const username = document.getElementById("registerUsername").value;
-        const password = document.getElementById("registerPassword").value;
-        const confirm = document.getElementById("confirmPassword").value;
-
-        if (!username || !password) {
-            alert("Vui lòng nhập đầy đủ thông tin!");
-            return;
-        }
-
-        if (password !== confirm) {
-            alert("Mật khẩu không khớp!");
-            return;
-        }
-
-        localStorage.setItem("user", username);
-        localStorage.setItem("pass", password);
-
-        alert("Đăng ký thành công!");
-        closeModal();
-    };
-
-    // ===== ĐĂNG NHẬP =====
-    window.login = function () {
-        const username = document.getElementById("loginUsername").value;
-        const password = document.getElementById("loginPassword").value;
-
-        const savedUser = localStorage.getItem("user");
-        const savedPass = localStorage.getItem("pass");
-
-        if (username === savedUser && password === savedPass) {
-            alert("Đăng nhập thành công!");
-
-            authButtons.innerHTML = `
-                <span class="font-medium text-gray-700">
-                    Xin chào, ${username}
-                </span>
-                <button onclick="logout()"
-                    class="bg-red-500 text-white px-4 py-2 rounded-lg">
-                    Đăng xuất
-                </button>
-            `;
-
-            closeModal();
+        if (currentUserInfo) {
+            // ---> NẾU ĐÃ ĐĂNG NHẬP <---
+            const user = JSON.parse(currentUserInfo);
+            
+            guestMenu.classList.add('hidden'); // Ẩn nút Đăng nhập/Đăng ký
+            
+            userMenu.classList.remove('hidden'); // Hiện khối Avatar
+            userMenu.classList.add('flex'); 
+            
+            // Hiển thị tên
+            userGreeting.innerText = 'Xin chào, ' + (user.fullName || user.username || 'Bạn');
         } else {
-            alert("Sai tài khoản hoặc mật khẩu!");
+            // ---> NẾU CHƯA ĐĂNG NHẬP <---
+            guestMenu.classList.remove('hidden');
+            userMenu.classList.add('hidden');
+            userMenu.classList.remove('flex');
         }
-    };
 
-    // ===== ĐĂNG XUẤT =====
-    window.logout = function () {
-        location.reload();
-    };
+        // Xử lý bật/tắt Dropdown Menu khi bấm vào Avatar
+        if (avatarBtn && dropdownMenu) {
+            avatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                dropdownMenu.classList.toggle('hidden');
+            });
 
+            // Bấm ra ngoài thì tự đóng Menu
+            document.addEventListener('click', (e) => {
+                if (!userMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        }
+    }
 });
+
+// ===== 2. HÀM ĐĂNG XUẤT TÀI KHOẢN (Viết dạng global để gọi từ HTML) =====
+window.logout = function() {
+    // Xóa trắng dữ liệu phiên đăng nhập
+    localStorage.removeItem('currentUser'); 
+    
+    // Bật thông báo và đẩy người dùng về trang chủ
+    alert('Đã đăng xuất thành công!');
+    window.location.href = 'index.html'; 
+};
