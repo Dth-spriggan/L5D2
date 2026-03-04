@@ -86,4 +86,5 @@ window.onload = function() {
             <button onclick="logout()" class="text-red-500 hover:underline">Đăng xuất</button>
         `;
     }
+    console.log("APP RUNNING OK");
 };
