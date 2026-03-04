@@ -5,52 +5,118 @@
     <title>Đăng ký - MidCV</title>
     <link href="./output.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-    <div class="bg-white p-8 rounded-xl shadow-xl w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center">Đăng ký</h2>
+<div class="bg-white p-8 rounded-xl shadow-lg w-[420px]">
 
-        <input id="username" type="text"
-            placeholder="Tên người dùng"
-            class="w-full mb-3 px-3 py-2 border rounded">
+    <h2 class="text-2xl font-bold text-center mb-6">Đăng ký tài khoản</h2>
 
-        <input id="password" type="password"
-            placeholder="Mật khẩu"
-            class="w-full mb-3 px-3 py-2 border rounded">
-
-        <input id="confirm" type="password"
-            placeholder="Xác nhận mật khẩu"
-            class="w-full mb-4 px-3 py-2 border rounded">
-
-        <button onclick="register()"
-            class="w-full bg-blue-500 text-white py-2 rounded">
-            Đăng ký
-        </button>
-
-        <a href="index.html"
-            class="block text-center mt-4 text-gray-500">
-            ← Quay lại trang chủ
-        </a>
+    <!-- CHỌN LOẠI -->
+    <div class="mb-4">
+        <label class="font-medium">Loại tài khoản:</label>
+        <select id="accountType" onchange="changeType()" 
+            class="w-full mt-2 px-3 py-2 border rounded">
+            <option value="personal">Cá nhân</option>
+            <option value="business">Doanh nghiệp</option>
+        </select>
     </div>
 
+    <!-- FORM CÁ NHÂN -->
+    <div id="personalForm">
+        <input type="text" placeholder="Họ và tên"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input type="date"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input type="text" placeholder="Số điện thoại"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input type="text" placeholder="Số CCCD"
+            class="w-full mb-3 px-3 py-2 border rounded">
+    </div>
+
+    <!-- FORM DOANH NGHIỆP -->
+    <div id="businessForm" class="hidden">
+        <input type="text" placeholder="Tên doanh nghiệp"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input type="text" placeholder="Mã số thuế"
+            class="w-full mb-3 px-3 py-2 border rounded">
+
+        <input type="text" placeholder="Địa chỉ"
+            class="w-full mb-3 px-3 py-2 border rounded">
+    </div>
+
+    <!-- MẬT KHẨU -->
+    <input id="password" type="password" placeholder="Mật khẩu"
+        class="w-full mb-3 px-3 py-2 border rounded">
+
+    <input id="confirmPassword" type="password" placeholder="Xác nhận mật khẩu"
+        class="w-full mb-3 px-3 py-2 border rounded">
+
+    <!-- CAPTCHA -->
+    <div class="mb-3">
+        <p id="captchaText" class="font-bold mb-2"></p>
+        <input id="captchaInput" type="text" placeholder="Nhập kết quả"
+            class="w-full px-3 py-2 border rounded">
+    </div>
+
+    <button onclick="register()"
+        class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+        Đăng ký
+    </button>
+
+    <a href="index.html"
+        class="block text-center mt-4 text-gray-500 hover:text-blue-600">
+        ← Quay lại trang chủ
+    </a>
+
+</div>
+
 <script>
-function register() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    const confirm = document.getElementById("confirm").value;
+let num1, num2, result;
 
-    if (!username || !password) {
-        alert("Vui lòng nhập đầy đủ!");
-        return;
+function generateCaptcha() {
+    num1 = Math.floor(Math.random() * 10);
+    num2 = Math.floor(Math.random() * 10);
+    result = num1 + num2;
+    document.getElementById("captchaText").innerText =
+        "CAPTCHA: " + num1 + " + " + num2 + " = ?";
+}
+
+generateCaptcha();
+
+function changeType() {
+    const type = document.getElementById("accountType").value;
+    const personal = document.getElementById("personalForm");
+    const business = document.getElementById("businessForm");
+
+    if (type === "personal") {
+        personal.classList.remove("hidden");
+        business.classList.add("hidden");
+    } else {
+        personal.classList.add("hidden");
+        business.classList.remove("hidden");
     }
+}
 
-    if (password !== confirm) {
+function register() {
+
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const captchaInput = document.getElementById("captchaInput").value;
+
+    if (pass !== confirm) {
         alert("Mật khẩu không khớp!");
         return;
     }
 
-    localStorage.setItem("user", username);
-    localStorage.setItem("pass", password);
+    if (parseInt(captchaInput) !== result) {
+        alert("CAPTCHA sai!");
+        generateCaptcha();
+        return;
+    }
 
     alert("Đăng ký thành công!");
     window.location.href = "login.html";
