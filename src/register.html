@@ -11,22 +11,19 @@
 
     <h2 class="text-2xl font-bold text-center mb-6">Đăng ký tài khoản</h2>
 
-    <!-- TÊN TÀI KHOẢN -->
-    <div class="mb-4">
-        <label class="block font-medium mb-1">Tên tài khoản</label>
-        <input id="username" type="text"
-            class="w-full px-3 py-2 border rounded"
-            placeholder="Nhập tên đăng nhập">
-    </div>
-
     <!-- LOẠI TÀI KHOẢN -->
     <div class="mb-4">
         <label class="block font-medium mb-1">Loại tài khoản</label>
-        <select id="accountType" onchange="changeType()"
-            class="w-full px-3 py-2 border rounded">
+        <select id="accountType" onchange="changeType()" class="w-full px-3 py-2 border rounded">
             <option value="personal">Cá nhân</option>
             <option value="business">Doanh nghiệp</option>
         </select>
+    </div>
+
+    <!-- TÊN ĐĂNG NHẬP -->
+    <div class="mb-4">
+        <label class="block font-medium mb-1">Tên đăng nhập</label>
+        <input id="username" type="text" class="w-full px-3 py-2 border rounded">
     </div>
 
     <!-- CÁ NHÂN -->
@@ -34,26 +31,22 @@
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Họ và tên</label>
-            <input id="fullName" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="fullName" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Ngày sinh</label>
-            <input id="dob" type="date"
-                class="w-full px-3 py-2 border rounded">
+            <input id="dob" type="date" class="w-full px-3 py-2 border rounded">
         </div>
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Số điện thoại</label>
-            <input id="phone" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="phone" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Số CCCD</label>
-            <input id="cccd" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="cccd" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
     </div>
@@ -63,20 +56,17 @@
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Tên doanh nghiệp</label>
-            <input id="companyName" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="companyName" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Mã số thuế</label>
-            <input id="taxCode" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="taxCode" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
         <div class="mb-4">
             <label class="block font-medium mb-1">Địa chỉ</label>
-            <input id="address" type="text"
-                class="w-full px-3 py-2 border rounded">
+            <input id="address" type="text" class="w-full px-3 py-2 border rounded">
         </div>
 
     </div>
@@ -84,31 +74,26 @@
     <!-- MẬT KHẨU -->
     <div class="mb-4">
         <label class="block font-medium mb-1">Mật khẩu</label>
-        <input id="password" type="password"
-            class="w-full px-3 py-2 border rounded">
+        <input id="password" type="password" class="w-full px-3 py-2 border rounded">
     </div>
 
     <div class="mb-4">
         <label class="block font-medium mb-1">Xác nhận mật khẩu</label>
-        <input id="confirmPassword" type="password"
-            class="w-full px-3 py-2 border rounded">
+        <input id="confirmPassword" type="password" class="w-full px-3 py-2 border rounded">
     </div>
 
     <!-- CAPTCHA -->
     <div class="mb-4">
         <label class="block font-medium mb-1">CAPTCHA</label>
         <p id="captchaText" class="font-bold mb-2"></p>
-        <input id="captchaInput" type="text"
-            class="w-full px-3 py-2 border rounded">
+        <input id="captchaInput" type="text" class="w-full px-3 py-2 border rounded">
     </div>
 
-    <button onclick="register()"
-        class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+    <button onclick="register()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
         Đăng ký
     </button>
 
-    <a href="index.html"
-        class="block text-center mt-4 text-gray-500 hover:text-blue-600">
+    <a href="index.html" class="block text-center mt-4 text-gray-500 hover:text-blue-600">
         ← Quay lại trang chủ
     </a>
 
@@ -140,30 +125,26 @@ function register() {
     const confirm = document.getElementById("confirmPassword").value.trim();
     const captchaInput = document.getElementById("captchaInput").value.trim();
 
-    // Kiểm tra username
     if (!username) {
-        alert("Vui lòng nhập tên tài khoản!");
+        alert("Vui lòng nhập tên đăng nhập!");
         return;
     }
 
     if (username.length < 4) {
-        alert("Tên tài khoản phải ít nhất 4 ký tự!");
+        alert("Tên đăng nhập phải ít nhất 4 ký tự!");
         return;
     }
 
-    if (/\s/.test(username)) {
-        alert("Tên tài khoản không được chứa khoảng trắng!");
+    // 🔥 Kiểm tra trùng username
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+
+    if (users.some(user => user.username === username)) {
+        alert("Tên đăng nhập đã tồn tại!");
         return;
     }
 
-    // Kiểm tra mật khẩu
     if (!pass || !confirm) {
         alert("Vui lòng nhập mật khẩu!");
-        return;
-    }
-
-    if (pass.length < 6) {
-        alert("Mật khẩu phải ít nhất 6 ký tự!");
         return;
     }
 
@@ -172,14 +153,18 @@ function register() {
         return;
     }
 
-    // CAPTCHA
     if (parseInt(captchaInput) !== result) {
         alert("CAPTCHA sai!");
         generateCaptcha();
         return;
     }
 
-    // Kiểm tra thông tin theo loại
+    let newUser = {
+        username,
+        password: pass,
+        type
+    };
+
     if (type === "personal") {
         const name = fullName.value.trim();
         const dob = document.getElementById("dob").value;
@@ -190,6 +175,12 @@ function register() {
             alert("Vui lòng nhập đầy đủ thông tin cá nhân!");
             return;
         }
+
+        newUser.fullName = name;
+        newUser.dob = dob;
+        newUser.phone = phone;
+        newUser.cccd = cccd;
+
     } else {
         const company = document.getElementById("companyName").value.trim();
         const tax = document.getElementById("taxCode").value.trim();
@@ -199,7 +190,14 @@ function register() {
             alert("Vui lòng nhập đầy đủ thông tin doanh nghiệp!");
             return;
         }
+
+        newUser.companyName = company;
+        newUser.taxCode = tax;
+        newUser.address = address;
     }
+
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
 
     alert("Đăng ký thành công!");
     window.location.href = "login.html";
