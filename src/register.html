@@ -2,207 +2,225 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký - MidCV</title>
     <link href="./output.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-50 font-sans text-gray-800 flex flex-col min-h-screen">
 
-<div class="bg-white p-8 rounded-xl shadow-lg w-[450px]">
-
-    <h2 class="text-2xl font-bold text-center mb-6">Đăng ký tài khoản</h2>
-
-    <!-- LOẠI TÀI KHOẢN -->
-    <div class="mb-4">
-        <label class="block font-medium mb-1">Loại tài khoản</label>
-        <select id="accountType" onchange="changeType()" class="w-full px-3 py-2 border rounded">
-            <option value="personal">Cá nhân</option>
-            <option value="business">Doanh nghiệp</option>
-        </select>
-    </div>
-
-    <!-- TÊN ĐĂNG NHẬP -->
-    <div class="mb-4">
-        <label class="block font-medium mb-1">Tên đăng nhập</label>
-        <input id="username" type="text" class="w-full px-3 py-2 border rounded">
-    </div>
-
-    <!-- CÁ NHÂN -->
-    <div id="personalForm">
-
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Họ và tên</label>
-            <input id="fullName" type="text" class="w-full px-3 py-2 border rounded">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html">
+                        <img class="h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm">
+                    </a>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800">Việc làm</a>
+                    <a href="#" class="text-gray-500 hover:text-blue-600">Hồ sơ & CV</a>
+                    <a href="#" class="text-gray-500 hover:text-blue-600">Công ty</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <a href="login.html" class="text-gray-600 hover:text-blue-600 font-medium">Đăng nhập</a>
+                    <a href="register.html" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition">Đăng ký</a>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Ngày sinh</label>
-            <input id="dob" type="date" class="w-full px-3 py-2 border rounded">
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg border border-gray-100">
+            
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Tạo tài khoản mới</h2>
+                <p class="text-sm text-gray-500 mt-2">Tham gia MidCV để tìm kiếm cơ hội nghề nghiệp</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Loại tài khoản</label>
+                    <select id="accountType" onchange="changeType()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        <option value="personal">Cá nhân (Người tìm việc)</option>
+                        <option value="business">Doanh nghiệp (Nhà tuyển dụng)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                    <input id="username" type="text" placeholder="Nhập tên đăng nhập" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div id="personalForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                        <input id="fullName" type="text" placeholder="Nguyễn Văn A" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+                            <input id="dob" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                            <input id="phone" type="tel" placeholder="0987..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CCCD / CMND</label>
+                        <input id="cccd" type="text" placeholder="Số căn cước công dân" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div id="businessForm" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên doanh nghiệp</label>
+                        <input id="companyName" type="text" placeholder="Công ty TNHH..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                        <input id="taxCode" type="text" placeholder="Nhập mã số thuế" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ trụ sở</label>
+                        <input id="address" type="text" placeholder="Địa chỉ công ty" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                        <input id="password" type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận MK</label>
+                        <input id="confirmPassword" type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mã xác nhận (Captcha)</label>
+                    <div class="flex gap-4 items-center">
+                        <div id="captchaBox" class="bg-gray-200 px-4 py-2 rounded-lg font-bold tracking-widest text-lg select-none w-24 text-center"></div>
+                        <input id="captchaInput" type="text" placeholder="Nhập số bên trái" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <button onclick="register()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150 mt-4">
+                    Đăng ký ngay
+                </button>
+            </div>
+
+            <p class="mt-6 text-center text-sm text-gray-600">
+                Đã có tài khoản? 
+                <a href="login.html" class="font-medium text-blue-600 hover:text-blue-500">Đăng nhập</a>
+            </p>
         </div>
+    </main>
 
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Số điện thoại</label>
-            <input id="phone" type="text" class="w-full px-3 py-2 border rounded">
+    <footer class="bg-slate-900 text-gray-300 pt-8 pb-8 mt-auto">
+        <div class="text-center">
+             <p class="text-sm text-gray-500">© 2026 Dự án Web Programming. All rights reserved.</p>
         </div>
+    </footer>
 
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Số CCCD</label>
-            <input id="cccd" type="text" class="w-full px-3 py-2 border rounded">
-        </div>
+    <script>
+        let captchaResult = 0;
 
-    </div>
-
-    <!-- DOANH NGHIỆP -->
-    <div id="businessForm" class="hidden">
-
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Tên doanh nghiệp</label>
-            <input id="companyName" type="text" class="w-full px-3 py-2 border rounded">
-        </div>
-
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Mã số thuế</label>
-            <input id="taxCode" type="text" class="w-full px-3 py-2 border rounded">
-        </div>
-
-        <div class="mb-4">
-            <label class="block font-medium mb-1">Địa chỉ</label>
-            <input id="address" type="text" class="w-full px-3 py-2 border rounded">
-        </div>
-
-    </div>
-
-    <!-- MẬT KHẨU -->
-    <div class="mb-4">
-        <label class="block font-medium mb-1">Mật khẩu</label>
-        <input id="password" type="password" class="w-full px-3 py-2 border rounded">
-    </div>
-
-    <div class="mb-4">
-        <label class="block font-medium mb-1">Xác nhận mật khẩu</label>
-        <input id="confirmPassword" type="password" class="w-full px-3 py-2 border rounded">
-    </div>
-
-    <!-- CAPTCHA -->
-    <div class="mb-4">
-        <label class="block font-medium mb-1">CAPTCHA</label>
-        <p id="captchaText" class="font-bold mb-2"></p>
-        <input id="captchaInput" type="text" class="w-full px-3 py-2 border rounded">
-    </div>
-
-    <button onclick="register()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-        Đăng ký
-    </button>
-
-    <a href="index.html" class="block text-center mt-4 text-gray-500 hover:text-blue-600">
-        ← Quay lại trang chủ
-    </a>
-
-</div>
-
-<script>
-let num1, num2, result;
-
-function generateCaptcha() {
-    num1 = Math.floor(Math.random() * 10);
-    num2 = Math.floor(Math.random() * 10);
-    result = num1 + num2;
-    document.getElementById("captchaText").innerText =
-        num1 + " + " + num2 + " = ?";
-}
-generateCaptcha();
-
-function changeType() {
-    const type = document.getElementById("accountType").value;
-    document.getElementById("personalForm").classList.toggle("hidden", type !== "personal");
-    document.getElementById("businessForm").classList.toggle("hidden", type !== "business");
-}
-
-function register() {
-
-    const username = document.getElementById("username").value.trim();
-    const type = document.getElementById("accountType").value;
-    const pass = document.getElementById("password").value.trim();
-    const confirm = document.getElementById("confirmPassword").value.trim();
-    const captchaInput = document.getElementById("captchaInput").value.trim();
-
-    if (!username) {
-        alert("Vui lòng nhập tên đăng nhập!");
-        return;
-    }
-
-    if (username.length < 4) {
-        alert("Tên đăng nhập phải ít nhất 4 ký tự!");
-        return;
-    }
-
-    // 🔥 Kiểm tra trùng username
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-
-    if (users.some(user => user.username === username)) {
-        alert("Tên đăng nhập đã tồn tại!");
-        return;
-    }
-
-    if (!pass || !confirm) {
-        alert("Vui lòng nhập mật khẩu!");
-        return;
-    }
-
-    if (pass !== confirm) {
-        alert("Mật khẩu không khớp!");
-        return;
-    }
-
-    if (parseInt(captchaInput) !== result) {
-        alert("CAPTCHA sai!");
-        generateCaptcha();
-        return;
-    }
-
-    let newUser = {
-        username,
-        password: pass,
-        type
-    };
-
-    if (type === "personal") {
-        const name = fullName.value.trim();
-        const dob = document.getElementById("dob").value;
-        const phone = document.getElementById("phone").value.trim();
-        const cccd = document.getElementById("cccd").value.trim();
-
-        if (!name || !dob || !phone || !cccd) {
-            alert("Vui lòng nhập đầy đủ thông tin cá nhân!");
-            return;
+        // Sinh mã Captcha đơn giản (Ví dụ: 1234)
+        function generateCaptcha() {
+            captchaResult = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById("captchaBox").innerText = captchaResult;
+            document.getElementById("captchaInput").value = "";
         }
 
-        newUser.fullName = name;
-        newUser.dob = dob;
-        newUser.phone = phone;
-        newUser.cccd = cccd;
-
-    } else {
-        const company = document.getElementById("companyName").value.trim();
-        const tax = document.getElementById("taxCode").value.trim();
-        const address = document.getElementById("address").value.trim();
-
-        if (!company || !tax || !address) {
-            alert("Vui lòng nhập đầy đủ thông tin doanh nghiệp!");
-            return;
+        // Chuyển đổi form Cá nhân / Doanh nghiệp
+        function changeType() {
+            const type = document.getElementById("accountType").value;
+            if (type === "personal") {
+                document.getElementById("personalForm").classList.remove("hidden");
+                document.getElementById("businessForm").classList.add("hidden");
+            } else {
+                document.getElementById("personalForm").classList.add("hidden");
+                document.getElementById("businessForm").classList.remove("hidden");
+            }
         }
 
-        newUser.companyName = company;
-        newUser.taxCode = tax;
-        newUser.address = address;
-    }
+        // Khởi tạo Captcha khi load trang
+        window.onload = function() {
+            generateCaptcha();
+        };
 
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
+        // Xử lý Đăng ký
+        function register() {
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            
+            const type = document.getElementById("accountType").value;
+            const username = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value;
+            const confirm = document.getElementById("confirmPassword").value;
+            const captchaInput = document.getElementById("captchaInput").value;
 
-    alert("Đăng ký thành công!");
-    window.location.href = "login.html";
-}
-</script>
+            if (!username || !pass || !confirm || !captchaInput) {
+                alert("Vui lòng điền đầy đủ các thông tin cơ bản!");
+                return;
+            }
 
+            // Kiểm tra trùng lặp tên đăng nhập
+            const isExist = users.find(u => u.username === username);
+            if (isExist) {
+                alert("Tên đăng nhập này đã tồn tại!");
+                return;
+            }
+
+            if (pass !== confirm) {
+                alert("Mật khẩu không khớp!");
+                return;
+            }
+
+            if (parseInt(captchaInput) !== captchaResult) {
+                alert("Mã Captcha không đúng!");
+                generateCaptcha();
+                return;
+            }
+
+            let newUser = { username, password: pass, type };
+
+            if (type === "personal") {
+                const name = document.getElementById("fullName").value.trim();
+                const dob = document.getElementById("dob").value;
+                const phone = document.getElementById("phone").value.trim();
+                const cccd = document.getElementById("cccd").value.trim();
+
+                if (!name || !dob || !phone || !cccd) {
+                    alert("Vui lòng nhập đầy đủ thông tin cá nhân!");
+                    return;
+                }
+                newUser.fullName = name;
+                newUser.dob = dob;
+                newUser.phone = phone;
+                newUser.cccd = cccd;
+            } else {
+                const company = document.getElementById("companyName").value.trim();
+                const tax = document.getElementById("taxCode").value.trim();
+                const address = document.getElementById("address").value.trim();
+
+                if (!company || !tax || !address) {
+                    alert("Vui lòng nhập đầy đủ thông tin doanh nghiệp!");
+                    return;
+                }
+                newUser.companyName = company;
+                newUser.taxCode = tax;
+                newUser.address = address;
+            }
+
+            // Lưu vào mảng users
+            users.push(newUser);
+            localStorage.setItem("users", JSON.stringify(users));
+
+            alert("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
+            window.location.href = "login.html";
+        }
+    </script>
 </body>
 </html>

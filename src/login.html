@@ -5,44 +5,80 @@
     <title>Đăng nhập - MidCV</title>
     <link href="./output.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-    <div class="bg-white p-8 rounded-xl shadow-xl w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center">Đăng nhập</h2>
+<div class="bg-white p-8 rounded-xl shadow-lg w-[420px]">
 
+    <h2 class="text-2xl font-bold text-center mb-6">Đăng nhập</h2>
+
+    <!-- USERNAME -->
+    <div class="mb-4">
+        <label class="block font-medium mb-1">Tên đăng nhập</label>
         <input id="username" type="text"
-            placeholder="Tên người dùng"
-            class="w-full mb-3 px-3 py-2 border rounded">
-
-        <input id="password" type="password"
-            placeholder="Mật khẩu"
-            class="w-full mb-4 px-3 py-2 border rounded">
-
-        <button onclick="login()"
-            class="w-full bg-blue-500 text-white py-2 rounded">
-            Đăng nhập
-        </button>
-
-        <a href="index.html"
-            class="block text-center mt-4 text-gray-500">
-            ← Quay lại trang chủ
-        </a>
+            class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
     </div>
+
+    <!-- PASSWORD -->
+    <div class="mb-6">
+        <label class="block font-medium mb-1">Mật khẩu</label>
+        <input id="password" type="password"
+            class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
+    </div>
+
+    <!-- LOGIN BUTTON -->
+    <button onclick="login()"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition">
+        Đăng nhập
+    </button>
+
+    <div class="text-center mt-4 text-sm text-gray-500">
+        Chưa có tài khoản?
+        <a href="register.html" class="text-blue-600 hover:underline">Đăng ký ngay</a>
+    </div>
+
+    <a href="index.html"
+       class="block text-center mt-4 text-gray-400 hover:text-blue-600 text-sm">
+       ← Quay lại trang chủ
+    </a>
+
+</div>
 
 <script>
 function login() {
-    const user = localStorage.getItem("user");
-    const pass = localStorage.getItem("pass");
 
-    const inputUser = document.getElementById("username").value;
-    const inputPass = document.getElementById("password").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    if (inputUser === user && inputPass === pass) {
-        alert("Đăng nhập thành công!");
-        window.location.href = "index.html";
-    } else {
-        alert("Sai tài khoản hoặc mật khẩu!");
+    if (!username || !password) {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
     }
+
+    // Lấy danh sách user
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+
+    if (users.length === 0) {
+        alert("Chưa có tài khoản nào được đăng ký!");
+        return;
+    }
+
+    // Tìm user
+    const foundUser = users.find(user =>
+        user.username === username && user.password === password
+    );
+
+    if (!foundUser) {
+        alert("Sai tên đăng nhập hoặc mật khẩu!");
+        return;
+    }
+
+    // Lưu trạng thái đăng nhập
+    localStorage.setItem("currentUser", JSON.stringify(foundUser));
+
+    alert("Đăng nhập thành công!");
+
+    // Chuyển về trang chủ
+    window.location.href = "index.html";
 }
 </script>
 
