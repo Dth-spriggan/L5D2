@@ -142,61 +142,69 @@
 
         </div>
     </main>
-<!-- OVERLAY -->
-    <div id="overlay"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+<div id="overlay"
+     class="fixed inset-0 hidden z-50">
 
-    <!-- LOGIN FORM -->
-    <div id="loginForm" class="bg-white p-6 rounded-xl w-96 hidden">
-        <h2 class="text-2xl font-bold mb-4 text-center">Đăng nhập</h2>
+    <!-- LỚP NỀN TỐI -->
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
 
-        <input id="loginUsername" type="text"
-            placeholder="Tên người dùng"
-            class="w-full mb-3 px-3 py-2 border rounded">
+    <!-- KHUNG FORM Ở GIỮA -->
+    <div class="absolute inset-0 flex items-center justify-center">
 
-        <input id="loginPassword" type="password"
-            placeholder="Mật khẩu"
-            class="w-full mb-3 px-3 py-2 border rounded">
+        <!-- LOGIN FORM -->
+        <div id="loginForm"
+             class="bg-white p-6 rounded-xl w-96 hidden shadow-xl">
+            <h2 class="text-2xl font-bold mb-4 text-center">Đăng nhập</h2>
 
-        <button onclick="login()"
-            class="w-full bg-blue-500 text-white py-2 rounded">
-            Đăng nhập
-        </button>
+            <input id="loginUsername" type="text"
+                placeholder="Tên người dùng"
+                class="w-full mb-3 px-3 py-2 border rounded">
 
-        <button onclick="closeModal()"
-            class="w-full mt-3 text-gray-500">
-            Đóng
-        </button>
+            <input id="loginPassword" type="password"
+                placeholder="Mật khẩu"
+                class="w-full mb-3 px-3 py-2 border rounded">
+
+            <button onclick="login()"
+                class="w-full bg-blue-500 text-white py-2 rounded">
+                Đăng nhập
+            </button>
+
+            <button onclick="closeModal()"
+                class="w-full mt-3 text-gray-500">
+                Đóng
+            </button>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="registerForm"
+             class="bg-white p-6 rounded-xl w-96 hidden shadow-xl">
+            <h2 class="text-2xl font-bold mb-4 text-center">Đăng ký</h2>
+
+            <input id="registerUsername" type="text"
+                placeholder="Tên người dùng"
+                class="w-full mb-3 px-3 py-2 border rounded">
+
+            <input id="registerPassword" type="password"
+                placeholder="Mật khẩu"
+                class="w-full mb-3 px-3 py-2 border rounded">
+
+            <input id="confirmPassword" type="password"
+                placeholder="Xác nhận mật khẩu"
+                class="w-full mb-3 px-3 py-2 border rounded">
+
+            <button onclick="register()"
+                class="w-full bg-blue-500 text-white py-2 rounded">
+                Đăng ký
+            </button>
+
+            <button onclick="closeModal()"
+                class="w-full mt-3 text-gray-500">
+                Đóng
+            </button>
+        </div>
+
     </div>
-
-    <!-- REGISTER FORM -->
-    <div id="registerForm" class="bg-white p-6 rounded-xl w-96 hidden">
-        <h2 class="text-2xl font-bold mb-4 text-center">Đăng ký</h2>
-
-        <input id="registerUsername" type="text"
-            placeholder="Tên người dùng"
-            class="w-full mb-3 px-3 py-2 border rounded">
-
-        <input id="registerPassword" type="password"
-            placeholder="Mật khẩu"
-            class="w-full mb-3 px-3 py-2 border rounded">
-
-        <input id="confirmPassword" type="password"
-            placeholder="Xác nhận mật khẩu"
-            class="w-full mb-3 px-3 py-2 border rounded">
-
-        <button onclick="register()"
-            class="w-full bg-blue-500 text-white py-2 rounded">
-            Đăng ký
-        </button>
-
-        <button onclick="closeModal()"
-            class="w-full mt-3 text-gray-500">
-            Đóng
-        </button>
-    </div>
-
-<script src="scripts.js"></script>
+</div>
     
     <script src="scripts.js"></script>
 
