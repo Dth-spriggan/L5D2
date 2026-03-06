@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ của tôi</title>
+    <link rel="stylesheet" href="output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Chỉ bổ sung những gì output.css chưa có */
+        .avatar-container { position: relative; width: 96px; height: 96px; }
+        .upload-overlay {
+            display: none;
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.42);
+            border-radius: 9999px;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.3rem;
+        }
+        .editable .upload-overlay { display: flex; }
+        .avatar-hint { display: none; margin-top: 6px; font-size: 0.75rem; color: oklch(54.6% 0.245 262.881); }
+        .show-hint { display: block; }
+
+        .edit-field {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 0.375rem;
+            border: 1.5px solid oklch(92.8% 0.006 264.531);
+            background: oklch(98.5% 0.002 247.839);
+            color: oklch(21% 0.034 264.665);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s, background 0.2s, box-shadow 0.2s;
+            cursor: default;
+            resize: none;
+        }
+        .edit-field:not([readonly]) {
+            background: #fff;
+            border-color: oklch(54.6% 0.245 262.881);
+            cursor: text;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+        }
+        .edit-field:not([readonly]):focus {
+            border-color: oklch(48.8% 0.243 264.376);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+
+        #toast {
+            display: none;
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            background: #16a34a; color: #fff;
+            padding: 11px 28px; border-radius: 9999px;
+            font-size: 0.95rem; font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen flex justify-center items-center p-4">
+
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Hồ sơ cá nhân</h2>
+            <a href="index.html" class="text-gray-500 transition" style="font-size:0.875rem;">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <form id="profileForm" class="space-y-4">
+
+            <!-- Avatar -->
+            <div class="flex flex-col items-center mb-6">
+                <div id="avatarContainer" class="avatar-container">
+                    <img id="avatarPreview"
+                         src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=3b82f6&color=fff&size=150"
+                         class="w-full object-cover rounded-full border-2 border-blue-500 shadow-sm"
+                         style="height:96px;"
+                         alt="Avatar">
+                    <div class="upload-overlay">
+                        <label for="avatarInput" class="w-full h-full flex items-center justify-center cursor-pointer">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                    </div>
+                    <input type="file" id="avatarInput" accept="image/*" class="hidden">
+                </div>
+                <span id="avatarHint" class="avatar-hint">
+                    <i class="fas fa-camera" style="font-size:0.7rem;"></i> Nhấn để đổi ảnh
+                </span>
+            </div>
+
+            <!-- Họ và tên -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Họ và tên</label>
+                <input type="text" id="name" class="edit-field" value="Nguyễn Văn A" readonly>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Email</label>
+                <input type="email" id="email" class="edit-field" value="nguyenvana@example.com" readonly>
+            </div>
+
+            <!-- Số điện thoại -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Số điện thoại</label>
+                <input type="text" id="phone" class="edit-field" value="0901 234 567" readonly>
+            </div>
+
+            <!-- Giới thiệu -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Giới thiệu bản thân</label>
+                <textarea id="bio" rows="3" class="edit-field" readonly placeholder="Mô tả ngắn về bạn..."></textarea>
+            </div>
+
+            <!-- Học vấn -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Trình độ học vấn</label>
+                <input type="text" id="education" class="edit-field" readonly placeholder="Trường học, bằng cấp...">
+            </div>
+
+            <!-- Kỹ năng -->
+            <div>
+                <label class="block tracking-widest font-bold text-gray-400 mb-1" style="font-size:0.7rem;text-transform:uppercase;">Kỹ năng mềm</label>
+                <input type="text" id="skills" class="edit-field" readonly placeholder="Giao tiếp, làm việc nhóm...">
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3 pt-4">
+                <button type="button" id="editBtn"
+                    class="flex-1 bg-blue-600 text-gray-50 py-2 rounded-md font-medium transition cursor-pointer">
+                    <i class="fas fa-pen" style="margin-right:6px;font-size:0.8rem;"></i>Chỉnh sửa
+                </button>
+                <button type="submit" id="saveBtn"
+                    class="hidden flex-1 py-2 rounded-md font-medium transition cursor-pointer text-gray-50"
+                    style="background:#16a34a;">
+                    <i class="fas fa-check" style="margin-right:6px;font-size:0.8rem;"></i>Lưu hồ sơ
+                </button>
+                <button type="button" id="cancelBtn"
+                    class="hidden flex-1 bg-gray-200 text-gray-700 py-2 rounded-md font-medium transition cursor-pointer">
+                    <i class="fas fa-times" style="margin-right:6px;font-size:0.8rem;"></i>Hủy
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <div id="toast">
+        <i class="fas fa-check-circle" style="margin-right:7px;"></i>Đã lưu hồ sơ thành công!
+    </div>
+
+<script>
+    const form            = document.getElementById('profileForm');
+    const fields          = document.querySelectorAll('.edit-field');
+    const avatarContainer = document.getElementById('avatarContainer');
+    const avatarInput     = document.getElementById('avatarInput');
+    const avatarPreview   = document.getElementById('avatarPreview');
+    const avatarHint      = document.getElementById('avatarHint');
+    const editBtn         = document.getElementById('editBtn');
+    const saveBtn         = document.getElementById('saveBtn');
+    const cancelBtn       = document.getElementById('cancelBtn');
+    const toast           = document.getElementById('toast');
+
+    let originalData   = {};
+    let originalAvatar = avatarPreview.src;
+
+    function setEditMode(isEditing) {
+        fields.forEach(field => {
+            if (isEditing) field.removeAttribute('readonly');
+            else field.setAttribute('readonly', true);
+        });
+
+        avatarContainer.classList.toggle('editable', isEditing);
+        avatarHint.classList.toggle('show-hint', isEditing);
+
+        editBtn.classList.toggle('hidden', isEditing);
+        saveBtn.classList.toggle('hidden', !isEditing);
+        cancelBtn.classList.toggle('hidden', !isEditing);
+    }
+
+    editBtn.addEventListener('click', function () {
+        fields.forEach(f => { originalData[f.id] = f.value; });
+        originalAvatar = avatarPreview.src;
+        setEditMode(true);
+        document.getElementById('name').focus();
+    });
+
+    cancelBtn.addEventListener('click', function () {
+        fields.forEach(f => { f.value = originalData[f.id]; });
+        avatarPreview.src = originalAvatar;
+        avatarInput.value = '';
+        setEditMode(false);
+    });
+
+    avatarInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => { avatarPreview.src = ev.target.result; };
+        reader.readAsDataURL(file);
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        setEditMode(false);
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    });
+</script>
+</body>
+</html>
