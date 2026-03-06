@@ -37,12 +37,16 @@ exports.getJobs = async (req, res) => {
 // 2. TẠO TIN MỚI
 exports.createJob = async (req, res) => {
   try {
-    const { title, description, salary_gross, job_type } = req.body;
+    // 1. Phải có location ở đây
+    const { title, description, salary_gross, job_type, location } = req.body; 
+    
+    // 2. Phải có chữ location trong ngoặc đơn ĐẦU TIÊN và dấu ? ở ngoặc đơn THỨ HAI
     const [result] = await db.query(
-      `INSERT INTO jobs (title, description, salary_gross, job_type, status, employer_id, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, 'PENDING_REVIEW', 1, NOW(), NOW())`,
-      [title, description, salary_gross || null, job_type || null]
+      `INSERT INTO jobs (title, description, salary_gross, job_type, location, status, employer_id, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, ?, 'PENDING_REVIEW', 1, NOW(), NOW())`,
+      [title, description, salary_gross || null, job_type || null, location || 'Chưa cập nhật'] // 3. Phải có location ở mảng này
     );
+    
     res.status(201).json({ success: true, message: 'Tạo tin thành công, chờ duyệt!', id: result.insertId });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -104,6 +108,22 @@ exports.rejectJob = async (req, res) => {
     const { id } = req.params;
     await db.query(`UPDATE jobs SET status = 'REJECTED' WHERE id = ?`, [id]);
     res.status(200).json({ success: true, message: 'Đã từ chối tin' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// 8. XÓA CỨNG (Hard Delete) - Bay màu vĩnh viễn khỏi Database
+exports.hardDeleteJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query(`DELETE FROM jobs WHERE id = ?`, [id]);
+    
+    if (result.affectedRows > 0) {
+      res.status(200).json({ success: true, message: 'Đã tiễn tin tuyển dụng bay màu vĩnh viễn!' });
+    } else {
+      res.status(404).json({ success: false, message: 'Không tìm thấy tin này để xóa' });
+    }
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
