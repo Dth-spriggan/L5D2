@@ -16,6 +16,9 @@ router.put('/jobs/:id', jobController.updateJob);
 // DELETE /api/jobs/:id -> Xóa mềm tin (Vào thùng rác)
 router.delete('/jobs/:id', jobController.deleteJob);
 
+// DELETE /api/jobs/:id/force -> Xóa cứng vĩnh viễn (Phải có chữ /force để phân biệt với xóa mềm)
+router.delete('/jobs/:id/force', jobController.hardDeleteJob);
+
 // POST /api/jobs/:id/restore -> Khôi phục tin từ thùng rác
 router.post('/jobs/:id/restore', jobController.restoreJob);
 
