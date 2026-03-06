@@ -4,56 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Tuyển dụng - MidCV</title>
-    <link href="./output.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden transition-opacity" onclick="toggleMobileMenu()"></div>
+    <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <img class="h-8 w-auto" src="./assets/logoweb.png" alt="Logo">
+            <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-red-500 focus:outline-none p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-2">
+            <a href="index.html" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Việc làm</a>
+            
+            <div class="border-b border-gray-100 pb-2">
+                <button onclick="toggleSubmenu('mobile-cv-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
+                    Hồ sơ & CV
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="mobile-cv-menu" class="hidden flex-col gap-3 pl-4 pt-3">
+                    <a href="#" class="text-gray-600 hover:text-blue-600">Thư viện Mẫu CV</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600">Tạo CV mới</a>
+                    <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="text-gray-600 hover:text-blue-600">Quản lý CV</a>
+                </div>
+            </div>
+
+            <div class="border-b border-gray-100 pb-2 mt-2">
+                <button onclick="toggleSubmenu('mobile-company-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
+                    Công ty
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="mobile-company-menu" class="hidden flex-col gap-3 pl-4 pt-3">
+                    <a href="#" class="text-gray-600 hover:text-blue-600">Danh sách Công ty</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600">Top Công ty nổi bật</a>
+                </div>
+            </div>
+            
+            <div id="employer-btn-mobile" class="mt-4 pt-2">
+                <a href="tuyendung.html" class="flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-3 rounded-lg shadow-md">
+                    🚀 Dành cho Nhà tuyển dụng
+                </a>
+            </div>
+        </div>
+    </div>
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="#">
-                        <img class="h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm">
-                    </a>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-1">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <a href="index.html"><img class="h-8 md:h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm"></a>
                 </div>
 
-                <nav class="hidden md:flex space-x-8">
-                    <a href="#" class="text-blue-600 font-medium hover:text-blue-800">Việc làm</a>
-                    <a href="#" class="text-gray-500 hover:text-blue-600">Hồ sơ & CV</a>
-                    <a href="#" class="text-gray-500 hover:text-blue-600">Công ty</a>
+                <nav class="hidden md:flex space-x-8 h-full items-center">
+                    <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800">Việc làm</a>
+                    
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-500 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none">
+                            Hồ sơ & CV
+                            <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <div class="absolute left-0 top-full w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
+                            <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">
+                                Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-500 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none">
+                            Công ty
+                            <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <div class="absolute left-0 top-full w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Danh sách Công ty</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Top Công ty nổi bật</a>
+                        </div>
+                    </div>
                 </nav>
 
-<div class="flex items-center space-x-4">
-    <div id="auth-container" class="flex items-center space-x-4">
-    
-    <div id="guest-menu" class="flex items-center space-x-4">
-        <a href="login.html" class="text-gray-600 hover:text-blue-600 font-medium">Đăng nhập</a>
-        <a href="register.html" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition">Đăng ký</a>
-    </div>
+                <div class="flex items-center" style="gap: 24px;">
+                    <a id="employer-btn-desktop" href="tuyendung.html" class="hidden md:flex items-center text-sm font-bold text-gray-700 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 transition" style="padding: 8px 16px; border-radius: 8px;">
+                        🚀 Nhà tuyển dụng
+                    </a>
+                    <div id="employer-divider" class="hidden md:block bg-gray-300" style="width: 1px; height: 24px;"></div>
 
-    <div id="user-menu" class="hidden items-center space-x-3">
-        <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
-        
-        <div style="position: relative; display: inline-block;">
-            
-            <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
-                <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
-            </button>
+                    <div id="auth-container" class="flex items-center" style="gap: 16px;">
+                        <div id="guest-menu" class="flex items-center" style="gap: 16px;">
+                            <a href="login.html" class="text-sm md:text-base text-gray-600 hover:text-blue-600 font-medium">Đăng nhập</a>
+                            <a href="register.html" class="text-sm md:text-base bg-blue-500 hover:bg-blue-600 text-white font-medium transition" style="padding: 8px 16px; border-radius: 8px;">Đăng ký</a>
+                        </div>
 
-            <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
-                
-                <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
-                
-                <div style="position: relative; z-index: 10; background: white; border-radius: 8px; overflow: hidden;">
-                    <a href="#" style="display: block; padding: 12px 16px; font-size: 14px; color: #374151; text-decoration: none; border-bottom: 1px solid #f9fafb;">Hồ sơ của tôi</a>
-                    <a href="#" style="display: block; padding: 12px 16px; font-size: 14px; color: #374151; text-decoration: none; border-bottom: 1px solid #f9fafb;">Việc làm đã lưu</a>
-                    <a href="#" style="display: block; padding: 12px 16px; font-size: 14px; color: #374151; text-decoration: none; border-bottom: 1px solid #f9fafb;">Cài đặt tài khoản</a>
-                    <button onclick="logout()" style="display: block; width: 100%; text-align: left; padding: 12px 16px; font-size: 14px; font-weight: bold; color: #dc2626; background: none; border: none; cursor: pointer;">Đăng xuất</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                        <div id="user-menu" class="hidden items-center" style="gap: 12px;">
+                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
+                            <div style="position: relative; display: inline-block;">
+                                <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
+                                    <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                </button>
+                                <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
+                                    <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
+                                    <div style="position: relative; z-index: 10; background: white; border-radius: 8px; overflow: hidden;">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Hồ sơ của tôi</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Việc làm đã lưu</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Cài đặt tài khoản</a>
+                                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50">Đăng xuất</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -326,12 +399,6 @@
         </div>
     </div>
 </footer>
-<script>
-    const btnMenu = document.querySelector('button.md\\:hidden');
-    btnMenu.addEventListener('click', () => {
-        alert('Menu mobile đã được bấm! Cần bổ sung UI menu xổ xuống.');
-    });
-</script>
 <script src="./scripts.js"></script>
 </body>
 </html>
