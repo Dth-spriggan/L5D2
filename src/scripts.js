@@ -216,3 +216,162 @@ window.requireAuth = function(event, targetPage) {
         // window.location.href = targetPage;
     }
 };
+// =================================================================
+// 7. XỬ LÝ SIDEBAR CỦA TRANG DASHBOARD DOANH NGHIỆP
+// =================================================================
+window.toggleAdminSidebar = function() {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-overlay');
+
+    if (!sidebar || !overlay) return; // Nếu không ở trang Admin thì bỏ qua
+
+    const isClosed = sidebar.classList.contains('-translate-x-full');
+
+    if (isClosed) {
+        // Mở sidebar: Kéo từ trái sang phải, làm mờ nền màn hình
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+    } else {
+        // Đóng sidebar: Trả về trạng thái giấu ngoài màn hình
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    }
+};
+// =================================================================
+// 8. XỬ LÝ CHUYỂN TAB TRONG DASHBOARD DOANH NGHIỆP (Single Page App)
+// =================================================================
+window.switchAdminView = function(viewId) {
+    // 1. Ẩn tất cả các khối nội dung (Views)
+    const allViews = document.querySelectorAll('.admin-view');
+    allViews.forEach(view => {
+        view.classList.remove('block');
+        view.classList.add('hidden');
+    });
+
+    // 2. Hiện khối nội dung được chọn
+    const targetView = document.getElementById('view-' + viewId);
+    if (targetView) {
+        targetView.classList.remove('hidden');
+        targetView.classList.add('block');
+    }
+
+    // 3. Xử lý đổi màu Menu Sidebar (Active state)
+    // Lấy tất cả các nút menu
+    const navBtns = document.querySelectorAll('.admin-nav-btn');
+    navBtns.forEach(btn => {
+        // Reset về màu xám mặc định
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/20');
+        btn.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+    });
+
+    // Đổi màu xanh cho nút đang được bấm
+    const activeBtn = document.getElementById('nav-' + viewId);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+        activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/20');
+    }
+
+    // 4. Đổi tiêu đề Header tương ứng
+    const titleObj = {
+        'overview': 'Bảng điều khiển',
+        'post-job': 'Quản lý Đăng tin',
+        'candidates': 'Hồ sơ ứng viên',
+        'settings': 'Cài đặt công ty'
+    };
+    const headerTitle = document.getElementById('dashboard-title');
+    if (headerTitle && titleObj[viewId]) {
+        headerTitle.innerText = titleObj[viewId];
+    }
+
+    // 5. [MOBILE-FRIENDLY] Tự động đóng Sidebar nếu đang dùng điện thoại
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-overlay');
+    if (window.innerWidth < 1024) { // 1024px là mốc breakpoint 'lg' của Tailwind
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    }
+};
+// =================================================================
+// 9. XỬ LÝ LƯU & CẬP NHẬT THÔNG TIN CÔNG TY
+// =================================================================
+
+// 9.1. Tự động load dữ liệu từ LocalStorage khi mở trang
+document.addEventListener('DOMContentLoaded', () => {
+    // Chỉ chạy nếu đang ở trang doanh nghiệp
+    if (document.getElementById('form-company-settings')) {
+        loadCompanyProfile();
+    }
+});
+
+window.loadCompanyProfile = function() {
+    const savedProfile = localStorage.getItem('companyProfile');
+    if (savedProfile) {
+        const data = JSON.parse(savedProfile);
+        
+        // Đổ dữ liệu vào Form
+        if(document.getElementById('setting-company-name')) document.getElementById('setting-company-name').value = data.name || '';
+        if(document.getElementById('setting-company-tax')) document.getElementById('setting-company-tax').value = data.tax || '';
+        if(document.getElementById('setting-company-email')) document.getElementById('setting-company-email').value = data.email || '';
+        if(document.getElementById('setting-company-phone')) document.getElementById('setting-company-phone').value = data.phone || '';
+        if(document.getElementById('setting-company-address')) document.getElementById('setting-company-address').value = data.address || '';
+        if(document.getElementById('setting-company-desc')) document.getElementById('setting-company-desc').value = data.desc || '';
+
+        // Đổ tên công ty lên thanh Header
+        const headerName = document.getElementById('header-company-name');
+        if (headerName && data.name) {
+            headerName.innerText = data.name;
+        }
+    }
+};
+
+// 9.2. Hàm lưu dữ liệu khi bấm nút "Lưu thay đổi"
+window.updateCompanyProfile = async function(event) {
+    event.preventDefault(); // Ngăn trình duyệt reload lại trang
+
+    // Thu thập dữ liệu từ Form
+    const data = {
+        name: document.getElementById('setting-company-name').value.trim(),
+        tax: document.getElementById('setting-company-tax').value.trim(),
+        email: document.getElementById('setting-company-email').value.trim(),
+        phone: document.getElementById('setting-company-phone').value.trim(),
+        address: document.getElementById('setting-company-address').value.trim(),
+        desc: document.getElementById('setting-company-desc').value.trim()
+    };
+
+    // ----------------------------------------------------
+    // PHẦN 1: CẬP NHẬT LOCALSTORAGE (Chạy siêu tốc cho UI)
+    // ----------------------------------------------------
+    localStorage.setItem('companyProfile', JSON.stringify(data));
+    
+    // Cập nhật Header ngay lập tức
+    const headerName = document.getElementById('header-company-name');
+    if (headerName) headerName.innerText = data.name;
+
+    alert('Đã lưu thông tin thành công!');
+
+    // ----------------------------------------------------
+    // PHẦN 2: CHUẨN BỊ FETCH API (Chờ Backend nối ống nước)
+    // ----------------------------------------------------
+    /*
+    try {
+        const response = await fetch("http://localhost:8080/api/company/update", {
+            method: "PUT", // HTTP Method để cập nhật dữ liệu
+            headers: {
+                "Content-Type": "application/json",
+                // "Authorization": "Bearer " + localStorage.getItem("token") // Bật lên khi có hệ thống Token
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+            console.log("Database Backend đã được cập nhật:", result);
+        } else {
+            console.error("Lỗi từ server Backend:", result.message);
+        }
+    } catch (error) {
+        console.error("Lỗi kết nối đến Backend:", error);
+    }
+    */
+};
