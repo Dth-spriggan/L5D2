@@ -1,0 +1,9 @@
+# Bỏ qua thư viện
+node_modules/
+
+# Bỏ qua file CSS tự động sinh của Tailwind
+output.css
+src/output.css
+
+# Bỏ qua file chứa mật khẩu
+.env

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Việc làm - MidCV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-1">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <a href="index.html"><img class="h-8 md:h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm"></a>
+                </div>
+                <nav class="hidden md:flex space-x-8 h-full items-center">
+                    <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800 border-b-2 border-blue-600 h-full flex items-center">Việc làm</a>
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-500 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none">
+                            Hồ sơ & CV
+                            <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="absolute left-0 top-full w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
+                            <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
+                        </div>
+                    </div>
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-500 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none">
+                            Công ty
+                            <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="absolute left-0 top-full w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Danh sách Công ty</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Top Công ty nổi bật</a>
+                        </div>
+                    </div>
+                </nav>
+                <div class="flex items-center" style="gap: 24px;">
+                    <a id="employer-btn-desktop" href="tuyendung.html" class="hidden md:flex items-center text-sm font-bold text-gray-700 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 transition" style="padding: 8px 16px; border-radius: 8px;">🚀 Nhà tuyển dụng</a>
+                    <div id="employer-divider" class="hidden md:block bg-gray-300" style="width: 1px; height: 24px;"></div>
+                    <div id="auth-container" class="flex items-center" style="gap: 16px;">
+                        <div id="guest-menu" class="flex items-center" style="gap: 16px;">
+                            <a href="login.html" class="text-sm md:text-base text-gray-600 hover:text-blue-600 font-medium">Đăng nhập</a>
+                            <a href="register.html" class="text-sm md:text-base bg-blue-500 hover:bg-blue-600 text-white font-medium transition" style="padding: 8px 16px; border-radius: 8px;">Đăng ký</a>
+                        </div>
+                        <div id="user-menu" class="hidden items-center" style="gap: 12px;">
+                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
+                            <div style="position: relative; display: inline-block;">
+                                <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
+                                    <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                </button>
+                                <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
+                                    <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
+                                    <div style="position: relative; z-index: 10; background: white; border-radius: 8px; overflow: hidden;">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Hồ sơ của tôi</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Việc làm đã lưu</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Cài đặt tài khoản</a>
+                                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50">Đăng xuất</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <button onclick="javascript:history.back()" class="inline-flex items-center gap-2 text-gray-600 font-medium hover:text-blue-600 transition group">
+                <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Quay lại
+            </button>
+        </div>
+    </div>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col gap-6">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="flex items-start gap-5">
+                <div class="w-20 h-20 bg-white border border-gray-200 rounded-xl p-2 shrink-0 flex items-center justify-center">
+                    <img id="detail-logo" src="https://via.placeholder.com/80" alt="Logo" class="max-w-full max-h-full object-contain">
+                </div>
+                <div>
+                    <h1 id="detail-title" class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Đang tải công việc...</h1>
+                    <p id="detail-company" class="text-lg text-gray-600 font-medium mb-3">...</p>
+                    <div class="flex flex-wrap gap-4 text-sm font-medium">
+                        <span class="flex items-center gap-1.5 text-green-600 bg-green-50 px-3 py-1.5 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="detail-salary">...</span></span>
+                        <span class="flex items-center gap-1.5 text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> <span id="detail-location">...</span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-auto flex flex-col gap-3 shrink-0">
+                <button onclick="handleJobAction('apply')" class="w-full md:w-48 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md text-center flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Ứng tuyển ngay
+                </button>
+                <button id="save-job-btn" onclick="handleJobAction('save')" class="w-full md:w-48 bg-white border-2 border-blue-600 text-blue-600 font-bold py-2.5 px-6 rounded-lg hover:bg-blue-50 transition text-center flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    <span>Lưu tin</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            
+            <div class="w-full lg:w-2/3 flex flex-col gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        Kỹ năng yêu cầu
+                    </h3>
+                    <div id="detail-tags" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-bold text-gray-900 mb-4 text-lg border-l-4 border-blue-600 pl-3">Mô tả công việc</h3>
+        <div id="detail-description" class="prose prose-blue text-gray-600 text-sm md:text-base space-y-2">
+            Đang tải mô tả...
+        </div>
+
+        <h3 class="font-bold text-gray-900 mb-4 text-lg border-l-4 border-blue-600 pl-3 mt-8">Yêu cầu ứng viên</h3>
+        <div id="detail-requirements" class="prose prose-blue text-gray-600 text-sm md:text-base space-y-2">
+            Đang tải yêu cầu...
+        </div>
+
+        <h3 class="font-bold text-gray-900 mb-4 text-lg border-l-4 border-blue-600 pl-3 mt-8">Quyền lợi</h3>
+        <div id="detail-benefits" class="prose prose-blue text-gray-600 text-sm md:text-base space-y-2">
+            Đang tải quyền lợi...
+        </div>
+    </div>
+            </div>
+
+            <div class="w-full lg:w-1/3 flex flex-col gap-6">
+                
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-900 mb-5">Thông tin chung</h3>
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-50 p-2 rounded-full text-blue-600 shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Cấp bậc</p>
+                                <p class="text-sm font-bold text-gray-800">Nhân viên</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-50 p-2 rounded-full text-blue-600 shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Hình thức làm việc</p>
+                                <p class="text-sm font-bold text-gray-800">Toàn thời gian</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-50 p-2 rounded-full text-blue-600 shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Số lượng cần tuyển</p>
+                                <p class="text-sm font-bold text-gray-800">2 người</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 rounded-xl p-4 text-center">
+                    <p class="text-xs text-gray-500 mb-2">Bạn thấy tin tuyển dụng này có dấu hiệu lừa đảo?</p>
+                    <button onclick="openReportModal()" class="text-sm text-red-500 font-bold hover:underline">Báo cáo tin giả mạo</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="apply-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-transform">
+            
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-800">Ứng tuyển vị trí này</h3>
+                <button onclick="closeApplyModal()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form onsubmit="submitApplication(event)" class="p-6">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Chọn CV để ứng tuyển <span class="text-red-500">*</span></label>
+                    <div class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-100 transition">
+                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p class="text-sm font-medium text-blue-700">Tải lên CV từ máy tính</p>
+                        <p class="text-xs text-gray-500 mt-1">Hỗ trợ định dạng .PDF, .DOC, .DOCX dưới 5MB</p>
+                        <input type="file" required class="mt-3 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full" accept=".pdf,.doc,.docx">
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Thư giới thiệu (Không bắt buộc)</label>
+                    <textarea rows="3" placeholder="Viết vài lời giới thiệu về bản thân và lý do bạn phù hợp với công việc này..." class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 resize-none"></textarea>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeApplyModal()" class="px-6 py-2.5 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition">Hủy bỏ</button>
+                    <button type="submit" id="submit-cv-btn" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition flex items-center justify-center min-w-[140px]">Nộp CV ngay</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="report-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-transform border-t-4 border-red-500">
+            
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-red-50">
+                <h3 class="text-lg font-bold text-red-700 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Báo cáo tin tuyển dụng
+                </h3>
+                <button onclick="closeReportModal()" class="text-gray-400 hover:text-red-500 p-1 rounded-full transition focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form onsubmit="submitReport(event)" class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Vui lòng chọn lý do bạn cho rằng tin tuyển dụng này vi phạm tiêu chuẩn cộng đồng của MidCV:</p>
+                
+                <div class="space-y-3 mb-5">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="report_reason" required class="w-4 h-4 text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700 font-medium">Yêu cầu nộp phí / Lừa đảo tiền bạc</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="report_reason" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700 font-medium">Công ty đa cấp / Lừa đảo sinh viên</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="report_reason" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700 font-medium">Nội dung sai sự thật / Treo đầu dê bán thịt chó</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="report_reason" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700 font-medium">Lý do khác</span>
+                    </label>
+                </div>
+
+                <div class="mb-5">
+                    <textarea rows="2" placeholder="Cung cấp thêm chi tiết (Ví dụ: Số điện thoại lừa đảo, tên người liên hệ...)" class="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-red-400 focus:outline-none text-gray-700 text-sm resize-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeReportModal()" class="px-5 py-2 rounded-lg text-gray-600 font-bold hover:bg-gray-100 transition text-sm">Hủy bỏ</button>
+                    <button type="submit" id="submit-report-btn" class="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold shadow-md transition text-sm flex items-center justify-center min-w-[120px]">Gửi báo cáo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-slate-900 text-gray-300 pt-16 pb-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <div>
+                <img src="./assets/logoweb.png" alt="Logo Nhóm" class="h-10 mb-6">
+                <p class="text-sm text-gray-400 mb-4">
+                    Nền tảng công nghệ tuyển dụng tiên tiến, kết nối hàng triệu ứng viên với các doanh nghiệp hàng đầu.
+                </p>
+                <div class="text-sm text-gray-400 space-y-2">
+                    <p>📍 Địa chỉ: Số 120 Yên Lãng, Đống Đa, Hà Nội</p>
+                    <p>📞 Điện thoại: (024) 37663311</p>
+                    <p>📧 Email: doshisa@na.na.na</p>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Dành cho Ứng viên</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="#" class="hover:text-blue-400 transition">Việc làm mới nhất</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Cẩm nang tìm việc</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Tính lương Gross - Net</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Nhà tuyển dụng</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="#" class="hover:text-blue-400 transition">Đăng tin tuyển dụng</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Bảng giá dịch vụ</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Tải ứng dụng</h3>
+                <p class="text-sm text-gray-400 mb-4">Tải ngay ứng dụng để tìm việc và tạo CV mọi lúc mọi nơi.</p>
+                <div class="flex flex-col gap-3">
+                    <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
+                        <span class="text-2xl">🍎</span>
+                        <div class="text-left">
+                            <p class="text-xs text-gray-400">Download on the</p>
+                            <p class="text-sm font-bold text-white">App Store</p>
+                        </div>
+                    </a>
+                    <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
+                        <span class="text-2xl">🤖</span>
+                        <div class="text-left">
+                            <p class="text-xs text-gray-400">GET IT ON</p>
+                            <p class="text-sm font-bold text-white">Google Play</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-sm text-gray-500">© 2026 Dự án Web Programming. All rights reserved.</p>
+            <div class="flex gap-4 text-sm text-gray-500">
+                <a href="#" class="hover:text-white transition">Quy chế hoạt động</a>
+                <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <script src="./scripts.js"></script>
+</body>
+</html>
