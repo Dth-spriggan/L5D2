@@ -21,7 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
             guestMenu.classList.add('hidden');
             userMenu.classList.remove('hidden');
             userMenu.classList.add('flex'); 
-            userGreeting.innerText = 'Xin chào, ' + (user.fullName || user.username || 'Bạn');
+            userGreeting.innerText = user.fullName || user.username || 'Bạn';
+            const hdrAv = document.getElementById('header-avatar');
+            if (hdrAv) {
+                if (user.avatar) {
+                    hdrAv.src = user.avatar;
+                } else if (user.fullName || user.username) {
+                    hdrAv.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName || user.username) + '&background=dbeafe&color=2563eb&size=80';
+                }
+            }
 
             // NẾU TÀI KHOẢN LÀ ỨNG VIÊN (personal): Ẩn hoàn toàn nút Nhà Tuyển Dụng đi
             if (user.type === 'personal') {
@@ -381,136 +389,16 @@ window.updateCompanyProfile = async function(event) {
 
 // Mảng 10 công việc (Đã thêm trường salarySort để sắp xếp và lọc bằng số)
 const mockJobs = [
-    { 
-        id: 1, 
-        title: "Lập trình viên Frontend (ReactJS)", 
-        company: "Công ty Cổ phần Công nghệ UTC", 
-        salary: "15 - 25 Triệu", 
-        salarySort: 15, 
-        location: "Hà Nội", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["ReactJS", "Tailwind"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Tham gia phát triển các tính năng UI/UX cho nền tảng web nội bộ của UTC.</li><li>Phối hợp cùng team Backend để tích hợp RESTful API.</li><li>Tối ưu hóa hiệu năng, đảm bảo trang web chạy mượt mà trên mọi thiết bị.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Có ít nhất 1 năm kinh nghiệm thực chiến với ReactJS và TailwindCSS.</li><li>Nắm vững kiến thức nền tảng HTML, CSS, JavaScript (ES6+).</li><li>Ưu tiên sinh viên tốt nghiệp hoặc đang theo học tại UTC.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Mức lương cạnh tranh 15 - 25 triệu tùy năng lực.</li><li>Môi trường làm việc trẻ trung, năng động, sếp tâm lý.</li><li>Được cấp Macbook Pro M2 để làm việc.</li></ul>"
-    },
-    { 
-        id: 2, 
-        title: "Chuyên viên Phân tích Dữ liệu", 
-        company: "Tập đoàn Tài chính Á Châu", 
-        salary: "Lên đến $1000", 
-        salarySort: 25, 
-        location: "Hà Nội", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["SQL", "Python"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Thu thập, xử lý và phân tích dữ liệu giao dịch tài chính của khách hàng.</li><li>Xây dựng các báo cáo (Dashboard) trực quan bằng PowerBI hoặc Tableau.</li><li>Đề xuất các chiến lược kinh doanh dựa trên Insight số liệu.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Thành thạo truy vấn SQL và ngôn ngữ Python (Pandas, NumPy).</li><li>Tư duy logic tốt, nhạy bén với những con số.</li><li>Có kinh nghiệm trong lĩnh vực Tài chính - Ngân hàng là một lợi thế lớn.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Thu nhập lên đến $1000 + Thưởng hiệu suất (KPI) hàng tháng.</li><li>Gói bảo hiểm sức khỏe cao cấp cho bản thân và gia đình.</li><li>Lộ trình thăng tiến rõ ràng lên vị trí Data Scientist.</li></ul>"
-    },
-    { 
-        id: 3, 
-        title: "Nhân viên Thiết kế Đồ họa", 
-        company: "Creative Agency VN", 
-        salary: "Thỏa thuận", 
-        salarySort: 10, 
-        location: "Từ xa (Remote)", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["Figma", "Photoshop"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Thiết kế ấn phẩm truyền thông (Banner, Poster, Standee) cho các chiến dịch.</li><li>Lên ý tưởng và thiết kế bộ nhận diện thương hiệu cho đối tác.</li><li>Tham gia thiết kế giao diện UI cơ bản cho website/app khi cần.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Sử dụng thành thạo bộ công cụ Adobe (Photoshop, Illustrator) và Figma.</li><li>Có tư duy thẩm mỹ hiện đại, bắt trend tốt.</li><li>Có khả năng quản lý thời gian tốt vì làm việc 100% Remote.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Thời gian làm việc tự do, chỉ cần đảm bảo đúng Deadline.</li><li>Thưởng thêm theo từng dự án hoàn thành xuất sắc.</li><li>Được làm việc với các brand lớn, nâng cấp Portfolio cá nhân.</li></ul>"
-    },
-    { 
-        id: 4, 
-        title: "Nhân viên Đè tem", 
-        company: "Công ty Cổ phần Mixifood", 
-        salary: "Lên đến 2 hộp khô gà", 
-        salarySort: 0, 
-        location: "120 Yên Lãng", 
-        logo: "./assets/mixifood.png", 
-        tags: ["Khô gà", "Bã mía"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Ngồi dán tem, đè tem chính hãng lên các hộp khô gà, bò khô của công ty.</li><li>Đóng gói hàng hóa cẩn thận để gửi cho anh em Bộ tộc trên toàn quốc.</li><li>Hỗ trợ dọn dẹp kho bãi và xả bã mía đúng nơi quy định.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Tay to, thao tác nhanh nhẹn, mắt thâm quần (do thức đêm nịnh trên stream).</li><li>Tuyệt đối không được ăn vụng khô gà trong giờ làm việc.</li><li>Biết bợ là một lợi thế cực lớn khi phỏng vấn.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Lương thưởng quy đổi thành 2 hộp khô gà/tháng.</li><li>Được bao nuôi 3 bữa tại công ty, thỉnh thoảng được sếp cho ăn bã mía.</li><li>Môi trường tấu hài 24/7, xả stress cực mạnh.</li></ul>"
-    },
-    { 
-        id: 5, 
-        title: "Lập trình viên Backend (Java)", 
-        company: "Techcombank", 
-        salary: "20 - 30 Triệu", 
-        salarySort: 20, 
-        location: "TP.HCM", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["Java", "Spring Boot"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Xây dựng và phát triển hệ thống Core Banking và các dịch vụ thanh toán.</li><li>Thiết kế, tối ưu hóa database và hiệu năng của các RESTful API.</li><li>Đảm bảo tính bảo mật và toàn vẹn dữ liệu cho hàng triệu giao dịch mỗi ngày.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>2+ năm kinh nghiệm làm việc với Java, Spring Boot, Hibernate.</li><li>Am hiểu kiến trúc Microservices và các hệ thống Message Queue (Kafka/RabbitMQ).</li><li>Hiểu biết sâu sắc về bảo mật ứng dụng web (OWASP).</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Lương tháng 13, 14 và thưởng hiệu quả kinh doanh cuối năm.</li><li>Gói vay vốn mua nhà, mua xe với lãi suất cực kỳ ưu đãi cho nhân viên.</li><li>Chương trình đào tạo chuyên môn chuẩn quốc tế.</li></ul>"
-    },
-    { 
-        id: 6, 
-        title: "Chuyên viên Digital Marketing", 
-        company: "MidCV Media", 
-        salary: "12 - 18 Triệu", 
-        salarySort: 12, 
-        location: "Hà Nội", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["SEO", "Facebook Ads"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Lên kế hoạch và thực thi các chiến dịch quảng cáo trên Facebook, Google.</li><li>Tối ưu hóa SEO Onpage/Offpage cho nền tảng tuyển dụng MidCV.</li><li>Theo dõi, đo lường và báo cáo tỷ lệ chuyển đổi (Conversion Rate).</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Có kinh nghiệm chạy quảng cáo ngân sách khá trở lên.</li><li>Am hiểu thuật toán của các công cụ tìm kiếm và mạng xã hội.</li><li>Kỹ năng viết content thu hút, tư duy hình ảnh tốt.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Ngân sách Marketing lớn, tha hồ A/B Testing các ý tưởng điên rồ nhất.</li><li>Du lịch công ty 2 lần/năm (Trong nước và Quốc tế).</li><li>Cơ chế thưởng nóng nếu chiến dịch vượt KPI.</li></ul>"
-    },
-    { 
-        id: 7, 
-        title: "Nhân viên Kiểm thử phần mềm (QA/QC)", 
-        company: "FPT Software", 
-        salary: "10 - 15 Triệu", 
-        salarySort: 10, 
-        location: "Đà Nẵng", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["Testing", "Automation"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Đọc hiểu tài liệu BA, lên kịch bản kiểm thử (Test Case) cho các dự án Outsource.</li><li>Thực hiện Manual Test và báo cáo bug qua hệ thống Jira.</li><li>Tham gia xây dựng các kịch bản Automation Test cơ bản.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Nắm vững quy trình phát triển phần mềm và các kỹ thuật testing.</li><li>Tính cách cẩn thận, tỉ mỉ, có tư duy 'phá bĩnh' để tìm ra lỗi ẩn.</li><li>Tiếng Anh đọc hiểu tài liệu tốt.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Cơ hội đi Onsite làm việc trực tiếp với khách hàng tại Nhật Bản/Mỹ.</li><li>Phụ cấp ngoại ngữ (Tiếng Anh/Tiếng Nhật) hàng tháng.</li><li>Campus làm việc siêu đẹp, có khu thể thao, gym, bể bơi riêng.</li></ul>"
-    },
-    { 
-        id: 8, 
-        title: "Kỹ sư DevOps System", 
-        company: "VNG Corporation", 
-        salary: "30 - 50 Triệu", 
-        salarySort: 30, 
-        location: "TP.HCM", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["AWS", "Docker", "CI/CD"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Thiết kế và vận hành hạ tầng Cloud (AWS/GCP) đáp ứng hàng triệu CCU.</li><li>Xây dựng và duy trì các luồng CI/CD tự động hóa việc deploy code.</li><li>Giám sát hệ thống (Monitoring), đảm bảo uptime 99.99%.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Kinh nghiệm sâu sắc với Linux, Docker, Kubernetes (K8s).</li><li>Thành thạo việc thiết lập CI/CD bằng Jenkins hoặc GitLab CI.</li><li>Khả năng xử lý sự cố (Troubleshooting) nhanh chóng dưới áp lực cao.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Gói thu nhập khủng, xứng đáng với năng lực chuyên gia.</li><li>Được cấp Stock Option (Cổ phiếu công ty) cho nhân sự cốt cán.</li><li>Chế độ chăm sóc sức khỏe toàn diện VNG Care.</li></ul>"
-    },
-    { 
-        id: 9, 
-        title: "Nhân viên IT Helpdesk", 
-        company: "Bệnh viện Đa khoa", 
-        salary: "7 - 10 Triệu", 
-        salarySort: 7, 
-        location: "Hà Nội", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["Phần cứng", "Mạng LAN"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Hỗ trợ bác sĩ, y tá cài đặt và khắc phục lỗi phần mềm quản lý bệnh viện.</li><li>Xử lý sự cố máy tính, máy in, mạng LAN tại các phòng ban.</li><li>Lắp đặt thiết bị IT mới và quản lý tài sản công nghệ của bệnh viện.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Am hiểu về phần cứng máy tính và hệ điều hành Windows.</li><li>Có kiến thức cơ bản về thiết lập mạng nội bộ (LAN/WAN).</li><li>Thái độ hòa nhã, kiên nhẫn khi hỗ trợ người dùng không chuyên IT.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Công việc ổn định, ít áp lực chạy deadline.</li><li>Chế độ khám chữa bệnh miễn phí/giảm giá cho bản thân và gia đình.</li><li>Tham gia đầy đủ bảo hiểm y tế, BHXH theo quy định nhà nước.</li></ul>"
-    },
-    { 
-        id: 10, 
-        title: "Giám đốc Sản phẩm (Product Manager)", 
-        company: "VinAI", 
-        salary: "40 - 60 Triệu", 
-        salarySort: 40, 
-        location: "Hà Nội", 
-        logo: "https://via.placeholder.com/60", 
-        tags: ["Agile", "Scrum", "Product"],
-        description: "<ul class='list-disc pl-5 space-y-1'><li>Hoạch định chiến lược và roadmap phát triển các sản phẩm ứng dụng AI.</li><li>Quản lý Product Backlog, phối hợp chặt chẽ với team R&D và Engineering.</li><li>Nghiên cứu thị trường, thấu hiểu insight người dùng để định hướng sản phẩm.</li></ul>",
-        requirements: "<ul class='list-disc pl-5 space-y-1'><li>Ít nhất 5 năm kinh nghiệm làm PO/PM cho các sản phẩm công nghệ.</li><li>Hiểu biết sâu sắc về quy trình Agile/Scrum.</li><li>Có kiến thức nền tảng về Trí tuệ nhân tạo (AI) / Machine Learning là một lợi thế cực lớn.</li></ul>",
-        benefits: "<ul class='list-disc pl-5 space-y-1'><li>Mức lương cực kỳ hấp dẫn, tương xứng với vị trí lãnh đạo cấp trung.</li><li>Được làm việc trực tiếp với những chuyên gia AI hàng đầu thế giới.</li><li>Đặc quyền mua xe VinFast và sử dụng các dịch vụ hệ sinh thái Vingroup với giá nội bộ.</li></ul>"
-    }
+    { id: 1, title: "Lập trình viên Frontend (ReactJS)", company: "Công ty Cổ phần Công nghệ UTC", salary: "15 - 25 Triệu", salarySort: 15, location: "Hà Nội", logo: "https://via.placeholder.com/60", tags: ["ReactJS", "Tailwind"] },
+    { id: 2, title: "Chuyên viên Phân tích Dữ liệu", company: "Tập đoàn Tài chính Á Châu", salary: "Lên đến $1000", salarySort: 25, location: "Hà Nội", logo: "https://via.placeholder.com/60", tags: ["SQL", "Python"] },
+    { id: 3, title: "Nhân viên Thiết kế Đồ họa", company: "Creative Agency VN", salary: "Thỏa thuận", salarySort: 10, location: "Từ xa (Remote)", logo: "https://via.placeholder.com/60", tags: ["Figma", "Photoshop"] },
+    { id: 4, title: "Nhân viên Đè tem", company: "Công ty Cổ phần Mixifood", salary: "Lên đến 2 hộp khô gà", salarySort: 0, location: "120 Yên Lãng", logo: "./assets/mixifood.png", tags: ["Khô gà", "Bã mía"] },
+    { id: 5, title: "Lập trình viên Backend (Java)", company: "Techcombank", salary: "20 - 30 Triệu", salarySort: 20, location: "TP.HCM", logo: "https://via.placeholder.com/60", tags: ["Java", "Spring Boot"] },
+    { id: 6, title: "Chuyên viên Digital Marketing", company: "MidCV Media", salary: "12 - 18 Triệu", salarySort: 12, location: "Hà Nội", logo: "https://via.placeholder.com/60", tags: ["SEO", "Facebook Ads"] },
+    { id: 7, title: "Nhân viên Kiểm thử phần mềm (QA/QC)", company: "FPT Software", salary: "10 - 15 Triệu", salarySort: 10, location: "Đà Nẵng", logo: "https://via.placeholder.com/60", tags: ["Testing", "Automation"] },
+    { id: 8, title: "Kỹ sư DevOps System", company: "VNG Corporation", salary: "30 - 50 Triệu", salarySort: 30, location: "TP.HCM", logo: "https://via.placeholder.com/60", tags: ["AWS", "Docker", "CI/CD"] },
+    { id: 9, title: "Nhân viên IT Helpdesk", company: "Bệnh viện Đa khoa", salary: "7 - 10 Triệu", salarySort: 7, location: "Hà Nội", logo: "https://via.placeholder.com/60", tags: ["Phần cứng", "Mạng LAN"] },
+    { id: 10, title: "Giám đốc Sản phẩm (Product Manager)", company: "VinAI", salary: "40 - 60 Triệu", salarySort: 40, location: "Hà Nội", logo: "https://via.placeholder.com/60", tags: ["Agile", "Scrum", "Product"] }
 ];
 
 // Biến toàn cục cho Phân trang
@@ -714,200 +602,5 @@ window.toggleMobileFilter = function() {
     if (filterSidebar) {
         // Lệnh toggle: Nếu đang ẩn thì hiện, đang hiện thì ẩn
         filterSidebar.classList.toggle('hidden');
-    }
-};
-// =================================================================
-// 12. XỬ LÝ TRANG CHI TIẾT VIỆC LÀM (VIECLAM.HTML)
-// =================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Đã fix lỗi vòng lặp: Chỉ chạy khi tìm thấy ID 'detail-title' (Chỉ có ở trang Chi tiết)
-    if (document.getElementById('detail-title')) {
-        loadJobDetail();
-    }
-});
-
-// Hàm lấy ID từ URL và đổ dữ liệu ra trang
-window.loadJobDetail = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const jobId = parseInt(urlParams.get('id'));
-
-    // Nếu không có ID trên URL, đá về trang chủ
-    if (!jobId) {
-        window.location.href = 'index.html';
-        return;
-    }
-
-    // Tìm công việc trong mảng mockJobs dựa vào ID
-    const job = mockJobs.find(j => j.id === jobId);
-
-    if (!job) {
-        alert('Không tìm thấy công việc này!');
-        window.location.href = 'listvieclam.html';
-        return;
-    }
-
-    // Đổ dữ liệu vào các thẻ HTML đã đánh sẵn ID
-    document.getElementById('detail-title').innerText = job.title;
-    document.getElementById('detail-company').innerText = job.company;
-    document.getElementById('detail-salary').innerText = job.salary;
-    document.getElementById('detail-location').innerText = job.location;
-    
-    if(document.getElementById('detail-logo')) {
-        document.getElementById('detail-logo').src = job.logo;
-    }
-
-    // Đổ mảng Tags (Kỹ năng)
-    const tagsContainer = document.getElementById('detail-tags');
-    if (tagsContainer) {
-        tagsContainer.innerHTML = job.tags.map(tag => `<span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-lg border border-blue-100 font-medium">${tag}</span>`).join('');
-    }
-    // Nối tiếp vào hàm loadJobDetail() hiện tại
-    document.getElementById('detail-description').innerHTML = job.description || 'Chưa có mô tả công việc.';
-    document.getElementById('detail-requirements').innerHTML = job.requirements || 'Chưa có yêu cầu.';
-    document.getElementById('detail-benefits').innerHTML = job.benefits || 'Chưa có thông tin phúc lợi.';
-
-    // Dòng này đặt ở sát cuối hàm loadJobDetail()
-    const currentUser = localStorage.getItem('currentUser') || 'guest';
-    const storageKey = `savedJobs_${currentUser}`;
-    const savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
-    // Kiểm tra xem job này có nằm trong list đã lưu không để vẽ nút cho đúng
-    updateSaveButtonUI(savedJobs.includes(jobId));
-};
-
-// Hàm xử lý nút Ứng tuyển & Lưu tin
-window.handleJobAction = function(actionType) {
-    // Phục hồi lại dòng lấy thông tin user để làm chìa khóa lưu LocalStorage
-    const currentUser = localStorage.getItem('currentUser') || 'guest';
-
-    if (actionType === 'apply') {
-        // Mở Popup nộp CV
-        const modal = document.getElementById('apply-modal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-    } else if (actionType === 'save') {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentJobId = parseInt(urlParams.get('id'));
-
-        if (!currentJobId) return;
-
-        const storageKey = `savedJobs_${currentUser}`; 
-        let savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-        if (!savedJobs.includes(currentJobId)) {
-            // Chưa lưu -> Tiến hành Lưu và Cập nhật UI
-            savedJobs.push(currentJobId);
-            localStorage.setItem(storageKey, JSON.stringify(savedJobs));
-            updateSaveButtonUI(true);
-        } else {
-            // Đã lưu -> Xóa khỏi mảng (Bỏ lưu) và Cập nhật UI
-            savedJobs = savedJobs.filter(id => id !== currentJobId);
-            localStorage.setItem(storageKey, JSON.stringify(savedJobs));
-            updateSaveButtonUI(false);
-        }
-    }
-};
-
-// Hàm đóng Popup
-window.closeApplyModal = function() {
-    const modal = document.getElementById('apply-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-};
-
-// Hàm giả lập Submit CV
-window.submitApplication = function(event) {
-    event.preventDefault(); // Ngăn load lại trang
-    
-    const btn = document.getElementById('submit-cv-btn');
-    const originalText = btn.innerHTML;
-    
-    // Đổi trạng thái nút thành Đang tải (Loading)
-    btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi CV...`;
-    btn.disabled = true;
-    btn.classList.add('opacity-70', 'cursor-not-allowed');
-
-    // Giả lập sau 1.5 giây thì gửi thành công
-    setTimeout(() => {
-        alert('🎉 Chúc mừng! CV của bạn đã được gửi tới Nhà tuyển dụng thành công!');
-        closeApplyModal();
-        
-        // Trả lại trạng thái nút
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        btn.classList.remove('opacity-70', 'cursor-not-allowed');
-    }, 1500);
-};// =================================================================
-// 13. XỬ LÝ MODAL BÁO CÁO TIN GIẢ MẠO
-// =================================================================
-
-window.openReportModal = function() {
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-        alert('Bạn cần đăng nhập để sử dụng tính năng Báo cáo!');
-        window.location.href = 'login.html';
-        return;
-    }
-    const modal = document.getElementById('report-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-};
-
-window.closeReportModal = function() {
-    const modal = document.getElementById('report-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-};
-
-window.submitReport = function(event) {
-    event.preventDefault();
-    
-    const btn = document.getElementById('submit-report-btn');
-    const originalText = btn.innerHTML;
-    
-    // Hiệu ứng loading
-    btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi...`;
-    btn.disabled = true;
-    btn.classList.add('opacity-70', 'cursor-not-allowed');
-
-    setTimeout(() => {
-        alert('Cảm ơn bạn! Báo cáo đã được gửi đến Ban Quản Trị MidCV để xem xét xử lý.');
-        closeReportModal();
-        
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        btn.classList.remove('opacity-70', 'cursor-not-allowed');
-    }, 1000);
-};
-// Hàm vẽ lại UI cho nút Lưu tin
-window.updateSaveButtonUI = function(isSaved) {
-    const btn = document.getElementById('save-job-btn');
-    if (!btn) return;
-
-    if (isSaved) {
-        // Trạng thái: Đã lưu (Trái tim đậm, chữ Đã lưu, nền xanh nhạt)
-        btn.innerHTML = `
-            <svg class="w-5 h-5" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-            <span>Đã lưu</span>
-        `;
-        btn.classList.add('bg-blue-50');
-        btn.classList.remove('bg-white');
-    } else {
-        // Trạng thái: Chưa lưu (Trái tim rỗng, chữ Lưu tin, nền trắng)
-        btn.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-            <span>Lưu tin</span>
-        `;
-        btn.classList.add('bg-white');
-        btn.classList.remove('bg-blue-50');
     }
 };
