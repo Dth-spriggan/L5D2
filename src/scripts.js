@@ -766,6 +766,14 @@ window.loadJobDetail = function() {
     document.getElementById('detail-description').innerHTML = job.description || 'Chưa có mô tả công việc.';
     document.getElementById('detail-requirements').innerHTML = job.requirements || 'Chưa có yêu cầu.';
     document.getElementById('detail-benefits').innerHTML = job.benefits || 'Chưa có thông tin phúc lợi.';
+
+    // Dòng này đặt ở sát cuối hàm loadJobDetail()
+    const currentUser = localStorage.getItem('currentUser') || 'guest';
+    const storageKey = `savedJobs_${currentUser}`;
+    const savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    // Kiểm tra xem job này có nằm trong list đã lưu không để vẽ nút cho đúng
+    updateSaveButtonUI(savedJobs.includes(jobId));
 };
 
 // Hàm xử lý nút Ứng tuyển & Lưu tin
@@ -786,17 +794,19 @@ window.handleJobAction = function(actionType) {
 
         if (!currentJobId) return;
 
-        // Dùng currentUser làm tên kho lưu trữ riêng cho từng người
         const storageKey = `savedJobs_${currentUser}`; 
         let savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
 
         if (!savedJobs.includes(currentJobId)) {
+            // Chưa lưu -> Tiến hành Lưu và Cập nhật UI
             savedJobs.push(currentJobId);
             localStorage.setItem(storageKey, JSON.stringify(savedJobs));
-            
-            alert('Đã lưu công việc thành công! Dữ liệu đã sẵn sàng cho nhánh user-ui.');
+            updateSaveButtonUI(true);
         } else {
-            alert('Bạn đã lưu công việc này từ trước rồi!');
+            // Đã lưu -> Xóa khỏi mảng (Bỏ lưu) và Cập nhật UI
+            savedJobs = savedJobs.filter(id => id !== currentJobId);
+            localStorage.setItem(storageKey, JSON.stringify(savedJobs));
+            updateSaveButtonUI(false);
         }
     }
 };
@@ -877,4 +887,27 @@ window.submitReport = function(event) {
         btn.disabled = false;
         btn.classList.remove('opacity-70', 'cursor-not-allowed');
     }, 1000);
+};
+// Hàm vẽ lại UI cho nút Lưu tin
+window.updateSaveButtonUI = function(isSaved) {
+    const btn = document.getElementById('save-job-btn');
+    if (!btn) return;
+
+    if (isSaved) {
+        // Trạng thái: Đã lưu (Trái tim đậm, chữ Đã lưu, nền xanh nhạt)
+        btn.innerHTML = `
+            <svg class="w-5 h-5" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            <span>Đã lưu</span>
+        `;
+        btn.classList.add('bg-blue-50');
+        btn.classList.remove('bg-white');
+    } else {
+        // Trạng thái: Chưa lưu (Trái tim rỗng, chữ Lưu tin, nền trắng)
+        btn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            <span>Lưu tin</span>
+        `;
+        btn.classList.add('bg-white');
+        btn.classList.remove('bg-blue-50');
+    }
 };
