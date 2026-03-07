@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -11,6 +12,13 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Để đọc được JSON từ body (người dùng gửi lên)
 
+
+// 1. Gọi file jobRoutes vào
+const jobRoutes = require('./routes/jobRoutes');
+
+// 2. Cắm điện cho toàn bộ route bắt đầu bằng /api
+app.use('/api', jobRoutes);
+
 // Test API đầu tiên
 app.get('/api/ping', (req, res) => {
     res.json({ success: true, message: "Hệ thống đang chạy mượt mà!" });
@@ -21,3 +29,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server Backend TopCV Clone đang chạy tại http://localhost:${PORT}`);
 });
+
+
+//Job
+//nn
