@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const empDivider = document.getElementById('employer-divider');
     const empBtnMobile = document.getElementById('employer-btn-mobile');
 
+    // ---------------------------------------------------------
+    // GATEKEEPER: CHẶN ỨNG VIÊN VÀO TRANG NHÀ TUYỂN DỤNG
+    // ---------------------------------------------------------
+    const currentUser = localStorage.getItem('currentUser');
+    
+    // Nếu đang ở trang tuyendung.html VÀ có tài khoản Ứng viên đang đăng nhập
+    if (window.location.pathname.includes('tuyendung.html') && currentUser) {
+        alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi truy cập Cổng Doanh Nghiệp.');
+        window.location.href = 'index.html'; // Trục xuất về trang chủ
+        return; // Dừng toàn bộ script phía sau
+    }
+
     if (guestMenu && userMenu) {
         const currentUserInfo = localStorage.getItem('currentUser'); 
 
@@ -911,3 +923,43 @@ window.updateSaveButtonUI = function(isSaved) {
         btn.classList.remove('bg-blue-50');
     }
 };
+// =================================================================
+// 14. ĐỒNG BỘ AVATAR VÀ TÊN USER LÊN HEADER TOÀN CỤC
+// =================================================================
+
+window.syncUserHeader = function() {
+    try {
+        const userStr = localStorage.getItem('currentUser');
+        if (!userStr) return; // Nếu chưa đăng nhập thì bỏ qua
+
+        const user = JSON.parse(userStr);
+        const headerAvatar = document.getElementById('header-avatar');
+        const userGreeting = document.getElementById('user-greeting');
+
+        // Lấy tên hiển thị (Ưu tiên fullName, nếu không có thì lấy username)
+        const displayName = user.fullName || user.username || 'Người dùng';
+
+        // 1. Cập nhật Tên hiển thị trên Header
+        if (userGreeting) {
+            userGreeting.textContent = `Xin chào, ${displayName}`;
+        }
+
+        // 2. Cập nhật Avatar trên Header
+        if (headerAvatar) {
+            if (user.avatar) {
+                // Nếu user đã tự up ảnh bên trang userui.html
+                headerAvatar.src = user.avatar;
+            } else {
+                // Nếu chưa up, tạo avatar chữ cái đầu (Giống hệt logic của bạn trợ lý)
+                headerAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=dbeafe&color=2563eb`;
+            }
+        }
+    } catch (e) {
+        console.error("Lỗi đồng bộ Header:", e);
+    }
+};
+
+// Gọi hàm này ngay khi trang vừa load xong
+document.addEventListener('DOMContentLoaded', () => {
+    syncUserHeader();
+});

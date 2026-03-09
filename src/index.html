@@ -110,17 +110,22 @@
                         </div>
 
                         <div id="user-menu" class="hidden items-center" style="gap: 12px;">
-                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
+                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, Người dùng</span>
+                            
                             <div style="position: relative; display: inline-block;">
                                 <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
-                                    <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                    <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
                                 </button>
+                                
                                 <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
                                     <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
                                     <div style="position: relative; z-index: 10; background: white; border-radius: 8px; overflow: hidden;">
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Hồ sơ của tôi</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Việc làm đã lưu</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Cài đặt tài khoản</a>
+                                        
+                                        <a href="userui.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Hồ sơ của tôi</a>
+                                        
+                                        <a href="userui.html?tab=saved" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Việc làm đã lưu</a>
+                                        <a href="userui.html?tab=settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50">Cài đặt tài khoản</a>
+                                        
                                         <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50">Đăng xuất</button>
                                     </div>
                                 </div>
