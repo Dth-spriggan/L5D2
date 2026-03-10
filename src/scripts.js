@@ -961,15 +961,11 @@ window.syncUserHeader = function() {
         if (dropdownEmail) dropdownEmail.textContent = user.email || (user.username + '@midcv.vn');
 
         // 2. Cập nhật Avatar
-        let avatarUrl = '';
         if (user.avatar) {
-            avatarUrl = user.avatar;
-        } else {
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=dbeafe&color=2563eb`;
+            if (headerAvatar) headerAvatar.src = user.avatar;
+            if (dropdownAvatar) dropdownAvatar.src = user.avatar;
         }
-
-        if (headerAvatar) headerAvatar.src = avatarUrl;
-        if (dropdownAvatar) dropdownAvatar.src = avatarUrl;
+        // Nếu chưa có avatar thì giữ ảnh mặc định logouser.png
         
     } catch (e) {
         console.error("Lỗi đồng bộ Header:", e);
