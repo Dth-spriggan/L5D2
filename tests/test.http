@@ -1,3 +1,13 @@
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123",
+    "name": "Test User",
+    "role": "Candidate"
+}
+
 ### 1. Test API Tạo tin tuyển dụng mới
 POST http://localhost:3000/api/jobs
 Content-Type: application/json
