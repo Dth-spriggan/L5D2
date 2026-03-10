@@ -1,28 +1,34 @@
-// Gọi thư viện dotenv ra để đọc file .env
-require('dotenv').config();
-const mysql = require('mysql2');
+const { Sequelize } = require('sequelize');
+require('dotenv').config(); // Gọi cái này để nó đọc được file .env
 
-// Tạo kết nối bằng các thông tin đã lưu trong .env
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  // ĐÂY LÀ CHÌA KHÓA QUAN TRỌNG CHO AIVEN: Bật mã hóa SSL
-  ssl: {
-    rejectUnauthorized: false // Tạm thời để false để test kết nối nhanh trên máy local
-  }
-});
+// Lấy thông số từ file .env
+const sequelize = new Sequelize(
+    process.env.DB_NAME, 
+    process.env.DB_USER, 
+    process.env.DB_PASSWORD, 
+    {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT, // Cổng 26197 của Aiven
+        dialect: 'mysql',
+        logging: false,
+        dialectOptions: {
+            // ĐÂY LÀ CHÌA KHÓA: Aiven bắt buộc phải có SSL
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
+        }
+    }
+);
 
-// Chạy thử kết nối xem có thông không
-connection.connect((err) => {
-  if (err) {
-    console.error('Báo cáo đại sư huynh, kết nối thất bại! Lỗi đây ạ:', err.message);
-    return;
-  }
-  console.log('Tuyệt vời đại sư huynh! Đã kết nối Database Aiven thành công rực rỡ!');
-});
+const connectDB = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('✅ Đã kết nối Aiven Cloud MySQL thành công!');
+    } catch (error) {
+        console.error('❌ Lỗi kết nối MySQL:', error.message);
+        process.exit(1);
+    }
+};
 
-// Xuất file này ra để các file code khác (như index.js) có thể dùng chung
-module.exports = connection;
+module.exports = { sequelize, connectDB };
