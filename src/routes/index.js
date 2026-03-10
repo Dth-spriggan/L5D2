@@ -14,7 +14,6 @@ const escrowRoutes = require('./escrowRoutes');
 // ==========================================
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
-
 router.get('/jobs', jobController.getAllJobs);
 
 // ==========================================

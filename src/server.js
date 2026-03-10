@@ -18,6 +18,7 @@ const app = express();
 // 2. Middlewares (Xử lý dữ liệu đầu vào)
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ==========================================================
 // 3. THIẾT LẬP QUAN HỆ CÁC BẢNG (ASSOCIATIONS)
