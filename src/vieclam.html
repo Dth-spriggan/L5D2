@@ -53,10 +53,10 @@
                             <a href="register.html" class="text-sm md:text-base bg-blue-500 hover:bg-blue-600 text-white font-medium transition" style="padding: 8px 16px; border-radius: 8px;">Đăng ký</a>
                         </div>
                         <div id="user-menu" class="hidden items-center" style="gap: 12px;">
-                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
                             <div style="position: relative; display: inline-block;">
-                                <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
-                                    <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                <button id="avatar-btn" style="outline: none; cursor: pointer; display: flex; align-items: center; gap: 8px; background: none; border: none; padding: 4px 0;">
+                                    <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                    <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block"></span>
                                 </button>
                                 <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
                                     <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
@@ -273,7 +273,7 @@
                 <div class="text-sm text-gray-400 space-y-2">
                     <p>📍 Địa chỉ: Số 120 Yên Lãng, Đống Đa, Hà Nội</p>
                     <p>📞 Điện thoại: (024) 37663311</p>
-                    <p>📧 Email: doshisa@na.na.na</p>
+                    <p>📧 Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="385c574b50514b59785659165659165659">[email&#160;protected]</a></p>
                 </div>
             </div>
 
@@ -322,12 +322,12 @@
             <p class="text-sm text-gray-500">© 2026 Dự án Web Programming. All rights reserved.</p>
             <div class="flex gap-4 text-sm text-gray-500">
                 <a href="#" class="hover:text-white transition">Quy chế hoạt động</a>
-                <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
+                <a href="#" class="hover:text-white transition">Chính sách bảo m
             </div>
         </div>
     </div>
 </footer>
 
-    <script src="./scripts.js"></script>
+<script src="./scripts.js"></script>
 </body>
 </html>

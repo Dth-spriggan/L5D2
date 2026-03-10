@@ -21,7 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
             guestMenu.classList.add('hidden');
             userMenu.classList.remove('hidden');
             userMenu.classList.add('flex'); 
-            userGreeting.innerText = 'Xin chào, ' + (user.fullName || user.username || 'Bạn');
+            userGreeting.innerText = user.fullName || user.username || 'Bạn';
+            const hdrAv = document.getElementById('header-avatar');
+            if (hdrAv) {
+                if (user.avatar) {
+                    hdrAv.src = user.avatar;
+                } else {
+                    hdrAv.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName || user.username) + '&background=dbeafe&color=2563eb&size=80';
+                }
+            }
 
             // NẾU TÀI KHOẢN LÀ ỨNG VIÊN (personal): Ẩn hoàn toàn nút Nhà Tuyển Dụng đi
             if (user.type === 'personal') {
