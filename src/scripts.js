@@ -4,74 +4,88 @@
 document.addEventListener('DOMContentLoaded', () => {
     const guestMenu = document.getElementById('guest-menu');
     const userMenu = document.getElementById('user-menu');
-    const userGreeting = document.getElementById('user-greeting');
-    const avatarBtn = document.getElementById('avatar-btn');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-
-    // Lấy các phần tử nút Nhà tuyển dụng
-    const empBtnDesktop = document.getElementById('employer-btn-desktop');
-    const empDivider = document.getElementById('employer-divider');
-    const empBtnMobile = document.getElementById('employer-btn-mobile');
-
-    // ---------------------------------------------------------
-    // GATEKEEPER: CHẶN ỨNG VIÊN VÀO TRANG NHÀ TUYỂN DỤNG
-    // ---------------------------------------------------------
-    const currentUser = localStorage.getItem('currentUser');
     
-    // Nếu đang ở trang tuyendung.html VÀ có tài khoản Ứng viên đang đăng nhập
-    if (window.location.pathname.includes('tuyendung.html') && currentUser) {
-        alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi truy cập Cổng Doanh Nghiệp.');
-        window.location.href = 'index.html'; // Trục xuất về trang chủ
-        return; // Dừng toàn bộ script phía sau
+    // ---------------------------------------------------------
+    // 1. ẨN NÚT TRỞ VỀ NẾU ĐANG Ở TRANG CHỦ (INDEX.HTML)
+    // ---------------------------------------------------------
+    const backBtn = document.getElementById('header-back-btn');
+    if (backBtn) {
+        const path = window.location.pathname;
+        if (path.endsWith('index.html') || path === '/' || path.endsWith('/')) {
+            backBtn.style.display = 'none'; // Giấu nút đi nếu là trang chủ
+        }
     }
 
-    if (guestMenu && userMenu) {
-        const currentUserInfo = localStorage.getItem('currentUser'); 
+    // ---------------------------------------------------------
+    // 2. GATEKEEPER BẢO VỆ URL: CHẶN ỨNG VIÊN VÀO TRANG NHÀ TUYỂN DỤNG
+    // ---------------------------------------------------------
+    const currentUserInfo = localStorage.getItem('currentUser');
+    
+    if (window.location.pathname.includes('tuyendung.html') && currentUserInfo) {
+        alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi truy cập Cổng Doanh Nghiệp.');
+        window.location.href = 'index.html'; 
+        return; 
+    }
 
+    // ---------------------------------------------------------
+    // 3. HIỂN THỊ MENU ĐĂNG NHẬP / AVATAR
+    // ---------------------------------------------------------
+    if (guestMenu && userMenu) {
         if (currentUserInfo) {
-            const user = JSON.parse(currentUserInfo);
+            // Đã đăng nhập
             guestMenu.classList.add('hidden');
             userMenu.classList.remove('hidden');
             userMenu.classList.add('flex'); 
-            userGreeting.innerText = 'Xin chào, ' + (user.fullName || user.username || 'Bạn');
-
-            // NẾU TÀI KHOẢN LÀ ỨNG VIÊN (personal): Ẩn hoàn toàn nút Nhà Tuyển Dụng đi
-            if (user.type === 'personal') {
-                if (empBtnDesktop) empBtnDesktop.style.display = 'none';
-                if (empDivider) empDivider.style.display = 'none';
-                if (empBtnMobile) empBtnMobile.style.display = 'none';
-            }
-
         } else {
+            // Chưa đăng nhập
             guestMenu.classList.remove('hidden');
             userMenu.classList.add('hidden');
             userMenu.classList.remove('flex');
-            
-            // Đảm bảo hiện lại nếu chưa đăng nhập (đề phòng)
-            if (empBtnDesktop) empBtnDesktop.style.display = '';
-            if (empDivider) empDivider.style.display = '';
-            if (empBtnMobile) empBtnMobile.style.display = '';
-        }
-
-        if (avatarBtn && dropdownMenu) {
-            avatarBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                dropdownMenu.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!userMenu.contains(e.target)) {
-                    dropdownMenu.classList.add('hidden');
-                }
-            });
         }
     }
 
-    // Khởi tạo Captcha nếu đang ở trang Đăng ký
     if (document.getElementById("captchaBox")) {
         window.generateCaptcha();
     }
+    // ---------------------------------------------------------
+    // 4. HIGHLIGHT MENU HEADER (ACTIVE STATE)
+    // ---------------------------------------------------------
+    const currentPath = window.location.pathname;
+    const navVieclam = document.getElementById('nav-vieclam');
+    const navCongty = document.getElementById('nav-congty');
+
+    // Hàm đổi màu và thêm gạch chân cho menu đang active
+    const setActiveMenu = (menuItem) => {
+        if (menuItem) {
+            menuItem.classList.remove('text-gray-700', 'border-transparent');
+            menuItem.classList.add('text-blue-600', 'border-blue-600');
+        }
+    };
+
+    // Kiểm tra URL xem đang ở trang nào để bôi đậm trang đó
+    if (currentPath.includes('vieclam.html')) {
+        setActiveMenu(navVieclam);
+    } else if (currentPath.includes('congty.html')) {
+        setActiveMenu(navCongty);
+    }
 });
+
+// ---------------------------------------------------------
+// 4. HÀM CHẶN SỰ KIỆN CLICK VÀO NÚT "ĐĂNG TUYỂN NGAY"
+// ---------------------------------------------------------
+window.handleEmployerAction = function(event) {
+    event.preventDefault(); // Ngăn trình duyệt load trang mới
+    
+    const currentUser = localStorage.getItem('currentUser');
+    
+    if (currentUser) {
+        // Hiện thông báo ngay lập tức, không load trang
+        alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi sử dụng chức năng Nhà Tuyển Dụng.');
+    } else {
+        // Chưa đăng nhập thì cho phép qua trang Doanh nghiệp bình thường
+        window.location.href = 'tuyendung.html';
+    }
+};
 
 // Hàm Đăng xuất
 window.logout = function() {
@@ -934,32 +948,196 @@ window.syncUserHeader = function() {
 
         const user = JSON.parse(userStr);
         const headerAvatar = document.getElementById('header-avatar');
-        const userGreeting = document.getElementById('user-greeting');
+        
+        // Các thẻ nằm trong Dropdown mới
+        const dropdownAvatar = document.getElementById('dropdown-avatar');
+        const dropdownName = document.getElementById('dropdown-name');
+        const dropdownEmail = document.getElementById('dropdown-email');
 
-        // Lấy tên hiển thị (Ưu tiên fullName, nếu không có thì lấy username)
         const displayName = user.fullName || user.username || 'Người dùng';
 
-        // 1. Cập nhật Tên hiển thị trên Header
-        if (userGreeting) {
-            userGreeting.textContent = `Xin chào, ${displayName}`;
+        // 1. Cập nhật Tên và Email trong Dropdown
+        if (dropdownName) dropdownName.textContent = displayName;
+        if (dropdownEmail) dropdownEmail.textContent = user.email || (user.username + '@midcv.vn');
+
+        // 2. Cập nhật Avatar
+        let avatarUrl = '';
+        if (user.avatar) {
+            avatarUrl = user.avatar;
+        } else {
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=dbeafe&color=2563eb`;
         }
 
-        // 2. Cập nhật Avatar trên Header
-        if (headerAvatar) {
-            if (user.avatar) {
-                // Nếu user đã tự up ảnh bên trang userui.html
-                headerAvatar.src = user.avatar;
-            } else {
-                // Nếu chưa up, tạo avatar chữ cái đầu (Giống hệt logic của bạn trợ lý)
-                headerAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=dbeafe&color=2563eb`;
-            }
-        }
+        if (headerAvatar) headerAvatar.src = avatarUrl;
+        if (dropdownAvatar) dropdownAvatar.src = avatarUrl;
+        
     } catch (e) {
         console.error("Lỗi đồng bộ Header:", e);
     }
 };
 
-// Gọi hàm này ngay khi trang vừa load xong
 document.addEventListener('DOMContentLoaded', () => {
     syncUserHeader();
+});
+// =================================================================
+// 15. TÍNH NĂNG SẮP XẾP CÔNG TY
+// =================================================================
+window.sortCompanies = function() {
+    const select = document.getElementById('sort-company');
+    const companyList = document.getElementById('company-list');
+    
+    if (!select || !companyList) return;
+
+    const sortType = select.value;
+    // Lấy tất cả các thẻ công ty biến thành 1 mảng (Array) để dễ sắp xếp
+    const cards = Array.from(companyList.children);
+
+    cards.sort((a, b) => {
+        // Đọc dữ liệu từ data- attributes
+        const jobsA = parseInt(a.dataset.jobs || 0);
+        const jobsB = parseInt(b.dataset.jobs || 0);
+        const folA = parseInt(a.dataset.followers || 0);
+        const folB = parseInt(b.dataset.followers || 0);
+        const featA = parseInt(a.dataset.featured || 0);
+        const featB = parseInt(b.dataset.featured || 0);
+
+        if (sortType === 'featured') {
+            // 1. Ưu tiên công ty Nổi bật (1) lên trước (0)
+            if (featA !== featB) return featB - featA;
+            // 2. Nếu cùng nổi bật thì ai nhiều Follow hơn xếp trên
+            return folB - folA;
+        } 
+        else if (sortType === 'jobs') {
+            return jobsB - jobsA; // Nhiều job nhất lên đầu
+        } 
+        else if (sortType === 'followers') {
+            return folB - folA; // Nhiều người theo dõi nhất lên đầu
+        }
+        return 0;
+    });
+
+    // Xóa danh sách cũ đi và nhét danh sách đã được sắp xếp lại vào
+    companyList.innerHTML = '';
+    cards.forEach(card => companyList.appendChild(card));
+};
+
+// Tự động chạy sắp xếp lần đầu khi vừa vào trang List Công ty
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('congty.html')) {
+        setTimeout(sortCompanies, 50); // Đợi giao diện load xong rồi tự động sort
+    }
+});
+// =================================================================
+// 16. CHI TIẾT CÔNG TY (BƠM DỮ LIỆU ĐỘNG TỪ URL)
+// =================================================================
+
+// 1. Dữ liệu giả lập của 3 công ty (Giống DB Backend)
+const mockCompaniesDB = [
+    {
+        id: 1, // ID của Mixifood
+        name: "Công ty Cổ phần Mixifood",
+        logo: "./assets/mixifood.png",
+        cover: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        industry: "Thực phẩm / F&B",
+        size: "50 - 100 nhân viên",
+        website: "https://mixifood.com",
+        address: "Tầng 5, Tòa nhà Mixi, P. Yên Hòa, Cầu Giấy, Hà Nội",
+        about: "<p>Mixifood là thương hiệu đồ ăn vặt hàng đầu Việt Nam, được sáng lập bởi Tộc trưởng Độ Mixi. Chúng tôi chuyên cung cấp các sản phẩm chất lượng cao như khô gà lá chanh, khô bò, lạp xưởng...</p><p>Môi trường làm việc năng động, trẻ trung và thường xuyên có các hoạt động teambuilding.</p>",
+        jobs: [
+            { id: 101, title: "Nhân viên Marketing Online", salary: "10 - 15 Triệu", location: "Hà Nội" },
+            { id: 102, title: "Nhân viên Đóng gói sản phẩm", salary: "7 - 10 Triệu", location: "Hà Nội" }
+        ]
+    },
+    {
+        id: 2, // ID của UTC
+        name: "Đại học Giao thông Vận tải (UTC)",
+        logo: "https://via.placeholder.com/150/2563eb/ffffff?text=UTC",
+        cover: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        industry: "Giáo dục / IT",
+        size: "1000+ nhân viên",
+        website: "https://utc.edu.vn",
+        address: "Số 3 phố Cầu Giấy, P.Láng Thượng, Q.Đống Đa, Hà Nội",
+        about: "<p>Trường Đại học Giao thông Vận tải là trường đại học đa ngành về kỹ thuật, công nghệ và kinh tế. Đặc biệt, khoa Công nghệ Thông tin đang đóng vai trò mũi nhọn trong việc cung ứng nhân sự chất lượng cao.</p>",
+        jobs: [
+            { id: 103, title: "Giảng viên ngành Trí tuệ Nhân tạo", salary: "Thỏa thuận", location: "Hà Nội" },
+            { id: 104, title: "Chuyên viên Quản trị Hệ thống", salary: "15 - 20 Triệu", location: "Hà Nội" }
+        ]
+    },
+    {
+        id: 3, // ID của VNG
+        name: "VNG Corporation",
+        logo: "https://via.placeholder.com/150/f97316/ffffff?text=VNG",
+        cover: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+        industry: "Game / IT",
+        size: "3000+ nhân viên",
+        website: "https://vng.com.vn",
+        address: "Z06 Đường số 13, P. Tân Thuận Đông, Quận 7, TP.HCM",
+        about: "<p>Kỳ lân công nghệ đầu tiên của Việt Nam. Chúng tôi kiến tạo những sản phẩm công nghệ thay đổi cuộc sống của hàng triệu người dùng thông qua Game, ZaloPay, VNG Cloud...</p>",
+        jobs: [
+            { id: 105, title: "Senior Game Developer", salary: "1500 - 3000 USD", location: "TP.HCM" },
+            { id: 106, title: "Data Analyst", salary: "20 - 35 Triệu", location: "Hà Nội" }
+        ]
+    }
+];
+
+window.loadCompanyDetail = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = parseInt(urlParams.get('id'));
+
+    if (!companyId) return;
+
+    // =========================================================
+    // KẾT NỐI BACKEND Ở ĐÂY (SAU NÀY BẠN MỞ COMMENT RA)
+    // =========================================================
+    /*
+    fetch(`https://api.midcv.vn/companies/${companyId}`)
+        .then(res => res.json())
+        .then(data => renderCompanyDetail(data))
+        .catch(err => console.error(err));
+    */
+
+    // Hiện tại dùng Mock Data để Demo:
+    const companyData = mockCompaniesDB.find(c => c.id === companyId);
+    
+    if (companyData) {
+        document.title = `${companyData.name} - MidCV`;
+        document.getElementById('detail-company-name').textContent = companyData.name;
+        document.getElementById('detail-company-logo').src = companyData.logo;
+        document.getElementById('detail-company-cover').src = companyData.cover;
+        document.getElementById('detail-company-industry').textContent = companyData.industry;
+        document.getElementById('detail-company-size').textContent = companyData.size;
+        
+        const webLink = document.getElementById('detail-company-website');
+        webLink.href = companyData.website;
+        webLink.textContent = companyData.website.replace('https://', '');
+
+        document.getElementById('detail-company-address').textContent = companyData.address;
+        document.getElementById('detail-company-about').innerHTML = companyData.about;
+
+        // Render danh sách việc làm đang mở
+        const jobsContainer = document.getElementById('detail-company-jobs');
+        jobsContainer.innerHTML = ''; // Xóa chữ loading
+        
+        companyData.jobs.forEach(job => {
+            const jobHtml = `
+                <a href="vieclam.html?id=${job.id}" class="block border border-gray-100 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition bg-gray-50 hover:bg-white group">
+                    <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition">${job.title}</h3>
+                    <div class="flex items-center gap-4 mt-2 text-sm">
+                        <span class="text-blue-600 font-bold">${job.salary}</span>
+                        <span class="text-gray-500">• ${job.location}</span>
+                    </div>
+                </a>
+            `;
+            jobsContainer.innerHTML += jobHtml;
+        });
+    } else {
+        document.getElementById('detail-company-name').textContent = "Không tìm thấy Công ty";
+    }
+};
+
+// Chạy hàm khi trang load xong
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('congty.html') && !window.location.pathname.includes('listcongty.html')) {
+        loadCompanyDetail();
+    }
 });
