@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhà tuyển dụng - MidCV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="bg-slate-50 font-sans text-gray-800 flex flex-col min-h-screen overflow-x-hidden">
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden transition-opacity" onclick="toggleMobileMenu()"></div>
+
+    <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <img class="h-8 w-auto" src="./assets/logoweb.png" alt="Logo">
+            <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-red-500 focus:outline-none p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-4">
+            <a href="index.html" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Việc làm</a>
+            <a href="#" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Hồ sơ & CV</a>
+            <a href="#" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Công ty</a>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <a href="tuyendung.html" class="flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-3 rounded-lg shadow-md">
+                    🚀 Dành cho Nhà tuyển dụng
+                </a>
+            </div>
+        </div>
+    </div>
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-1">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    
+                    <a href="index.html">
+                        <img class="h-8 md:h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm">
+                    </a>
+                    <span class="text-slate-800 font-bold text-lg border-l border-slate-300 pl-3 hidden md:block">Nhà Tuyển Dụng</span>
+                </div>
+
+                <nav class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800">Việc làm</a>
+                    <a href="#" class="text-gray-500 hover:text-blue-600">Hồ sơ & CV</a>
+                    <a href="#" class="text-gray-500 hover:text-blue-600">Công ty</a>
+                </nav>
+
+                <div class="flex items-center" style="gap: 24px;">
+                    <a href="index.html" class="hidden md:flex items-center text-sm font-bold text-gray-700 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 transition" style="padding: 8px 16px; border-radius: 8px;">
+                        ← Về trang Ứng viên
+                    </a>
+
+                    <div class="hidden md:block bg-gray-300" style="width: 1px; height: 24px;"></div>
+
+                    <div id="auth-container" class="flex items-center" style="gap: 16px;">
+                        <div id="guest-menu" class="flex items-center" style="gap: 12px;">
+                            <a href="login.html" class="text-sm md:text-base text-gray-600 hover:text-blue-600 font-medium">Đăng nhập</a>
+                            <a href="register.html" class="text-sm md:text-base bg-blue-500 hover:bg-blue-600 text-white font-medium transition" style="padding: 8px 16px; border-radius: 8px;">Đăng ký</a>
+                        </div>
+
+                        <div id="user-menu" class="hidden items-center" style="gap: 12px;">
+                            <span id="user-greeting" class="text-sm font-medium text-gray-700 hidden md:block">Xin chào, User</span>
+                            <div style="position: relative; display: inline-block;">
+                                <button id="avatar-btn" style="outline: none; cursor: pointer; display: block;">
+                                    <img src="./assets/logouser.png" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover;">
+                                </button>
+                                <div id="dropdown-menu" class="hidden" style="position: absolute; top: 100%; right: 0; margin-top: 12px; min-width: 200px; background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; z-index: 50; white-space: nowrap;">
+                                    <div style="position: absolute; width: 16px; height: 16px; background: white; border-top: 1px solid #f3f4f6; border-left: 1px solid #f3f4f6; transform: rotate(45deg); top: -8px; right: 12px;"></div>
+                                    <div style="position: relative; z-index: 10; background: white; border-radius: 8px; overflow: hidden;">
+                                        <a href="#" style="display: block; padding: 12px 16px; font-size: 14px; color: #374151; text-decoration: none; border-bottom: 1px solid #f9fafb;">Hồ sơ của tôi</a>
+                                        <button onclick="logout()" style="display: block; width: 100%; text-align: left; padding: 12px 16px; font-size: 14px; font-weight: bold; color: #dc2626; background: none; border: none; cursor: pointer;">Đăng xuất</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row items-center gap-12 w-full">
+        <div class="lg:w-1/2 text-center lg:text-left">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+                Tìm kiếm nhân tài <br>
+                <span class="text-blue-600">Nhanh chóng & Hiệu quả</span>
+            </h1>
+            <p class="text-lg text-slate-600 mb-8">
+                Tiếp cận hơn 5 triệu hồ sơ ứng viên chất lượng cao. Đăng tin tuyển dụng và quản lý quy trình dễ dàng.
+            </p>
+        </div>
+
+        <div class="lg:w-1/2 w-full max-w-md mx-auto lg:mx-0">
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+                
+                <div class="flex border-b border-slate-200 mb-6">
+                    <button id="tab-login" onclick="switchTab('login')" class="flex-1 pb-3 text-center font-bold text-blue-600 border-b-2 border-blue-600">Đăng nhập</button>
+                    <button id="tab-register" onclick="switchTab('register')" class="flex-1 pb-3 text-center font-medium text-slate-500 hover:text-slate-800 transition">Đăng ký công ty</button>
+                </div>
+
+                <div id="form-login" class="block">
+                    <div style="margin-bottom: 16px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Email / Tên đăng nhập</label>
+                        <input type="text" placeholder="hr@congty.com" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
+                        <input type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <button onclick="window.location.href='doanhnghiep.html'" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-md">
+                        Đăng nhập hệ thống
+                    </button>
+                </div>
+
+                <div id="form-register" class="hidden">
+                    <div style="margin-bottom: 16px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tên doanh nghiệp</label>
+                        <input type="text" placeholder="Công ty TNHH..." class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Mã số thuế</label>
+                        <input type="text" placeholder="Nhập MST" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Email liên hệ</label>
+                        <input type="email" placeholder="hr@congty.com" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
+                        <input type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <button onclick="mockAuth('Đăng ký Doanh nghiệp')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-md">
+                        Tạo tài khoản công ty
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+             <p>© 2026 MidCV for Business. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="./scripts.js"></script>
+</body>
+</html>
