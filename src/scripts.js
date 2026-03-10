@@ -23,12 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
             userMenu.classList.add('flex'); 
             userGreeting.innerText = user.fullName || user.username || 'Bạn';
             const hdrAv = document.getElementById('header-avatar');
-            if (hdrAv) {
-                if (user.avatar) {
-                    hdrAv.src = user.avatar;
-                } else {
-                    hdrAv.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName || user.username) + '&background=dbeafe&color=2563eb&size=80';
-                }
+            if (hdrAv && user.avatar) {
+                hdrAv.src = user.avatar;
             }
 
             // NẾU TÀI KHOẢN LÀ ỨNG VIÊN (personal): Ẩn hoàn toàn nút Nhà Tuyển Dụng đi
