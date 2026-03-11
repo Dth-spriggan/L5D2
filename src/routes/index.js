@@ -3,18 +3,23 @@ const router = express.Router();
 
 // 1. Import Controllers hiện tại của huynh
 const authController = require('../controllers/authController');
-const jobController = require('../controllers/jobController');
 const applicationController = require('../controllers/applicationController');
 
 // 2. Import Router riêng của module Escrow mà huynh vừa tạo
 const escrowRoutes = require('./escrowRoutes');
+
+// Import cái Route Jobs xịn xò anh em mình vừa viết
+const jobRoutes = require('./jobRoutes');
 
 // ==========================================
 // Các Route cũ giữ nguyên như ban đầu
 // ==========================================
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
-router.get('/jobs', jobController.getAllJobs);
+
+
+// ✅ Dùng dòng này để cắm toàn bộ 8 cái API Thêm/Sửa/Xóa Jobs vào hệ thống:
+router.use('/', jobRoutes);
 
 // ==========================================
 // Gắn module Escrow vào
