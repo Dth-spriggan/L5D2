@@ -8,45 +8,62 @@ Content-Type: application/json
     "role": "Candidate"
 }
 
-### 1. Test API Tạo tin tuyển dụng mới
+
+
+### ==========================================
+### BỘ TEST API JOBS 
+### ==========================================
+
+### 1. TẠO TIN TUYỂN DỤNG MỚI (Nhét sẵn employerId để qua vòng gửi xe)
 POST http://localhost:3000/api/jobs
 Content-Type: application/json
 
 {
-  "title": "Tuyển dụng BLV Xoilac",
-  "description": "Làm việc juventus.",
-  "salary_gross": 300,
-  "job_type": "Fulltime",
-  "location": "Hà Nội"
+  "title": "Bán khô gà",
+  "description": "Domee Shi.",
+  "salary_gross": 36000000,
+  "job_type": "PART_TIME",
+  "location": "Hà Nội",
+  "employerId": 1 
 }
 
+### ------------------------------------------
 
-###
-POST http://localhost:3000/api/jobs
+### 2. LẤY DANH SÁCH & TÌM KIẾM
+GET http://localhost:3000/api/jobs?page=1&limit=5&status=PENDING_REVIEW
+
+### ------------------------------------------
+
+### 3. CẬP NHẬT TIN TUYỂN DỤNG (Nhớ đổi ID 1 thành ID thật)
+PUT http://localhost:3000/api/jobs/3
 Content-Type: application/json
 
 {
-  "title": "Tuyển dụng nhân viên bán khô gà",
-  "description": "Làm việc UTC.",
-  "job_type": "Part-time",
-  "location": "Hà Nội"
-}
-###
-POST http://localhost:3000/api/jobs
-Content-Type: application/json
-
-{
-  "title": "Tuyển dụng Rapper",
-  "description": "Biết bợ, làm việc tại nhà QNT.",
-  "salary_gross": 18000000,
-  "job_type": "Fulltime",
-  "location": "Hà Nội"
+  "title": "Tuyển dụng rapper",
+  "description": "Biết bợ căng"
 }
 
+### ------------------------------------------
 
-### 2. XÓA MỀM TIN SỐ 7 (Vứt vào thùng rác)
-DELETE http://localhost:3000/api/jobs/4
+### 4. ADMIN DUYỆT TIN
+PUT http://localhost:3000/api/admin/jobs/2/approve
 
+### ------------------------------------------
 
-### 7. XÓA VĨNH VIỄN (Hard Delete) - Cẩn thận khi bấm!
-DELETE http://localhost:3000/api/jobs/5/force
+### 5. ADMIN TỪ CHỐI TIN
+PUT http://localhost:3000/api/admin/jobs/1/reject
+
+### ------------------------------------------
+
+### 6. XÓA MỀM (Cho vào thùng rác)
+DELETE http://localhost:3000/api/jobs/1
+
+### ------------------------------------------
+
+### 7. KHÔI PHỤC TIN (Móc từ thùng rác ra)
+POST http://localhost:3000/api/jobs/1/restore
+
+### ------------------------------------------
+
+### 8. XÓA CỨNG (Bay màu vĩnh viễn)
+DELETE http://localhost:3000/api/jobs/4/force
