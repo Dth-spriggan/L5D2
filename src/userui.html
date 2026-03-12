@@ -10,6 +10,7 @@
     <style>
         * { box-sizing: border-box; }
 
+        /* ── Layout wrapper ── */
         .profile-wrapper {
             display: flex;
             align-items: flex-start;
@@ -20,6 +21,7 @@
             margin: 0 auto;
         }
 
+        /* ── Cột trái ── */
         .left-panel {
             width: 250px;
             flex-shrink: 0;
@@ -57,6 +59,15 @@
         }
         .editable .upload-overlay { display: flex; }
         #avatarInput { display: none; }
+
+        .avatar-hint {
+            display: none;
+            font-size: 0.72rem;
+            color: #6b7280;
+            margin-top: -6px;
+            margin-bottom: 10px;
+        }
+        .show-hint { display: block; }
 
         .user-name {
             font-size: 1.05rem;
@@ -104,6 +115,7 @@
         .side-nav a i { width: 18px; text-align: center; font-size: 0.88rem; color: #9ca3af; }
         .side-nav a.active i { color: #2563eb; }
 
+        /* ── Cột phải ── */
         .right-panel {
             flex: 1;
             background: #fff;
@@ -122,6 +134,7 @@
         }
         .panel-header h2 { font-size: 1rem; font-weight: 700; color: #111827; }
 
+        /* Form fields */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -161,6 +174,7 @@
             border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
         }
 
+        /* Buttons */
         .btn-row { display: flex; gap: 10px; margin-top: 24px; }
         .btn {
             padding: 9px 22px; border-radius: 8px;
@@ -178,6 +192,7 @@
         .btn-cancel:hover { background: #d1d5db; }
         .hidden-btn { display: none !important; }
 
+        /* Toast */
         #toast {
             display: none; position: fixed; bottom: 28px; left: 50%;
             transform: translateX(-50%);
@@ -195,14 +210,22 @@
             .form-grid .full-width { grid-column: 1; }
         }
     </style>
+    <script>
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'index.html';
+        }
+    </script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 flex flex-col min-h-screen">
 
-    <!-- MOBILE SIDEBAR -->
+    <!-- ═══════════════ MOBILE SIDEBAR ═══════════════ -->
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden transition-opacity" onclick="toggleMobileMenu()"></div>
     <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
         <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <img id="avatarPreviewMobile" src="./assets/logouser.png" alt="Avatar">
+            <img class="h-8 w-auto" src="./assets/logoweb.png" alt="Logo">
+            <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-red-500 focus:outline-none p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
         <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-2">
             <a href="index.html" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Việc làm</a>
@@ -227,10 +250,11 @@
                     <a href="#" class="text-gray-600 hover:text-blue-600">Top Công ty nổi bật</a>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- ═══════════════ HEADER ═══════════════ -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -278,8 +302,15 @@
                         </div>
                         <div id="user-menu" class="hidden items-center" style="gap: 12px;">
                             <button onclick="history.back()" 
-                                    style="padding:6px 14px; border-radius:8px; background:#2563eb; color:white; font-size:0.9rem; font-weight:600; border:none; cursor:pointer;">
-                                ← Trở về
+                            style="padding:6px 14px;
+                            border-radius:8px;
+                            background:#2563eb;
+                            color:white;
+                            font-size:0.9rem;
+                            font-weight:600;
+                            border:none;
+                            cursor:pointer;">
+                            ← Trở về
                             </button>
                         </div>
                     </div>
@@ -288,24 +319,29 @@
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
+    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
     <main class="flex-grow bg-gray-50">
         <div class="profile-wrapper">
 
+            <!-- Cột trái -->
             <div class="left-panel">
                 <div id="avatarContainer" class="avatar-container">
-                    <img id="avatarPreview" src="./assets/logouser.png" alt="Avatar">
+                    <img id="avatarPreview"
+                         src="./assets/logouser.png"
+                         alt="Avatar">
                     <div class="upload-overlay">
                         <label for="avatarInput" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;">
                             <i class="fas fa-camera"></i>
                         </label>
                     </div>
                     <input type="file" id="avatarInput" accept="image/*">
-                    <br><br>
-                    <button type="button" id="removeAvatarBtn" class="hidden text-sm text-red-600 hover:text-red-800 mt-2">
-                        Xóa ảnh
-                    </button>
                 </div>
+                <span id="avatarHint" class="avatar-hint">
+                    <i class="fas fa-camera" style="font-size:0.65rem;"></i> Nhấn để đổi ảnh
+                </span>
+                <button id="deleteAvatarBtn" onclick="deleteAvatar()" style="display:none; margin-top:6px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:4px 12px; font-size:0.75rem; cursor:pointer;">
+                    <i class="fas fa-trash" style="font-size:0.65rem;"></i> Xóa ảnh
+                </button>
 
                 <div class="user-name" id="display-name">Người dùng</div>
                 <div class="user-role">Ứng viên</div>
@@ -334,55 +370,58 @@
                 </nav>
             </div>
 
+            <!-- Cột phải -->
             <div class="right-panel">
 
+                <!-- Panel: Thông tin cá nhân -->
                 <div id="panel-info">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-user-circle" style="color:#2563eb;margin-right:7px;"></i>Thông tin cá nhân</h2>
-                    </div>
-
-                    <form id="profileForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Họ và tên</label>
-                                <input type="text" id="name" class="edit-field" readonly placeholder="Nguyễn Văn A">
-                            </div>
-                            <div class="form-group">
-                                <label>Số điện thoại</label>
-                                <input type="text" id="phone" class="edit-field" readonly placeholder="09xx xxx xxx">
-                            </div>
-                            <div class="form-group full-width">
-                                <label>Email</label>
-                                <input type="email" id="email" class="edit-field" readonly placeholder="example@email.com">
-                            </div>
-                            <div class="form-group full-width">
-                                <label>Giới thiệu bản thân</label>
-                                <textarea id="bio" rows="3" class="edit-field" readonly placeholder="Mô tả ngắn về bạn..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Trình độ học vấn</label>
-                                <input type="text" id="education" class="edit-field" readonly placeholder="Trường học, bằng cấp...">
-                            </div>
-                            <div class="form-group">
-                                <label>Kỹ năng mềm</label>
-                                <input type="text" id="skills" class="edit-field" readonly placeholder="Giao tiếp, làm việc nhóm...">
-                            </div>
-                        </div>
-
-                        <div class="btn-row">
-                            <button type="button" id="editBtn" class="btn btn-edit">
-                                <i class="fas fa-pen" style="font-size:0.8rem;"></i> Chỉnh sửa
-                            </button>
-                            <button type="submit" id="saveBtn" class="btn btn-save hidden-btn">
-                                <i class="fas fa-check" style="font-size:0.8rem;"></i> Lưu hồ sơ
-                            </button>
-                            <button type="button" id="cancelBtn" class="btn btn-cancel hidden-btn">
-                                <i class="fas fa-times" style="font-size:0.8rem;"></i> Hủy
-                            </button>
-                        </div>
-                    </form>
+                <div class="panel-header">
+                    <h2><i class="fas fa-user-circle" style="color:#2563eb;margin-right:7px;"></i>Thông tin cá nhân</h2>
                 </div>
 
+                <form id="profileForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Họ và tên</label>
+                            <input type="text" id="name" class="edit-field" readonly placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" id="phone" class="edit-field" readonly placeholder="09xx xxx xxx">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Email</label>
+                            <input type="email" id="email" class="edit-field" readonly placeholder="example@email.com">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Giới thiệu bản thân</label>
+                            <textarea id="bio" rows="3" class="edit-field" readonly placeholder="Mô tả ngắn về bạn..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Trình độ học vấn</label>
+                            <input type="text" id="education" class="edit-field" readonly placeholder="Trường học, bằng cấp...">
+                        </div>
+                        <div class="form-group">
+                            <label>Kỹ năng mềm</label>
+                            <input type="text" id="skills" class="edit-field" readonly placeholder="Giao tiếp, làm việc nhóm...">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" id="editBtn" class="btn btn-edit">
+                            <i class="fas fa-pen" style="font-size:0.8rem;"></i> Chỉnh sửa
+                        </button>
+                        <button type="submit" id="saveBtn" class="btn btn-save hidden-btn">
+                            <i class="fas fa-check" style="font-size:0.8rem;"></i> Lưu hồ sơ
+                        </button>
+                        <button type="button" id="cancelBtn" class="btn btn-cancel hidden-btn">
+                            <i class="fas fa-times" style="font-size:0.8rem;"></i> Hủy
+                        </button>
+                    </div>
+                </form>
+                </div><!-- end panel-info -->
+
+                <!-- Panel: Facebook -->
                 <div id="panel-facebook" class="hidden-btn">
                     <div class="panel-header">
                         <h2><i class="fab fa-facebook" style="color:#1877f2;margin-right:7px;"></i>Liên kết Facebook</h2>
@@ -408,6 +447,7 @@
                     </div>
                 </div>
 
+                <!-- Panel: LinkedIn -->
                 <div id="panel-linkedin" class="hidden-btn">
                     <div class="panel-header">
                         <h2><i class="fab fa-linkedin" style="color:#0a66c2;margin-right:7px;"></i>Liên kết LinkedIn</h2>
@@ -433,12 +473,12 @@
                     </div>
                 </div>
 
-            </div>
+            </div><!-- end right-panel -->
 
         </div>
     </main>
 
-    <!-- FOOTER -->
+    <!-- ═══════════════ FOOTER ═══════════════ -->
     <footer class="bg-slate-900 text-gray-300 pt-16 pb-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -497,13 +537,13 @@
         <i class="fas fa-check-circle" style="margin-right:7px;"></i>Đã lưu hồ sơ thành công!
     </div>
 
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="./scripts.js"></script>
     <script>
-        const DEFAULT_AVATAR = './assets/logouser.png';
-
         function loadUser() {
             try {
                 const user = JSON.parse(localStorage.getItem('currentUser'));
                 if (!user) return null;
+                // Nếu fullName rỗng, thử đọc lại từ mảng users (đề phòng currentUser thiếu field)
                 if (!user.fullName && user.username) {
                     const users = JSON.parse(localStorage.getItem('users')) || [];
                     const found = users.find(u => u.username === user.username);
@@ -512,7 +552,6 @@
                 return user;
             } catch { return null; }
         }
-
         function saveUser(data) {
             try {
                 const current = loadUser() || {};
@@ -520,25 +559,7 @@
             } catch {}
         }
 
-        // Cập nhật giao diện header dựa trên trạng thái đăng nhập
-        function updateAuthUI() {
-            const user = loadUser();
-            const guestMenu = document.getElementById('guest-menu');
-            const userMenu = document.getElementById('user-menu');
-            const mobileAvatar = document.getElementById('avatarPreviewMobile');
-
-            if (user) {
-                // Đã đăng nhập
-                if (guestMenu) guestMenu.classList.add('hidden');
-                if (userMenu) userMenu.classList.remove('hidden');
-                if (mobileAvatar && user.avatar) mobileAvatar.src = user.avatar;
-            } else {
-                // Chưa đăng nhập
-                if (guestMenu) guestMenu.classList.remove('hidden');
-                if (userMenu) userMenu.classList.add('hidden');
-            }
-        }
-
+        // Chạy thẳng sau khi DOM sẵn sàng (tránh xung đột DOMContentLoaded với scripts.js)
         function initProfile() {
             const user = loadUser();
             if (!user) return;
@@ -552,38 +573,25 @@
             document.getElementById('skills').value    = user.skills    || '';
 
             document.getElementById('display-name').textContent = displayName;
+            const greetingEl = document.getElementById('user-greeting');
+            if (greetingEl) greetingEl.textContent = displayName;
 
-            const avatarEl = document.getElementById('avatarPreview');
-            if (user.avatar && user.avatar.startsWith('data:image')) {
-                avatarEl.src = user.avatar;
+            const hdrAv = document.getElementById('header-avatar');
+            if (user.avatar) {
+                document.getElementById('avatarPreview').src = user.avatar;
+                if (hdrAv) hdrAv.src = user.avatar;
+                document.getElementById('deleteAvatarBtn').style.display = 'block';
             } else {
-                avatarEl.src = DEFAULT_AVATAR;
+                document.getElementById('avatarPreview').src = './assets/logouser.png';
+                // header-avatar giữ nguyên default
             }
         }
 
-        function initSocial() {
-            const user = loadUser();
-            if (!user) return;
-            ['facebook','linkedin'].forEach(type => {
-                const url = user[type + 'Url'] || '';
-                if (url) {
-                    document.getElementById(type + '-url').value = url;
-                    renderSocialPreview(type, url);
-                }
-            });
-        }
-
-        // Gọi các hàm khởi tạo
+        // Gọi ngay nếu DOM đã ready, nếu chưa thì chờ
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                initProfile();
-                initSocial();
-                updateAuthUI();
-            });
+            document.addEventListener('DOMContentLoaded', initProfile);
         } else {
             initProfile();
-            initSocial();
-            updateAuthUI();
         }
 
         const form           = document.getElementById('profileForm');
@@ -591,10 +599,10 @@
         const avatarContainer= document.getElementById('avatarContainer');
         const avatarInput    = document.getElementById('avatarInput');
         const avatarPreview  = document.getElementById('avatarPreview');
+        const avatarHint     = document.getElementById('avatarHint');
         const editBtn        = document.getElementById('editBtn');
         const saveBtn        = document.getElementById('saveBtn');
         const cancelBtn      = document.getElementById('cancelBtn');
-        const removeAvatarBtn= document.getElementById('removeAvatarBtn');
         const toast          = document.getElementById('toast');
 
         let originalData = {}, originalAvatar = '';
@@ -605,10 +613,10 @@
                 else f.setAttribute('readonly', true);
             });
             avatarContainer.classList.toggle('editable', isEditing);
+            avatarHint.classList.toggle('show-hint', isEditing);
             editBtn.classList.toggle('hidden-btn', isEditing);
             saveBtn.classList.toggle('hidden-btn', !isEditing);
             cancelBtn.classList.toggle('hidden-btn', !isEditing);
-            removeAvatarBtn.classList.toggle('hidden', !isEditing);
         }
 
         editBtn.addEventListener('click', function () {
@@ -620,7 +628,7 @@
 
         cancelBtn.addEventListener('click', function () {
             editableFields.forEach(f => { f.value = originalData[f.id]; });
-            avatarPreview.src = originalAvatar.startsWith('data:image') ? originalAvatar : DEFAULT_AVATAR;
+            avatarPreview.src = originalAvatar;
             avatarInput.value = '';
             setEditMode(false);
         });
@@ -631,18 +639,28 @@
             const reader = new FileReader();
             reader.onload = ev => {
                 avatarPreview.src = ev.target.result;
+                const hdrAv = document.getElementById('header-avatar');
+                if (hdrAv) hdrAv.src = ev.target.result;
+                document.getElementById('deleteAvatarBtn').style.display = 'block';
             };
             reader.readAsDataURL(file);
         });
 
-        removeAvatarBtn.addEventListener('click', function () {
-            avatarPreview.src = DEFAULT_AVATAR;
+        // Hàm xóa ảnh đại diện
+        window.deleteAvatar = function() {
+            avatarPreview.src = './assets/logouser.png';
             avatarInput.value = '';
-            const user = loadUser() || {};
+            const hdrAv = document.getElementById('header-avatar');
+            if (hdrAv) hdrAv.src = './assets/logouser.png';
+            document.getElementById('deleteAvatarBtn').style.display = 'none';
+            // Xóa avatar khỏi localStorage
+            const user = JSON.parse(localStorage.getItem('currentUser')) || {};
             delete user.avatar;
             localStorage.setItem('currentUser', JSON.stringify(user));
-            updateAuthUI(); // cập nhật lại nếu cần
-        });
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const idx = users.findIndex(u => u.username === user.username);
+            if (idx !== -1) { delete users[idx].avatar; localStorage.setItem('users', JSON.stringify(users)); }
+        };
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -654,15 +672,18 @@
                 education: document.getElementById('education').value,
                 skills:    document.getElementById('skills').value,
             };
-            if (avatarPreview.src.startsWith('data:image')) updated.avatar = avatarPreview.src;
+            if (avatarPreview.src.startsWith('data:')) updated.avatar = avatarPreview.src;
             saveUser(updated);
-            document.getElementById('display-name').textContent = updated.fullName || 'Người dùng';
+            const hdrAv = document.getElementById('header-avatar');
+            if (hdrAv && updated.avatar) hdrAv.src = updated.avatar;
+            const savedName = updated.fullName || 'Người dùng';
+            document.getElementById('display-name').textContent = savedName;
+            const greetingEl = document.getElementById('user-greeting');
+            if (greetingEl) greetingEl.textContent = savedName;
             setEditMode(false);
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 2500);
-            updateAuthUI();
         });
-
         function switchPanel(name) {
             ['info','facebook','linkedin'].forEach(p => {
                 document.getElementById('panel-' + p).classList.add('hidden-btn');
@@ -711,14 +732,22 @@
             }
         }
 
-        // Logout function
-        function logout() {
-            localStorage.removeItem('currentUser');
-            updateAuthUI();
-            window.location.href = 'index.html'; // hoặc trang chủ bạn muốn
+        function initSocial() {
+            const user = loadUser();
+            if (!user) return;
+            ['facebook','linkedin'].forEach(type => {
+                const url = user[type + 'Url'] || '';
+                if (url) {
+                    document.getElementById(type + '-url').value = url;
+                    renderSocialPreview(type, url);
+                }
+            });
         }
-
-        // Các hàm khác như toggleMobileMenu, toggleSubmenu, requireAuth... nếu có trong scripts.js
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSocial);
+        } else {
+            initSocial();
+        }
     </script>
 </body>
 </html>

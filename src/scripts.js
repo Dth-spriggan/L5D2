@@ -44,7 +44,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Nếu chưa đăng nhập mà vào userui -> chuyển về trang chủ
+    if (document.getElementById('avatarPreview')) {
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
+
+    // Nếu đã đăng nhập mà vào trang đăng nhập -> chuyển về trang chủ
+    if (document.getElementById("username") && document.getElementById("password") && !document.getElementById("captchaBox")) {
+        if (localStorage.getItem('currentUser')) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
+
     if (document.getElementById("captchaBox")) {
+        // Nếu đã đăng nhập mà vào trang đăng ký -> chuyển về trang chủ
+        if (localStorage.getItem('currentUser')) {
+            alert('Bạn đang đăng nhập rồi! Vui lòng đăng xuất trước khi tạo tài khoản mới.');
+            window.location.href = 'index.html';
+            return;
+        }
         window.generateCaptcha();
     }
     // ---------------------------------------------------------
