@@ -11,6 +11,8 @@ const escrowRoutes = require('./escrowRoutes');
 // Import cái Route Jobs xịn xò anh em mình vừa viết
 const jobRoutes = require('./jobRoutes');
 
+const cvRoutes = require('./cvRoutes');
+
 // ==========================================
 // Các Route cũ giữ nguyên như ban đầu
 // ==========================================
@@ -20,6 +22,8 @@ router.post('/auth/login', authController.login);
 
 // ✅ Dùng dòng này để cắm toàn bộ 8 cái API Thêm/Sửa/Xóa Jobs vào hệ thống:
 router.use('/', jobRoutes);
+
+router.use('/cvs', cvRoutes);
 
 // ==========================================
 // Gắn module Escrow vào

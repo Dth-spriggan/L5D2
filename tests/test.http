@@ -67,3 +67,74 @@ POST http://localhost:3000/api/jobs/1/restore
 
 ### 8. XÓA CỨNG (Bay màu vĩnh viễn)
 DELETE http://localhost:3000/api/jobs/4/force
+
+###-------------------------------------------------------------
+### ==========================================
+### 🚀 BỘ TEST API QUẢN LÝ CV (NHÁNH FEATURE-CV)
+### ==========================================
+
+### 1. 👱‍♂️ [ỨNG VIÊN] TẢI CV LÊN (Upload)
+# Bắn phát này đầu tiên để tạo data trong Database
+POST http://localhost:3000/api/cvs
+Content-Type: application/json
+
+{
+  "candidate_id": 4,
+  "cv_title": "BLVXoilac.pdf",
+  "file_url": "https://s3.amazonaws.com/topcv/cv_anhdev_fullstack.pdf"
+}
+
+### ------------------------------------------
+
+### 2. 👱‍♂️ [ỨNG VIÊN] XEM DANH SÁCH CV CỦA TÔI
+# Truyền id của ứng viên số 2 vào để xem nó có nôn ra cái CV vừa up không
+GET http://localhost:3000/api/cvs/me?candidate_id=2
+
+### ------------------------------------------
+
+### 3. 👱‍♂️ [ỨNG VIÊN] ĐỔI TÊN CV HOẶC UP FILE MỚI
+# Nhìn vào kết quả của bước 2, lấy cái "id" của CV dán vào thay cho số 1 ở link dưới
+PUT http://localhost:3000/api/cvs/3
+Content-Type: application/json
+
+{
+  "cv_title": "CV_Chinh_Thuc_Vip_Pro.pdf",
+  "file_url": "https://s3.amazonaws.com/topcv/cv_anhdev_update.pdf"
+}
+
+### ------------------------------------------
+
+### 4. 👱‍♂️ [ỨNG VIÊN] BẬT CHẾ ĐỘ "ĐANG TÌM VIỆC"
+# Sửa số 1 thành ID CV của ông
+PUT http://localhost:3000/api/cvs/3/toggle-search
+Content-Type: application/json
+
+{
+  "is_searchable": true
+}
+
+### ------------------------------------------
+
+### 5. 👱‍♂️ [ỨNG VIÊN] XÓA CV (Test Xóa Mềm)
+# Bóp cò phát này xong, ông gọi lại API số 2 xem cái CV nó có tàng hình không nhé!
+DELETE http://localhost:3000/api/cvs/4
+
+
+### ==========================================
+### 👑 GÓC CỦA ADMIN (QUẢN TRỊ VIÊN)
+### ==========================================
+
+### 6. 👑 [ADMIN] XEM TOÀN BỘ CV TRONG HỆ THỐNG
+GET http://localhost:3000/api/cvs/admin/all
+
+### ------------------------------------------
+
+### 7. 👑 [ADMIN] XÓA CỨNG VĨNH VIỄN (TIÊU HỦY)
+# Lấy ID của một cái CV bất kỳ thay vào số 1, bắn phát này là mất tích khỏi DBeaver luôn
+DELETE http://localhost:3000/api/cvs/admin/1/force
+
+### ------------------------------------------
+
+### 8. 👱‍♂️ [ỨNG VIÊN] KHÔI PHỤC CV (UNDO XÓA MỀM)
+# Lấy ID của cái CV sếp vừa bấm XÓA MỀM ở bước 5, thay vào số 1 ở link dưới rồi bóp cò!
+POST http://localhost:3000/api/cvs/4/restore
