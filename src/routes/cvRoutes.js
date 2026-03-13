@@ -32,6 +32,9 @@ router.put('/:id/toggle-search', cvController.toggleSearchable);
 // - Link: /api/cvs/:id
 router.delete('/:id', cvController.deleteCV);
 
+// [Khôi phục CV đã xóa] - Dành cho trường hợp lỡ tay xóa nhầm, muốn khôi phục lại CV
+router.post('/:id/restore', cvController.restoreCV);
+
 // --- DÀNH CHO ADMIN ---
 router.get('/admin/all', cvController.getAllCVsForAdmin);
 router.delete('/admin/:id/force', cvController.hardDeleteCV); // Xóa cứng

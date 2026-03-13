@@ -79,8 +79,8 @@ POST http://localhost:3000/api/cvs
 Content-Type: application/json
 
 {
-  "candidate_id": 2,
-  "cv_title": "CV_Dev_Fullstack_2026.pdf",
+  "candidate_id": 4,
+  "cv_title": "BLVXoilac.pdf",
   "file_url": "https://s3.amazonaws.com/topcv/cv_anhdev_fullstack.pdf"
 }
 
@@ -117,7 +117,7 @@ Content-Type: application/json
 
 ### 5. 👱‍♂️ [ỨNG VIÊN] XÓA CV (Test Xóa Mềm)
 # Bóp cò phát này xong, ông gọi lại API số 2 xem cái CV nó có tàng hình không nhé!
-DELETE http://localhost:3000/api/cvs/3
+DELETE http://localhost:3000/api/cvs/4
 
 
 ### ==========================================
@@ -132,3 +132,9 @@ GET http://localhost:3000/api/cvs/admin/all
 ### 7. 👑 [ADMIN] XÓA CỨNG VĨNH VIỄN (TIÊU HỦY)
 # Lấy ID của một cái CV bất kỳ thay vào số 1, bắn phát này là mất tích khỏi DBeaver luôn
 DELETE http://localhost:3000/api/cvs/admin/1/force
+
+### ------------------------------------------
+
+### 8. 👱‍♂️ [ỨNG VIÊN] KHÔI PHỤC CV (UNDO XÓA MỀM)
+# Lấy ID của cái CV sếp vừa bấm XÓA MỀM ở bước 5, thay vào số 1 ở link dưới rồi bóp cò!
+POST http://localhost:3000/api/cvs/4/restore

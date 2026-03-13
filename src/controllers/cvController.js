@@ -99,3 +99,28 @@ exports.hardDeleteCV = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// 8. [ỨNG VIÊN] KHÔI PHỤC CV ĐÃ XÓA MỀM (UNDO)
+exports.restoreCV = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Tìm CV đã bị xóa mềm (Bắt buộc phải có paranoid: false thì mới mò được vào thùng rác)
+    const cv = await CV.findOne({ where: { id }, paranoid: false });
+
+    if (!cv) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy CV này!' });
+    }
+
+    if (!cv.deleted_at) {
+      return res.status(400).json({ success: false, message: 'CV này có bị xóa đâu mà đòi khôi phục hả sếp?' });
+    }
+
+    // 💡 Ma thuật của Sequelize: 1 lệnh restore() là deleted_at sẽ biến thành NULL
+    await cv.restore();
+    
+    res.status(200).json({ success: true, message: 'Đã hồi sinh CV thành công!' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
