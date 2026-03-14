@@ -413,7 +413,7 @@ window.updateCompanyProfile = async function(event) {
 // =================================================================
 
 // Mảng 10 công việc (Đã thêm trường salarySort để sắp xếp và lọc bằng số)
-const mockJobs = [
+window.mockJobs = [
     { 
         id: 1, 
         title: "Lập trình viên Frontend (ReactJS)", 
@@ -765,13 +765,11 @@ window.loadJobDetail = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const jobId = parseInt(urlParams.get('id'));
 
-    // Nếu không có ID trên URL, đá về trang chủ
     if (!jobId) {
         window.location.href = 'index.html';
         return;
     }
 
-    // Tìm công việc trong mảng mockJobs dựa vào ID
     const job = mockJobs.find(j => j.id === jobId);
 
     if (!job) {
@@ -780,7 +778,6 @@ window.loadJobDetail = function() {
         return;
     }
 
-    // Đổ dữ liệu vào các thẻ HTML đã đánh sẵn ID
     document.getElementById('detail-title').innerText = job.title;
     document.getElementById('detail-company').innerText = job.company;
     document.getElementById('detail-salary').innerText = job.salary;
@@ -790,53 +787,71 @@ window.loadJobDetail = function() {
         document.getElementById('detail-logo').src = job.logo;
     }
 
-    // Đổ mảng Tags (Kỹ năng)
     const tagsContainer = document.getElementById('detail-tags');
     if (tagsContainer) {
         tagsContainer.innerHTML = job.tags.map(tag => `<span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-lg border border-blue-100 font-medium">${tag}</span>`).join('');
     }
-    // Nối tiếp vào hàm loadJobDetail() hiện tại
+    
     document.getElementById('detail-description').innerHTML = job.description || 'Chưa có mô tả công việc.';
     document.getElementById('detail-requirements').innerHTML = job.requirements || 'Chưa có yêu cầu.';
     document.getElementById('detail-benefits').innerHTML = job.benefits || 'Chưa có thông tin phúc lợi.';
 
-    // Dòng này đặt ở sát cuối hàm loadJobDetail()
-    const currentUser = localStorage.getItem('currentUser') || 'guest';
-    const storageKey = `savedJobs_${currentUser}`;
-    const savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+    // --- FIX LỖI TẠI ĐÂY: Dùng đúng chìa khóa (username/email) để kiểm tra trạng thái Nút Lưu ---
+    let isSaved = false;
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+        const savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+        isSaved = savedJobs.map(id => Number(id)).includes(Number(jobId));
+    }
     
-    // Kiểm tra xem job này có nằm trong list đã lưu không để vẽ nút cho đúng
-    updateSaveButtonUI(savedJobs.includes(jobId));
+    // Vẽ nút đúng trạng thái ngay khi load trang
+    updateSaveButtonUI(isSaved);
 };
 
 // Hàm xử lý nút Ứng tuyển & Lưu tin
 window.handleJobAction = function(actionType) {
-    // Phục hồi lại dòng lấy thông tin user để làm chìa khóa lưu LocalStorage
-    const currentUser = localStorage.getItem('currentUser') || 'guest';
+    const userStr = localStorage.getItem('currentUser');
 
     if (actionType === 'apply') {
-        // Mở Popup nộp CV
+        if (!userStr) {
+            alert("Vui lòng đăng nhập để ứng tuyển!");
+            window.location.href = 'login.html';
+            return;
+        }
         const modal = document.getElementById('apply-modal');
         if (modal) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
     } else if (actionType === 'save') {
+        // --- FIX LỖI TẠI ĐÂY: Đồng bộ logic lưu chuẩn chỉ ---
+        if (!userStr) {
+            alert("Vui lòng đăng nhập để lưu việc làm!");
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const user = JSON.parse(userStr);
+        const storageKey = `savedJobs_${user.username || user.email || 'default'}`; 
+        
         const urlParams = new URLSearchParams(window.location.search);
-        const currentJobId = parseInt(urlParams.get('id'));
+        const currentJobId = Number(urlParams.get('id'));
 
         if (!currentJobId) return;
 
-        const storageKey = `savedJobs_${currentUser}`; 
         let savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+        savedJobs = savedJobs.map(id => Number(id)); // Ép kiểu số
 
         if (!savedJobs.includes(currentJobId)) {
-            // Chưa lưu -> Tiến hành Lưu và Cập nhật UI
+            // Chưa lưu -> Tiến hành Lưu và Cập nhật Nút
             savedJobs.push(currentJobId);
             localStorage.setItem(storageKey, JSON.stringify(savedJobs));
             updateSaveButtonUI(true);
+            alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
         } else {
-            // Đã lưu -> Xóa khỏi mảng (Bỏ lưu) và Cập nhật UI
+            // Đã lưu -> Bấm cái nữa là Xóa (Bỏ lưu) và Cập nhật Nút
             savedJobs = savedJobs.filter(id => id !== currentJobId);
             localStorage.setItem(storageKey, JSON.stringify(savedJobs));
             updateSaveButtonUI(false);
@@ -1149,12 +1164,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // 17. LÔ-GIC DÀNH RIÊNG CHO TRANG HỒ SƠ ỨNG VIÊN (USERUI.HTML)
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // KHIÊN BẢO VỆ: Chỉ chạy các đoạn code bên dưới nếu đang ở trang userui.html
     if (!window.location.pathname.includes('userui.html')) return;
 
     const DEFAULT_AVATAR = './assets/logouser.png';
 
-    // Hàm lấy User từ LocalStorage
     function loadUser() {
         try {
             const userStr = localStorage.getItem('currentUser');
@@ -1162,7 +1175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch { return null; }
     }
 
-    // Hàm lưu User xuống LocalStorage và đồng bộ mảng Users
     function saveUser(data) {
         try {
             const current = loadUser() || {};
@@ -1175,16 +1187,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 users[userIndex] = updatedUser;
                 localStorage.setItem('users', JSON.stringify(users));
             }
-            // Kích hoạt đồng bộ lên Header ngay lập tức
             if (typeof window.syncUserHeader === 'function') window.syncUserHeader();
         } catch {}
     }
 
-    // --- KHỞI TẠO DỮ LIỆU LÊN FORM ---
     function initProfile() {
         const user = loadUser();
         if (!user) {
-            window.location.href = 'login.html'; // Chặn chưa đăng nhập
+            window.location.href = 'login.html';
             return;
         }
 
@@ -1207,7 +1217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- XỬ LÝ CHUYỂN TAB ---
     window.switchPanel = function(name) {
         ['info','facebook','linkedin', 'saved', 'settings'].forEach(p => {
             const panel = document.getElementById('panel-' + p);
@@ -1221,19 +1230,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if(activePanel) activePanel.classList.remove('hidden-btn');
         if(activeNav) activeNav.classList.add('active');
 
-        // Cập nhật URL mà không load lại trang
         window.history.replaceState(null, '', `?tab=${name}`);
 
-        if(name === 'saved') loadSavedJobs();
+        // GỌI HÀM RENDER KHI BẤM SANG TAB LƯU
+        if(name === 'saved') {
+            if (typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
+        }
     };
 
-    // --- CHẠY KHỞI TẠO KHI LOAD TRANG ---
     initProfile();
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab') || 'info'; 
     switchPanel(tab);
 
-    // --- XỬ LÝ GIAO DIỆN CHỈNH SỬA THÔNG TIN ---
     const form = document.getElementById('profileForm');
     const editableFields = document.querySelectorAll('#name, #email, #phone, #bio, #education, #skills');
     const avatarContainer = document.getElementById('avatarContainer');
@@ -1270,23 +1279,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const editBtn = document.getElementById('editBtn');
-    if(editBtn) {
-        editBtn.addEventListener('click', () => {
-            editableFields.forEach(f => { originalData[f.id] = f.value; });
-            if(avatarPreview) originalAvatar = avatarPreview.src;
-            setEditMode(true);
-            document.getElementById('name').focus();
-        });
-    }
+    if(editBtn) editBtn.addEventListener('click', () => {
+        editableFields.forEach(f => { originalData[f.id] = f.value; });
+        if(avatarPreview) originalAvatar = avatarPreview.src;
+        setEditMode(true);
+        document.getElementById('name').focus();
+    });
 
     const cancelBtn = document.getElementById('cancelBtn');
-    if(cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            editableFields.forEach(f => { f.value = originalData[f.id]; });
-            if(avatarPreview) avatarPreview.src = originalAvatar.startsWith('data:image') ? originalAvatar : DEFAULT_AVATAR;
-            setEditMode(false);
-        });
-    }
+    if(cancelBtn) cancelBtn.addEventListener('click', () => {
+        editableFields.forEach(f => { f.value = originalData[f.id]; });
+        if(avatarPreview) avatarPreview.src = originalAvatar.startsWith('data:image') ? originalAvatar : DEFAULT_AVATAR;
+        setEditMode(false);
+    });
 
     if(avatarInput && avatarPreview) {
         avatarInput.addEventListener('change', (e) => {
@@ -1303,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rmAvatarBtn.addEventListener('click', () => {
             avatarPreview.src = DEFAULT_AVATAR;
             saveUser({ avatar: '' }); 
-            showToast('Đã xóa ảnh đại diện');
+            window.showToast('Đã xóa ảnh đại diện');
         });
     }
 
@@ -1321,80 +1326,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (avatarPreview && avatarPreview.src.startsWith('data:image')) {
                 updated.avatar = avatarPreview.src;
             }
-            
             saveUser(updated);
             const dispName = document.getElementById('display-name');
             if(dispName) dispName.textContent = updated.fullName || 'Người dùng';
             setEditMode(false);
-            showToast('Đã cập nhật Hồ sơ!');
+            window.showToast('Đã cập nhật Hồ sơ!');
         });
     }
 
-    // --- XỬ LÝ VIỆC LÀM ĐÃ LƯU ---
-    window.loadSavedJobs = function() {
-        const currentUserStr = localStorage.getItem('currentUser') || 'guest';
-        const storageKey = `savedJobs_${currentUserStr}`;
-        const savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-        const container = document.getElementById('saved-jobs-container');
-        if(!container) return;
-
-        if (savedIds.length === 0) {
-            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
-            return;
-        }
-
-        // Nếu bạn chưa có biến mockJobs ở file script thì chèn logic Backend vào đây
-        if (typeof mockJobs === 'undefined') {
-            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Đang chờ kết nối Backend để tải dữ liệu...</div>';
-            return;
-        }
-
-        const jobsToRender = mockJobs.filter(j => savedIds.includes(j.id));
-        container.innerHTML = jobsToRender.map(job => `
-            <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
-                <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
-                <div class="flex-1">
-                    <a href="vieclam.html?id=${job.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 pr-20">${job.title}</a>
-                    <p class="text-sm text-gray-500 mb-2">${job.company}</p>
-                    <div class="flex gap-2 text-xs font-medium">
-                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary}</span>
-                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
-                    </div>
-                </div>
-                <button onclick="removeSavedJob(${job.id})" class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition" title="Bỏ lưu">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `).join('');
-    };
-
-    window.removeSavedJob = function(jobId) {
-        const currentUserStr = localStorage.getItem('currentUser') || 'guest';
-        const storageKey = `savedJobs_${currentUserStr}`;
-        let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-        
-        savedIds = savedIds.filter(id => id !== jobId);
-        localStorage.setItem(storageKey, JSON.stringify(savedIds));
-        
-        showToast('Đã xóa việc làm khỏi danh sách!');
-        loadSavedJobs(); 
-    };
-
-    // --- XỬ LÝ CÀI ĐẶT ---
     window.saveSettings = function() {
         const newPassEl = document.getElementById('new-password');
         if(!newPassEl) return;
         if(newPassEl.value) {
             saveUser({ password: newPassEl.value });
             newPassEl.value = '';
-            showToast('Đã cập nhật Mật khẩu!');
+            window.showToast('Đã cập nhật Mật khẩu!');
         } else {
-            showToast('Không có thay đổi nào được lưu.');
+            window.showToast('Không có thay đổi nào được lưu.');
         }
     };
 });
+
 // =================================================================
-// 19. MOCK DATA & LOGIC "LƯU VIỆC LÀM" (CÓ RÀO SẴN BACKEND)
+// 19. MOCK DATA & LOGIC "LƯU VIỆC LÀM" (CHUẨN CHỈ)
 // =================================================================
 
 window.saveJobToLocal = function(jobId) {
@@ -1405,36 +1359,24 @@ window.saveJobToLocal = function(jobId) {
         return;
     }
     const user = JSON.parse(userStr);
-
-    // =========================================================
-    // [RÀO TRƯỚC] DÀNH CHO BACKEND KHI RÁP API:
-    // Mở comment đoạn này và XÓA đoạn LocalStorage bên dưới
-    // =========================================================
-    /*
-    fetch(`https://api.midcv.vn/users/${user.id}/saved-jobs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId: jobId })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("🎉 Đã lưu việc làm thành công!");
-    })
-    .catch(err => console.error("Lỗi khi lưu việc làm:", err));
-    */
-
-    // --- ĐOẠN CODE DÙNG TẠM BẰNG LOCALSTORAGE ---
-    const storageKey = `savedJobs_${user.username}`;
+    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+    
     let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    savedIds = savedIds.map(id => Number(id));
+    const numJobId = Number(jobId);
 
-    if (!savedIds.includes(jobId)) {
-        savedIds.push(jobId);
+    if (!savedIds.includes(numJobId)) {
+        savedIds.push(numJobId);
         localStorage.setItem(storageKey, JSON.stringify(savedIds));
-        alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
+        
+        if (window.location.pathname.includes('userui.html')) {
+            if (typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
+        } else {
+            alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
+        }
     } else {
         alert("⚠️ Việc làm này đã được bạn lưu từ trước rồi!");
     }
-    // ----------------------------------------------
 };
 
 window.loadSavedJobs = function() {
@@ -1444,42 +1386,24 @@ window.loadSavedJobs = function() {
     const container = document.getElementById('saved-jobs-container');
     if(!container) return;
 
-    // =========================================================
-    // [RÀO TRƯỚC] DÀNH CHO BACKEND KHI RÁP API:
-    // Backend cần trả về một mảng chứa THÔNG TIN CHI TIẾT của các job đã lưu 
-    // chứ không chỉ trả về ID. Mở comment đoạn này và XÓA đoạn LocalStorage.
-    // =========================================================
-    /*
-    fetch(`https://api.midcv.vn/users/${user.id}/saved-jobs`)
-    .then(res => res.json())
-    .then(jobsArray => {
-        if (jobsArray.length === 0) {
-            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
-            return;
-        }
-        renderJobsToHTML(jobsArray, container); // Tách hàm render ra cho gọn
-    })
-    .catch(err => console.error("Lỗi load việc làm:", err));
-    */
-
-    // --- ĐOẠN CODE DÙNG TẠM BẰNG LOCALSTORAGE ---
-    const storageKey = `savedJobs_${user.username}`;
-    const savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+    let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    savedIds = savedIds.map(id => Number(id));
 
     if (savedIds.length === 0) {
         container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
         return;
     }
 
-    if (typeof window.mockJobs === 'undefined') return;
-    const jobsToRender = window.mockJobs.filter(j => savedIds.includes(j.id));
-    renderJobsToHTML(jobsToRender, container);
-    // ----------------------------------------------
-};
-
-// Hàm tách riêng việc in HTML để Backend và LocalStorage đều có thể dùng chung
-function renderJobsToHTML(jobsArray, container) {
-    container.innerHTML = jobsArray.map(job => `
+    if (typeof window.mockJobs === 'undefined') {
+        container.innerHTML = '<div class="text-center py-10 text-red-500 bg-red-50 border border-red-100 rounded-lg">Lỗi: Không tìm thấy dữ liệu công việc.</div>';
+        return;
+    }
+    
+    const jobsToRender = window.mockJobs.filter(j => savedIds.includes(Number(j.id)));
+    
+    // In trực tiếp ra HTML
+    container.innerHTML = jobsToRender.map(job => `
         <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
             <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
             <div class="flex-1">
@@ -1495,4 +1419,21 @@ function renderJobsToHTML(jobsArray, container) {
             </button>
         </div>
     `).join('');
-}
+};
+
+window.removeSavedJob = function(jobId) {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+    
+    let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    savedIds = savedIds.map(id => Number(id));
+    const numJobId = Number(jobId);
+    
+    savedIds = savedIds.filter(id => id !== numJobId);
+    localStorage.setItem(storageKey, JSON.stringify(savedIds));
+    
+    if (typeof window.showToast === 'function') window.showToast('Đã xóa việc làm khỏi danh sách!');
+    window.loadSavedJobs(); 
+};
