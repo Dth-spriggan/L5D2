@@ -1393,3 +1393,90 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+// =================================================================
+// 19. MOCK DATA & LOGIC "LƯU VIỆC LÀM" (GIẢ LẬP BACKEND)
+// =================================================================
+
+// 1. Kho dữ liệu việc làm giả lập (Giống DB Backend)
+window.mockJobs = [
+    { id: 101, title: "Nhân viên Marketing Online", company: "Mixifood", salary: "10 - 15 Triệu", location: "Hà Nội", logo: "./assets/mixifood.png" },
+    { id: 103, title: "Giảng viên ngành Trí tuệ Nhân tạo", company: "Đại học Giao thông Vận tải (UTC)", salary: "Thỏa thuận", location: "Hà Nội", logo: "https://via.placeholder.com/150/2563eb/ffffff?text=UTC" },
+    { id: 105, title: "Senior Game Developer", company: "VNG Corporation", salary: "1500 - 3000 USD", location: "TP.HCM", logo: "https://via.placeholder.com/150/f97316/ffffff?text=VNG" }
+];
+
+// 2. Hàm giả lập để người dùng bấm nút "Lưu tin" ở các trang Việc làm
+window.saveJobToLocal = function(jobId) {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert("Vui lòng Đăng nhập để lưu việc làm!");
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Lấy username để tạo "ngăn kéo" lưu trữ riêng cho người đó
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username}`;
+    let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    if (!savedIds.includes(jobId)) {
+        savedIds.push(jobId);
+        localStorage.setItem(storageKey, JSON.stringify(savedIds));
+        alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
+    } else {
+        alert("⚠️ Việc làm này đã được bạn lưu từ trước rồi!");
+    }
+};
+
+// 3. Cập nhật lại Hàm Load Việc Làm cho chuẩn xác
+window.loadSavedJobs = function() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username}`;
+    const savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const container = document.getElementById('saved-jobs-container');
+    
+    if(!container) return;
+
+    if (savedIds.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
+        return;
+    }
+
+    // Lấy các job từ Kho dữ liệu khớp với ID đã lưu
+    const jobsToRender = window.mockJobs.filter(j => savedIds.includes(j.id));
+    
+    container.innerHTML = jobsToRender.map(job => `
+        <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
+            <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
+            <div class="flex-1">
+                <a href="vieclam.html?id=${job.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 pr-20">${job.title}</a>
+                <p class="text-sm text-gray-500 mb-2">${job.company}</p>
+                <div class="flex gap-2 text-xs font-medium">
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary}</span>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
+                </div>
+            </div>
+            <button onclick="removeSavedJob(${job.id})" class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition" title="Bỏ lưu">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+};
+
+window.removeSavedJob = function(jobId) {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username}`;
+    let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    // Lọc bỏ ID vừa bấm xóa
+    savedIds = savedIds.filter(id => id !== jobId);
+    localStorage.setItem(storageKey, JSON.stringify(savedIds));
+    
+    if (typeof showToast === 'function') showToast('Đã xóa việc làm khỏi danh sách!');
+    window.loadSavedJobs(); // Tải lại danh sách ngay lập tức
+};
