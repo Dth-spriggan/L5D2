@@ -1394,17 +1394,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 // =================================================================
-// 19. MOCK DATA & LOGIC "LƯU VIỆC LÀM" (GIẢ LẬP BACKEND)
+// 19. MOCK DATA & LOGIC "LƯU VIỆC LÀM" (CÓ RÀO SẴN BACKEND)
 // =================================================================
 
-// 1. Kho dữ liệu việc làm giả lập (Giống DB Backend)
-window.mockJobs = [
-    { id: 101, title: "Nhân viên Marketing Online", company: "Mixifood", salary: "10 - 15 Triệu", location: "Hà Nội", logo: "./assets/mixifood.png" },
-    { id: 103, title: "Giảng viên ngành Trí tuệ Nhân tạo", company: "Đại học Giao thông Vận tải (UTC)", salary: "Thỏa thuận", location: "Hà Nội", logo: "https://via.placeholder.com/150/2563eb/ffffff?text=UTC" },
-    { id: 105, title: "Senior Game Developer", company: "VNG Corporation", salary: "1500 - 3000 USD", location: "TP.HCM", logo: "https://via.placeholder.com/150/f97316/ffffff?text=VNG" }
-];
-
-// 2. Hàm giả lập để người dùng bấm nút "Lưu tin" ở các trang Việc làm
 window.saveJobToLocal = function(jobId) {
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) {
@@ -1412,9 +1404,26 @@ window.saveJobToLocal = function(jobId) {
         window.location.href = 'login.html';
         return;
     }
-
-    // Lấy username để tạo "ngăn kéo" lưu trữ riêng cho người đó
     const user = JSON.parse(userStr);
+
+    // =========================================================
+    // [RÀO TRƯỚC] DÀNH CHO BACKEND KHI RÁP API:
+    // Mở comment đoạn này và XÓA đoạn LocalStorage bên dưới
+    // =========================================================
+    /*
+    fetch(`https://api.midcv.vn/users/${user.id}/saved-jobs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: jobId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("🎉 Đã lưu việc làm thành công!");
+    })
+    .catch(err => console.error("Lỗi khi lưu việc làm:", err));
+    */
+
+    // --- ĐOẠN CODE DÙNG TẠM BẰNG LOCALSTORAGE ---
     const storageKey = `savedJobs_${user.username}`;
     let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
 
@@ -1425,29 +1434,52 @@ window.saveJobToLocal = function(jobId) {
     } else {
         alert("⚠️ Việc làm này đã được bạn lưu từ trước rồi!");
     }
+    // ----------------------------------------------
 };
 
-// 3. Cập nhật lại Hàm Load Việc Làm cho chuẩn xác
 window.loadSavedJobs = function() {
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) return;
-    
     const user = JSON.parse(userStr);
+    const container = document.getElementById('saved-jobs-container');
+    if(!container) return;
+
+    // =========================================================
+    // [RÀO TRƯỚC] DÀNH CHO BACKEND KHI RÁP API:
+    // Backend cần trả về một mảng chứa THÔNG TIN CHI TIẾT của các job đã lưu 
+    // chứ không chỉ trả về ID. Mở comment đoạn này và XÓA đoạn LocalStorage.
+    // =========================================================
+    /*
+    fetch(`https://api.midcv.vn/users/${user.id}/saved-jobs`)
+    .then(res => res.json())
+    .then(jobsArray => {
+        if (jobsArray.length === 0) {
+            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
+            return;
+        }
+        renderJobsToHTML(jobsArray, container); // Tách hàm render ra cho gọn
+    })
+    .catch(err => console.error("Lỗi load việc làm:", err));
+    */
+
+    // --- ĐOẠN CODE DÙNG TẠM BẰNG LOCALSTORAGE ---
     const storageKey = `savedJobs_${user.username}`;
     const savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    const container = document.getElementById('saved-jobs-container');
-    
-    if(!container) return;
 
     if (savedIds.length === 0) {
         container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
         return;
     }
 
-    // Lấy các job từ Kho dữ liệu khớp với ID đã lưu
+    if (typeof window.mockJobs === 'undefined') return;
     const jobsToRender = window.mockJobs.filter(j => savedIds.includes(j.id));
-    
-    container.innerHTML = jobsToRender.map(job => `
+    renderJobsToHTML(jobsToRender, container);
+    // ----------------------------------------------
+};
+
+// Hàm tách riêng việc in HTML để Backend và LocalStorage đều có thể dùng chung
+function renderJobsToHTML(jobsArray, container) {
+    container.innerHTML = jobsArray.map(job => `
         <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
             <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
             <div class="flex-1">
@@ -1463,20 +1495,4 @@ window.loadSavedJobs = function() {
             </button>
         </div>
     `).join('');
-};
-
-window.removeSavedJob = function(jobId) {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    
-    const user = JSON.parse(userStr);
-    const storageKey = `savedJobs_${user.username}`;
-    let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
-    // Lọc bỏ ID vừa bấm xóa
-    savedIds = savedIds.filter(id => id !== jobId);
-    localStorage.setItem(storageKey, JSON.stringify(savedIds));
-    
-    if (typeof showToast === 'function') showToast('Đã xóa việc làm khỏi danh sách!');
-    window.loadSavedJobs(); // Tải lại danh sách ngay lập tức
-};
+}
