@@ -17,10 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------------------------------------------------------
-    // 2. GATEKEEPER BẢO VỆ URL: CHẶN ỨNG VIÊN VÀO TRANG NHÀ TUYỂN DỤNG
+    // 2. GATEKEEPER BẢO VỆ URL: CHẶN TRUY CẬP SAI LUỒNG
     // ---------------------------------------------------------
     const currentUserInfo = localStorage.getItem('currentUser');
     
+    // A. CHẶN VÀO LẠI TRANG AUTH: Nếu đã đăng nhập mà vào Login/Register -> Đá về trang chủ (Không báo cáo)
+    if (currentUserInfo && (window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html'))) {
+        window.location.href = 'index.html';
+        return; // Dừng chạy các script bên dưới
+    }
+
+    // B. CHẶN VÀO TRANG DOANH NGHIỆP: Nếu đang là Ứng viên mà vào trang Tuyển dụng -> Cảnh báo & Đá về trang chủ
     if (window.location.pathname.includes('tuyendung.html') && currentUserInfo) {
         alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi truy cập Cổng Doanh Nghiệp.');
         window.location.href = 'index.html'; 
@@ -1136,4 +1143,253 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('congty.html') && !window.location.pathname.includes('listcongty.html')) {
         loadCompanyDetail();
     }
+});
+
+// =================================================================
+// 17. LÔ-GIC DÀNH RIÊNG CHO TRANG HỒ SƠ ỨNG VIÊN (USERUI.HTML)
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // KHIÊN BẢO VỆ: Chỉ chạy các đoạn code bên dưới nếu đang ở trang userui.html
+    if (!window.location.pathname.includes('userui.html')) return;
+
+    const DEFAULT_AVATAR = './assets/logouser.png';
+
+    // Hàm lấy User từ LocalStorage
+    function loadUser() {
+        try {
+            const userStr = localStorage.getItem('currentUser');
+            return userStr ? JSON.parse(userStr) : null;
+        } catch { return null; }
+    }
+
+    // Hàm lưu User xuống LocalStorage và đồng bộ mảng Users
+    function saveUser(data) {
+        try {
+            const current = loadUser() || {};
+            const updatedUser = { ...current, ...data };
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.username === current.username);
+            if (userIndex !== -1) {
+                users[userIndex] = updatedUser;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            // Kích hoạt đồng bộ lên Header ngay lập tức
+            if (typeof window.syncUserHeader === 'function') window.syncUserHeader();
+        } catch {}
+    }
+
+    // --- KHỞI TẠO DỮ LIỆU LÊN FORM ---
+    function initProfile() {
+        const user = loadUser();
+        if (!user) {
+            window.location.href = 'login.html'; // Chặn chưa đăng nhập
+            return;
+        }
+
+        const displayName = user.fullName || user.username || 'Người dùng';
+        
+        const safeSet = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+        safeSet('name', displayName);
+        safeSet('phone', user.phone || '');
+        safeSet('email', user.email || '');
+        safeSet('bio', user.bio || '');
+        safeSet('education', user.education || '');
+        safeSet('skills', user.skills || '');
+
+        const dispName = document.getElementById('display-name');
+        if(dispName) dispName.textContent = displayName;
+
+        const avatarEl = document.getElementById('avatarPreview');
+        if (avatarEl) {
+            avatarEl.src = (user.avatar && user.avatar.startsWith('data:image')) ? user.avatar : DEFAULT_AVATAR;
+        }
+    }
+
+    // --- XỬ LÝ CHUYỂN TAB ---
+    window.switchPanel = function(name) {
+        ['info','facebook','linkedin', 'saved', 'settings'].forEach(p => {
+            const panel = document.getElementById('panel-' + p);
+            const nav = document.getElementById('nav-' + p);
+            if(panel) panel.classList.add('hidden-btn');
+            if(nav) nav.classList.remove('active');
+        });
+        const activePanel = document.getElementById('panel-' + name);
+        const activeNav = document.getElementById('nav-' + name);
+        
+        if(activePanel) activePanel.classList.remove('hidden-btn');
+        if(activeNav) activeNav.classList.add('active');
+
+        // Cập nhật URL mà không load lại trang
+        window.history.replaceState(null, '', `?tab=${name}`);
+
+        if(name === 'saved') loadSavedJobs();
+    };
+
+    // --- CHẠY KHỞI TẠO KHI LOAD TRANG ---
+    initProfile();
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab') || 'info'; 
+    switchPanel(tab);
+
+    // --- XỬ LÝ GIAO DIỆN CHỈNH SỬA THÔNG TIN ---
+    const form = document.getElementById('profileForm');
+    const editableFields = document.querySelectorAll('#name, #email, #phone, #bio, #education, #skills');
+    const avatarContainer = document.getElementById('avatarContainer');
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const toast = document.getElementById('toast');
+    let originalData = {}, originalAvatar = '';
+
+    window.showToast = function(msg = "Thành công!") {
+        if(!toast) return;
+        toast.innerHTML = `<i class="fas fa-check-circle" style="margin-right:7px;"></i>${msg}`;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    };
+
+    function setEditMode(isEditing) {
+        editableFields.forEach(f => {
+            if (isEditing) f.removeAttribute('readonly');
+            else f.setAttribute('readonly', true);
+        });
+        if(avatarContainer) avatarContainer.classList.toggle('editable', isEditing);
+        
+        const toggles = ['editBtn', 'saveBtn', 'cancelBtn'];
+        toggles.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                if(id === 'editBtn') el.classList.toggle('hidden-btn', isEditing);
+                else el.classList.toggle('hidden-btn', !isEditing);
+            }
+        });
+        
+        const rmAvatar = document.getElementById('removeAvatarBtn');
+        if(rmAvatar) rmAvatar.classList.toggle('hidden', !isEditing);
+    }
+
+    const editBtn = document.getElementById('editBtn');
+    if(editBtn) {
+        editBtn.addEventListener('click', () => {
+            editableFields.forEach(f => { originalData[f.id] = f.value; });
+            if(avatarPreview) originalAvatar = avatarPreview.src;
+            setEditMode(true);
+            document.getElementById('name').focus();
+        });
+    }
+
+    const cancelBtn = document.getElementById('cancelBtn');
+    if(cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            editableFields.forEach(f => { f.value = originalData[f.id]; });
+            if(avatarPreview) avatarPreview.src = originalAvatar.startsWith('data:image') ? originalAvatar : DEFAULT_AVATAR;
+            setEditMode(false);
+        });
+    }
+
+    if(avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => { avatarPreview.src = ev.target.result; };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const rmAvatarBtn = document.getElementById('removeAvatarBtn');
+    if(rmAvatarBtn && avatarPreview) {
+        rmAvatarBtn.addEventListener('click', () => {
+            avatarPreview.src = DEFAULT_AVATAR;
+            saveUser({ avatar: '' }); 
+            showToast('Đã xóa ảnh đại diện');
+        });
+    }
+
+    if(form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const updated = {
+                fullName:  document.getElementById('name').value,
+                email:     document.getElementById('email').value,
+                phone:     document.getElementById('phone').value,
+                bio:       document.getElementById('bio').value,
+                education: document.getElementById('education').value,
+                skills:    document.getElementById('skills').value,
+            };
+            if (avatarPreview && avatarPreview.src.startsWith('data:image')) {
+                updated.avatar = avatarPreview.src;
+            }
+            
+            saveUser(updated);
+            const dispName = document.getElementById('display-name');
+            if(dispName) dispName.textContent = updated.fullName || 'Người dùng';
+            setEditMode(false);
+            showToast('Đã cập nhật Hồ sơ!');
+        });
+    }
+
+    // --- XỬ LÝ VIỆC LÀM ĐÃ LƯU ---
+    window.loadSavedJobs = function() {
+        const currentUserStr = localStorage.getItem('currentUser') || 'guest';
+        const storageKey = `savedJobs_${currentUserStr}`;
+        const savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+        const container = document.getElementById('saved-jobs-container');
+        if(!container) return;
+
+        if (savedIds.length === 0) {
+            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
+            return;
+        }
+
+        // Nếu bạn chưa có biến mockJobs ở file script thì chèn logic Backend vào đây
+        if (typeof mockJobs === 'undefined') {
+            container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Đang chờ kết nối Backend để tải dữ liệu...</div>';
+            return;
+        }
+
+        const jobsToRender = mockJobs.filter(j => savedIds.includes(j.id));
+        container.innerHTML = jobsToRender.map(job => `
+            <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
+                <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
+                <div class="flex-1">
+                    <a href="vieclam.html?id=${job.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 pr-20">${job.title}</a>
+                    <p class="text-sm text-gray-500 mb-2">${job.company}</p>
+                    <div class="flex gap-2 text-xs font-medium">
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary}</span>
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
+                    </div>
+                </div>
+                <button onclick="removeSavedJob(${job.id})" class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition" title="Bỏ lưu">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    };
+
+    window.removeSavedJob = function(jobId) {
+        const currentUserStr = localStorage.getItem('currentUser') || 'guest';
+        const storageKey = `savedJobs_${currentUserStr}`;
+        let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        savedIds = savedIds.filter(id => id !== jobId);
+        localStorage.setItem(storageKey, JSON.stringify(savedIds));
+        
+        showToast('Đã xóa việc làm khỏi danh sách!');
+        loadSavedJobs(); 
+    };
+
+    // --- XỬ LÝ CÀI ĐẶT ---
+    window.saveSettings = function() {
+        const newPassEl = document.getElementById('new-password');
+        if(!newPassEl) return;
+        if(newPassEl.value) {
+            saveUser({ password: newPassEl.value });
+            newPassEl.value = '';
+            showToast('Đã cập nhật Mật khẩu!');
+        } else {
+            showToast('Không có thay đổi nào được lưu.');
+        }
+    };
 });
