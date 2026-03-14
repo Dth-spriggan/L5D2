@@ -277,7 +277,7 @@
                             <a href="register.html" class="text-sm md:text-base bg-blue-500 hover:bg-blue-600 text-white font-medium transition" style="padding: 8px 16px; border-radius: 8px;">Đăng ký</a>
                         </div>
                         <div id="user-menu" class="hidden items-center" style="gap: 12px;">
-                            <button onclick="history.back()" 
+                            <button onclick="window.location.href='index.html'" 
                                     style="padding:6px 14px; border-radius:8px; background:#2563eb; color:white; font-size:0.9rem; font-weight:600; border:none; cursor:pointer;">
                                 ← Trở về
                             </button>
@@ -301,11 +301,10 @@
                         </label>
                     </div>
                     <input type="file" id="avatarInput" accept="image/*">
-                    <br><br>
-                    <button type="button" id="removeAvatarBtn" class="hidden text-sm text-red-600 hover:text-red-800 mt-2">
-                        Xóa ảnh
-                    </button>
                 </div>
+                <button type="button" id="removeAvatarBtn" class="hidden" style="margin-top:8px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:4px 14px; font-size:0.78rem; cursor:pointer; display:none;">
+                    <i class="fas fa-trash" style="font-size:0.7rem; margin-right:4px;"></i>Xóa ảnh
+                </button>
 
                 <div class="user-name" id="display-name">Người dùng</div>
                 <div class="user-role">Ứng viên</div>
@@ -516,7 +515,16 @@
         function saveUser(data) {
             try {
                 const current = loadUser() || {};
-                localStorage.setItem('currentUser', JSON.stringify({ ...current, ...data }));
+                const updated = { ...current, ...data };
+                localStorage.setItem('currentUser', JSON.stringify(updated));
+
+                // Cập nhật luôn vào mảng users để login hoạt động đúng
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const idx = users.findIndex(u => u.username === current.username);
+                if (idx !== -1) {
+                    users[idx] = { ...users[idx], ...data };
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
             } catch {}
         }
 
@@ -546,7 +554,7 @@
             const displayName = user.fullName || user.username || 'Người dùng';
             document.getElementById('name').value      = displayName;
             document.getElementById('phone').value     = user.phone     || '';
-            document.getElementById('email').value     = user.email     || '';
+            document.getElementById('email').value     = user.email || user.username || '';
             document.getElementById('bio').value       = user.bio       || '';
             document.getElementById('education').value = user.education || '';
             document.getElementById('skills').value    = user.skills    || '';
@@ -608,7 +616,7 @@
             editBtn.classList.toggle('hidden-btn', isEditing);
             saveBtn.classList.toggle('hidden-btn', !isEditing);
             cancelBtn.classList.toggle('hidden-btn', !isEditing);
-            removeAvatarBtn.classList.toggle('hidden', !isEditing);
+            removeAvatarBtn.style.display = isEditing && avatarPreview.src !== DEFAULT_AVATAR && !avatarPreview.src.includes('logouser') ? 'block' : 'none';
         }
 
         editBtn.addEventListener('click', function () {
@@ -633,6 +641,7 @@
                 avatarPreview.src = ev.target.result;
             };
             reader.readAsDataURL(file);
+            removeAvatarBtn.style.display = 'block';
         });
 
         removeAvatarBtn.addEventListener('click', function () {
@@ -649,6 +658,7 @@
             const updated = {
                 fullName:  document.getElementById('name').value,
                 email:     document.getElementById('email').value,
+                username:  document.getElementById('email').value,
                 phone:     document.getElementById('phone').value,
                 bio:       document.getElementById('bio').value,
                 education: document.getElementById('education').value,
