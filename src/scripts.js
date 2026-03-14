@@ -51,7 +51,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Nếu chưa đăng nhập mà vào userui -> về trang chủ
+    if (document.getElementById('avatarPreview')) {
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
+
+    // Nếu đã đăng nhập mà vào trang đăng nhập -> về trang chủ
+    if (document.getElementById("username") && document.getElementById("password") && !document.getElementById("captchaBox")) {
+        if (localStorage.getItem('currentUser')) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
+
     if (document.getElementById("captchaBox")) {
+        if (localStorage.getItem('currentUser')) {
+            alert('Bạn đang đăng nhập rồi! Vui lòng đăng xuất trước khi tạo tài khoản mới.');
+            window.location.href = 'index.html';
+            return;
+        }
         window.generateCaptcha();
     }
     // ---------------------------------------------------------
@@ -155,8 +176,14 @@ window.mockAuth = function(action) {
 window.login = function() {
     const inputUser = document.getElementById("username").value.trim();
     const inputPass = document.getElementById("password").value;
-    let users = JSON.parse(localStorage.getItem("users")) || [];
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inputUser)) {
+        alert("Email không đúng định dạng! Vui lòng nhập đúng dạng example@email.com");
+        return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
     const validUser = users.find(u => u.username === inputUser && u.password === inputPass && u.type === "personal");
 
     if (validUser) {
@@ -164,7 +191,7 @@ window.login = function() {
         localStorage.setItem("currentUser", JSON.stringify(validUser));
         window.location.href = "index.html";
     } else {
-        alert("Sai tài khoản hoặc mật khẩu! (Lưu ý: Chỉ dành cho tài khoản Ứng viên)");
+        alert("Sai email hoặc mật khẩu! (Lưu ý: Chỉ dành cho tài khoản Ứng viên)");
     }
 };
 
@@ -191,8 +218,14 @@ window.register = function() {
         return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+        alert("Email không đúng định dạng! Vui lòng nhập đúng dạng example@email.com");
+        return;
+    }
+
     if (users.find(u => u.username === username)) {
-        alert("Tên đăng nhập này đã tồn tại!");
+        alert("Email này đã được đăng ký!");
         return;
     }
 

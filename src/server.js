@@ -2,6 +2,9 @@ require('dotenv').config(); // Bắt buộc phải nằm trên cùng để đọ
 const express = require('express');
 const cors = require('cors');
 
+const app = express();
+
+
 // 1. Import Database & Models
 const { connectDB, sequelize } = require('./db');
 const User = require('./models/user');
@@ -12,8 +15,6 @@ const EscrowContract = require('./models/escrowContract');
 const Transaction = require('./models/transaction');
 
 const routes = require('./routes/index');
-
-const app = express();
 
 // 2. Middlewares (Xử lý dữ liệu đầu vào)
 app.use(cors());
