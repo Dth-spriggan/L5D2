@@ -44,10 +44,10 @@
                                 <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
                             </div>
                         </div>
-                        <div id="user-menu" class="hidden items-center" style="gap: 12px;">
-                            <button onclick="window.location.href='index.html'" 
-                                    style="padding:6px 14px; border-radius:8px; background:#2563eb; color:white; font-size:0.9rem; font-weight:600; border:none; cursor:pointer;">
-                                ← Trở về
+
+                        <div class="relative group h-full flex items-center">
+                            <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
+                                Công cụ <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
                             <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                                 <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
@@ -95,11 +95,9 @@
                         </label>
                     </div>
                     <input type="file" id="avatarInput" accept="image/*">
+                    <br><br>
+                    <button type="button" id="removeAvatarBtn" class="hidden text-sm text-red-600 hover:text-red-800 mt-2">Xóa ảnh</button>
                 </div>
-                <button type="button" id="removeAvatarBtn" class="hidden" style="margin-top:8px; background:none; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:4px 14px; font-size:0.78rem; cursor:pointer; display:none;">
-                    <i class="fas fa-trash" style="font-size:0.7rem; margin-right:4px;"></i>Xóa ảnh
-                </button>
-
                 <div class="user-name" id="display-name">Người dùng</div>
                 <div class="user-role">Ứng viên</div>
 
@@ -229,243 +227,6 @@
         </div>
     </footer>
 
-    <div id="toast">
-        <i class="fas fa-check-circle" style="margin-right:7px;"></i>Đã lưu hồ sơ thành công!
-    </div>
-
-    <script>
-        const DEFAULT_AVATAR = './assets/logouser.png';
-
-        function loadUser() {
-            try {
-                const user = JSON.parse(localStorage.getItem('currentUser'));
-                if (!user) return null;
-                if (!user.fullName && user.username) {
-                    const users = JSON.parse(localStorage.getItem('users')) || [];
-                    const found = users.find(u => u.username === user.username);
-                    if (found) return found;
-                }
-                return user;
-            } catch { return null; }
-        }
-
-        function saveUser(data) {
-            try {
-                const current = loadUser() || {};
-                const updated = { ...current, ...data };
-                localStorage.setItem('currentUser', JSON.stringify(updated));
-
-                // Cập nhật luôn vào mảng users để login hoạt động đúng
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                const idx = users.findIndex(u => u.username === current.username);
-                if (idx !== -1) {
-                    users[idx] = { ...users[idx], ...data };
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
-            } catch {}
-        }
-
-        // Cập nhật giao diện header dựa trên trạng thái đăng nhập
-        function updateAuthUI() {
-            const user = loadUser();
-            const guestMenu = document.getElementById('guest-menu');
-            const userMenu = document.getElementById('user-menu');
-            const mobileAvatar = document.getElementById('avatarPreviewMobile');
-
-            if (user) {
-                // Đã đăng nhập
-                if (guestMenu) guestMenu.classList.add('hidden');
-                if (userMenu) userMenu.classList.remove('hidden');
-                if (mobileAvatar && user.avatar) mobileAvatar.src = user.avatar;
-            } else {
-                // Chưa đăng nhập
-                if (guestMenu) guestMenu.classList.remove('hidden');
-                if (userMenu) userMenu.classList.add('hidden');
-            }
-        }
-
-        function initProfile() {
-            const user = loadUser();
-            if (!user) return;
-
-            const displayName = user.fullName || user.username || 'Người dùng';
-            document.getElementById('name').value      = displayName;
-            document.getElementById('phone').value     = user.phone     || '';
-            document.getElementById('email').value     = user.email || user.username || '';
-            document.getElementById('bio').value       = user.bio       || '';
-            document.getElementById('education').value = user.education || '';
-            document.getElementById('skills').value    = user.skills    || '';
-
-            document.getElementById('display-name').textContent = displayName;
-
-            const avatarEl = document.getElementById('avatarPreview');
-            if (user.avatar && user.avatar.startsWith('data:image')) {
-                avatarEl.src = user.avatar;
-            } else {
-                avatarEl.src = DEFAULT_AVATAR;
-            }
-        }
-
-        function initSocial() {
-            const user = loadUser();
-            if (!user) return;
-            ['facebook','linkedin'].forEach(type => {
-                const url = user[type + 'Url'] || '';
-                if (url) {
-                    document.getElementById(type + '-url').value = url;
-                    renderSocialPreview(type, url);
-                }
-            });
-        }
-
-        // Gọi các hàm khởi tạo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                initProfile();
-                initSocial();
-                updateAuthUI();
-            });
-        } else {
-            initProfile();
-            initSocial();
-            updateAuthUI();
-        }
-
-        const form           = document.getElementById('profileForm');
-        const editableFields = document.querySelectorAll('#name, #email, #phone, #bio, #education, #skills');
-        const avatarContainer= document.getElementById('avatarContainer');
-        const avatarInput    = document.getElementById('avatarInput');
-        const avatarPreview  = document.getElementById('avatarPreview');
-        const editBtn        = document.getElementById('editBtn');
-        const saveBtn        = document.getElementById('saveBtn');
-        const cancelBtn      = document.getElementById('cancelBtn');
-        const removeAvatarBtn= document.getElementById('removeAvatarBtn');
-        const toast          = document.getElementById('toast');
-
-        let originalData = {}, originalAvatar = '';
-
-        function setEditMode(isEditing) {
-            editableFields.forEach(f => {
-                if (isEditing) f.removeAttribute('readonly');
-                else f.setAttribute('readonly', true);
-            });
-            avatarContainer.classList.toggle('editable', isEditing);
-            editBtn.classList.toggle('hidden-btn', isEditing);
-            saveBtn.classList.toggle('hidden-btn', !isEditing);
-            cancelBtn.classList.toggle('hidden-btn', !isEditing);
-            removeAvatarBtn.style.display = isEditing && avatarPreview.src !== DEFAULT_AVATAR && !avatarPreview.src.includes('logouser') ? 'block' : 'none';
-        }
-
-        editBtn.addEventListener('click', function () {
-            editableFields.forEach(f => { originalData[f.id] = f.value; });
-            originalAvatar = avatarPreview.src;
-            setEditMode(true);
-            document.getElementById('name').focus();
-        });
-
-        cancelBtn.addEventListener('click', function () {
-            editableFields.forEach(f => { f.value = originalData[f.id]; });
-            avatarPreview.src = originalAvatar.startsWith('data:image') ? originalAvatar : DEFAULT_AVATAR;
-            avatarInput.value = '';
-            setEditMode(false);
-        });
-
-        avatarInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                avatarPreview.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-            removeAvatarBtn.style.display = 'block';
-        });
-
-        removeAvatarBtn.addEventListener('click', function () {
-            avatarPreview.src = DEFAULT_AVATAR;
-            avatarInput.value = '';
-            const user = loadUser() || {};
-            delete user.avatar;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            updateAuthUI(); // cập nhật lại nếu cần
-        });
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const updated = {
-                fullName:  document.getElementById('name').value,
-                email:     document.getElementById('email').value,
-                username:  document.getElementById('email').value,
-                phone:     document.getElementById('phone').value,
-                bio:       document.getElementById('bio').value,
-                education: document.getElementById('education').value,
-                skills:    document.getElementById('skills').value,
-            };
-            if (avatarPreview.src.startsWith('data:image')) updated.avatar = avatarPreview.src;
-            saveUser(updated);
-            document.getElementById('display-name').textContent = updated.fullName || 'Người dùng';
-            setEditMode(false);
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2500);
-            updateAuthUI();
-        });
-
-        function switchPanel(name) {
-            ['info','facebook','linkedin'].forEach(p => {
-                document.getElementById('panel-' + p).classList.add('hidden-btn');
-                document.getElementById('nav-' + p).classList.remove('active');
-            });
-            document.getElementById('panel-' + name).classList.remove('hidden-btn');
-            document.getElementById('nav-' + name).classList.add('active');
-        }
-
-        function saveSocial(type) {
-            const url = document.getElementById(type + '-url').value.trim();
-            if (!url) { alert('Vui lòng nhập link!'); return; }
-            if (!url.startsWith('http')) { alert('Link phải bắt đầu bằng https://'); return; }
-            saveUser({ [type + 'Url']: url });
-            renderSocialPreview(type, url);
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-
-        function openSocial(type) {
-            const url = document.getElementById(type + '-url').value.trim();
-            if (url) window.open(url, '_blank');
-        }
-
-        function deleteSocial(type) {
-            document.getElementById(type + '-url').value = '';
-            saveUser({ [type + 'Url']: '' });
-            renderSocialPreview(type, '');
-        }
-
-        function renderSocialPreview(type, url) {
-            const preview = document.getElementById(type + '-preview');
-            const link    = document.getElementById(type + '-link');
-            const openBtn = document.getElementById(type + '-open-btn');
-            const delBtn  = document.getElementById(type + '-del-btn');
-            if (url) {
-                preview.style.display = 'flex';
-                link.href = url;
-                link.textContent = url;
-                openBtn.style.display = 'inline-flex';
-                if (delBtn) delBtn.style.display = 'inline-flex';
-            } else {
-                preview.style.display = 'none';
-                openBtn.style.display = 'none';
-                if (delBtn) delBtn.style.display = 'none';
-            }
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('currentUser');
-            updateAuthUI();
-            window.location.href = 'index.html'; // hoặc trang chủ bạn muốn
-        }
-
-        // Các hàm khác như toggleMobileMenu, toggleSubmenu, requireAuth... nếu có trong scripts.js
-    </script>
+    <script src="./scripts.js"></script>
 </body>
 </html>
