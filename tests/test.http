@@ -131,7 +131,7 @@ GET http://localhost:3000/api/cvs/admin/all
 
 ### 7. 👑 [ADMIN] XÓA CỨNG VĨNH VIỄN (TIÊU HỦY)
 # Lấy ID của một cái CV bất kỳ thay vào số 1, bắn phát này là mất tích khỏi DBeaver luôn
-DELETE http://localhost:3000/api/cvs/admin/1/force
+DELETE http://localhost:3000/api/cvs/admin/8/force
 
 ### ------------------------------------------
 

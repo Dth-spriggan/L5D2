@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const cvController = require('../controllers/cvController');
 
+// 💡 DÒNG MỚI: Gọi thằng bảo vệ ra
+const upload = require('../middlewares/uploadMiddleware');
+
 // ======================================================================
 // 📁 NHÓM QUẢN LÝ CV (Dành cho Ứng viên - Candidate)
 // *Lưu ý: Tương lai sẽ gắn Middleware checkRole('Candidate') vào đây
@@ -10,7 +13,7 @@ const cvController = require('../controllers/cvController');
 // [Tải CV lên] - Thêm mới một bản CV vào hồ sơ
 // - Method: POST
 // - Link: /api/cvs
-router.post('/', cvController.uploadCV);
+router.post('/', upload.single('cv_file'), cvController.uploadCV);
 
 // [Danh sách CV] - Lấy tất cả CV mà ứng viên này đã up
 // - Method: GET
