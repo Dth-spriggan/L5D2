@@ -1380,7 +1380,6 @@ window.toggleFollowCompany = function() {
     if (!followedIds.includes(companyId)) {
         followedIds.push(companyId);
         localStorage.setItem(storageKey, JSON.stringify(followedIds));
-        alert("🎉 Đã theo dõi công ty! Hãy vào Hồ sơ để xem.");
     } else {
         followedIds = followedIds.filter(id => id !== companyId);
         localStorage.setItem(storageKey, JSON.stringify(followedIds));
@@ -1393,7 +1392,10 @@ window.checkFollowStatus = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const companyId = Number(urlParams.get('id'));
     const btn = document.getElementById('btn-follow-company');
-    if (!btn || !companyId) return;
+    const icon = document.getElementById('follow-icon');
+    const text = document.getElementById('follow-text');
+
+    if (!btn || !icon || !text || !companyId) return;
 
     let isFollowed = false;
     const userStr = localStorage.getItem('currentUser');
@@ -1405,11 +1407,27 @@ window.checkFollowStatus = function() {
     }
 
     if (isFollowed) {
-        btn.innerHTML = `<i class="fas fa-check"></i> <span>Đang theo dõi</span>`;
+        // Trạng thái: ĐÃ THEO DÕI
+        text.innerText = "Đã theo dõi";
+        
+        // Biến hình thành dấu tích (check) và xoay nhẹ
+        icon.classList.remove('fa-plus');
+        icon.classList.add('fa-check');
+        icon.style.transform = 'rotate(360deg) scale(1.2)';
+        
+        // Đổi màu nút sang dạng xanh nhạt
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
         btn.classList.add('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
     } else {
-        btn.innerHTML = `<i class="fas fa-plus"></i> <span>Theo dõi công ty</span>`;
+        // Trạng thái: CHƯA THEO DÕI
+        text.innerText = "Theo dõi công ty";
+        
+        // Trả về dấu cộng
+        icon.classList.remove('fa-check');
+        icon.classList.add('fa-plus');
+        icon.style.transform = 'rotate(0deg) scale(1)';
+        
+        // Trả về màu xanh đậm ban đầu
         btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
         btn.classList.remove('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
     }
@@ -1468,13 +1486,21 @@ window.removeFollowedCompany = function(companyId) {
 
 
 // =================================================================
-// 22. LOGIC ĐÁNH GIÁ CÔNG TY (REVIEW)
+// 22. LOGIC ĐÁNH GIÁ CÔNG TY (REVIEW - CÓ QUYỀN CHÍNH CHỦ)
 // =================================================================
 
+// Biến toàn cục để biết ta đang "Sửa" hay "Viết mới" (-1 nghĩa là viết mới)
+window.editingReviewIndex = -1;
+
 window.selectStar = function(rating) {
-    document.getElementById('input-rating-val').value = rating;
-    const stars = document.getElementById('star-rating-select').children;
-    for(let i=0; i<5; i++) {
+    const ratingInput = document.getElementById('input-rating-val');
+    if(ratingInput) ratingInput.value = rating;
+
+    const container = document.getElementById('star-rating-select');
+    if(!container) return;
+    const stars = container.children;
+
+    for(let i = 0; i < 5; i++) {
         if (i < rating) {
             stars[i].classList.add('text-amber-400');
             stars[i].classList.remove('text-gray-300');
@@ -1486,38 +1512,61 @@ window.selectStar = function(rating) {
 };
 
 window.submitReview = function(event) {
-    event.preventDefault();
+    event.preventDefault(); 
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) {
-        alert("Vui lòng Đăng nhập để gửi đánh giá!");
+        alert("Bạn cần đăng nhập để viết đánh giá!");
         window.location.href = 'login.html';
         return;
     }
     const user = JSON.parse(userStr);
+    const ratingInput = document.getElementById('input-rating-val');
+    const contentInput = document.getElementById('input-review-content');
+    if (!ratingInput || !contentInput) return;
+
+    const rating = ratingInput.value;
+    const content = contentInput.value;
+
+    if (Number(rating) === 0) { alert("⭐ Vui lòng chọn số sao trước khi gửi!"); return; }
+    if (!content.trim()) { alert("📝 Vui lòng nhập nội dung đánh giá!"); return; }
+
     const urlParams = new URLSearchParams(window.location.search);
     const companyId = urlParams.get('id');
     if (!companyId) return;
 
-    const rating = document.getElementById('input-rating-val').value;
-    const content = document.getElementById('input-review-content').value;
-
-    const reviewObj = {
-        name: user.fullName || user.username,
-        avatar: user.avatar || './assets/logouser.png',
-        rating: Number(rating),
-        content: content,
-        date: new Date().toLocaleDateString('vi-VN')
-    };
-
-    // Lưu vào LocalStorage
     const storageKey = `reviews_company_${companyId}`;
     let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
-    reviews.unshift(reviewObj); // Chèn lên đầu
+
+    // --- KIỂM TRA XEM ĐANG SỬA HAY VIẾT MỚI ---
+    if (window.editingReviewIndex >= 0) {
+        // CẬP NHẬT BÌNH LUẬN CŨ
+        reviews[window.editingReviewIndex].rating = Number(rating);
+        reviews[window.editingReviewIndex].content = content.trim();
+        reviews[window.editingReviewIndex].date = new Date().toLocaleDateString('vi-VN') + " (Đã sửa)";
+        
+        alert("🎉 Đã cập nhật đánh giá thành công!");
+        window.editingReviewIndex = -1; // Reset trạng thái về Viết mới
+        const submitBtn = document.querySelector('#input-review-content').closest('form').querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.innerText = "Gửi đánh giá"; // Trả lại tên nút
+    } else {
+        // VIẾT BÌNH LUẬN MỚI
+        const reviewObj = {
+            username: user.username, // LƯU THÊM USERNAME ĐỂ LÀM CHÌA KHÓA CHÍNH CHỦ
+            name: user.fullName || user.username || "Người dùng MidCV",
+            avatar: (user.avatar && user.avatar.startsWith('data:image')) ? user.avatar : './assets/logouser.png',
+            rating: Number(rating),
+            content: content.trim(),
+            date: new Date().toLocaleDateString('vi-VN')
+        };
+        reviews.unshift(reviewObj); 
+        alert("🎉 Đánh giá của bạn đã được đăng công khai!");
+    }
+
     localStorage.setItem(storageKey, JSON.stringify(reviews));
 
-    document.getElementById('input-review-content').value = '';
-    alert("Cảm ơn bạn! Đánh giá đã được gửi thành công.");
-    loadCompanyReviews();
+    contentInput.value = ''; 
+    window.selectStar(0); 
+    window.loadCompanyReviews();
 };
 
 window.loadCompanyReviews = function() {
@@ -1529,20 +1578,31 @@ window.loadCompanyReviews = function() {
     const storageKey = `reviews_company_${companyId}`;
     let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-    // Chèn thêm 1 review giả lập cho xôm tụ nếu mảng rỗng
+    // Lấy thông tin người đang xem trang để đối chiếu
+    const userStr = localStorage.getItem('currentUser');
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+
     if (reviews.length === 0) {
-        reviews = [{
-            name: "Ẩn danh", avatar: "https://via.placeholder.com/40", rating: 4, date: "10/03/2026",
-            content: "Môi trường công ty rất tốt, đồng nghiệp hòa đồng. Tuy nhiên quy trình duyệt giấy tờ hơi lâu."
-        }];
+        container.innerHTML = '<p class="text-gray-400 text-sm italic">Chưa có đánh giá nào cho công ty này. Hãy là người đầu tiên!</p>';
+        return;
     }
 
-    container.innerHTML = reviews.map(r => {
+    container.innerHTML = reviews.map((r, index) => {
         const starsHtml = Array(5).fill(0).map((_, i) => `<i class="fas fa-star ${i < r.rating ? 'text-amber-400' : 'text-gray-300'}"></i>`).join('');
+        
+        // --- LOGIC PHÂN QUYỀN: CHỈ HIỆN NÚT SỬA/XÓA NẾU KHỚP USERNAME ---
+        const isOwner = currentUser && r.username === currentUser.username;
+        const actionButtons = isOwner ? `
+            <div class="flex gap-4 mt-3 text-xs font-medium">
+                <button onclick="editReview(${index})" class="text-blue-500 hover:text-blue-700 transition flex items-center gap-1"><i class="fas fa-edit"></i> Sửa</button>
+                <button onclick="deleteReview(${index})" class="text-red-500 hover:text-red-700 transition flex items-center gap-1"><i class="fas fa-trash"></i> Xóa</button>
+            </div>
+        ` : '';
+
         return `
-        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0 animate-fade-in relative group">
             <div class="flex items-center gap-3 mb-2">
-                <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover bg-gray-100 border border-gray-200">
+                <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
                 <div>
                     <h5 class="font-bold text-gray-800 text-sm">${r.name}</h5>
                     <div class="flex items-center gap-2">
@@ -1552,8 +1612,48 @@ window.loadCompanyReviews = function() {
                 </div>
             </div>
             <p class="text-sm text-gray-600 leading-relaxed">${r.content}</p>
+            ${actionButtons}
         </div>`;
     }).join('');
+};
+
+// --- HÀM XÓA BÌNH LUẬN ---
+window.deleteReview = function(index) {
+    if(!confirm("⚠️ Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác.")) return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('id');
+    const storageKey = `reviews_company_${companyId}`;
+    let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    reviews.splice(index, 1); // Cắt bỏ 1 phần tử tại vị trí index
+    localStorage.setItem(storageKey, JSON.stringify(reviews));
+    window.loadCompanyReviews(); // Render lại danh sách
+};
+
+// --- HÀM SỬA BÌNH LUẬN ---
+window.editReview = function(index) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('id');
+    const storageKey = `reviews_company_${companyId}`;
+    let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const r = reviews[index];
+
+    // Bật trạng thái Sửa
+    window.editingReviewIndex = index;
+    
+    // Đổ dữ liệu cũ vào Form
+    window.selectStar(r.rating);
+    const contentInput = document.getElementById('input-review-content');
+    contentInput.value = r.content;
+    
+    // Đổi chữ nút bấm
+    const submitBtn = contentInput.closest('form').querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.innerText = "Cập nhật đánh giá";
+
+    // Tự động cuộn màn hình xuống chỗ Form và Focus con trỏ chuột vào khung gõ
+    contentInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    contentInput.focus();
 };
 
 // =================================================================
@@ -1586,5 +1686,90 @@ document.addEventListener('DOMContentLoaded', () => {
             checkFollowStatus();
             loadCompanyReviews();
         }, 200);
+    }
+});
+// =================================================================
+// 23. XỬ LÝ PHÂN TRANG VÀ RENDER DANH SÁCH CÔNG TY (LISTCONGTY.HTML)
+// =================================================================
+
+let currentCompPage = 1;
+const compsPerPage = 6; // Một trang hiển thị tối đa 6 công ty
+
+window.renderCompanyList = function(page = 1) {
+    const container = document.getElementById('company-list-container');
+    const paginationContainer = document.getElementById('company-pagination');
+    
+    if (!container || typeof mockCompaniesDB === 'undefined') return;
+
+    currentCompPage = page;
+    const totalCompanies = mockCompaniesDB.length;
+    
+    // 1. Tính toán vị trí cắt mảng dữ liệu
+    const startIndex = (currentCompPage - 1) * compsPerPage;
+    const endIndex = startIndex + compsPerPage;
+    const compsToShow = mockCompaniesDB.slice(startIndex, endIndex);
+
+    // 2. Vẽ danh sách Công ty
+    container.innerHTML = compsToShow.map(comp => {
+        // Giả lập số liệu Follow và Job (Vì trong DB của bạn chưa có các trường này)
+        const jobCount = comp.jobs ? comp.jobs.length : Math.floor(Math.random() * 10) + 1;
+        const followers = (Math.random() * 50).toFixed(1) + "K";
+        
+        return `
+        <a href="congty.html?id=${comp.id}" class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition overflow-hidden flex flex-col group relative cursor-pointer block">
+            <div class="h-24 bg-gradient-to-r from-blue-700 to-blue-500 relative">
+                <div class="absolute -bottom-8 left-6 w-16 h-16 bg-white rounded-lg p-1 shadow-md border border-gray-100 flex items-center justify-center">
+                    <img src="${comp.logo}" alt="Logo" class="w-full h-full object-contain rounded">
+                </div>
+            </div>
+            <div class="pt-10 px-6 pb-6 flex flex-col flex-grow">
+                <h3 class="font-bold text-lg text-gray-900 mb-1 group-hover:text-blue-600 transition">${comp.name}</h3>
+                <p class="text-sm text-gray-500 mb-4 line-clamp-2">${comp.about.replace(/<[^>]*>/g, '').substring(0, 100)}...</p>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium">${comp.industry}</span>
+                </div>
+                <div class="mt-auto border-t border-gray-50 pt-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex flex-col">
+                            <span class="text-lg font-black text-blue-600 leading-none">${jobCount}</span>
+                            <span class="text-xs text-gray-500 mt-1 font-medium">Việc làm</span>
+                        </div>
+                        <div class="w-px h-8 bg-gray-200"></div>
+                        <div class="flex flex-col text-right">
+                            <span class="text-lg font-black text-gray-700 leading-none">${followers}</span>
+                            <span class="text-xs text-gray-500 mt-1 font-medium">Followers</span>
+                        </div>
+                    </div>
+                    <div class="w-full text-sm font-bold text-blue-600 bg-blue-50 group-hover:bg-blue-600 group-hover:text-white transition py-2.5 rounded-lg flex items-center justify-center gap-2 border border-transparent">
+                        Xem chi tiết
+                    </div>
+                </div>
+            </div>
+        </a>`;
+    }).join('');
+
+    // 3. Vẽ bộ nút Phân trang (Chỉ hiện khi cần)
+    if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+        const totalPages = Math.ceil(totalCompanies / compsPerPage);
+        
+        // Nếu chỉ có 1 trang, vẫn hiện nút số 1 nhưng không có các nút khác
+        for (let i = 1; i <= totalPages; i++) {
+            const isActive = i === currentCompPage;
+            const btnClass = isActive 
+                ? "bg-blue-600 text-white font-bold border-blue-600 shadow-md" 
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50";
+                
+            paginationContainer.innerHTML += `
+                <button onclick="renderCompanyList(${i})" class="w-10 h-10 flex items-center justify-center rounded-lg border transition ${btnClass}">${i}</button>
+            `;
+        }
+    }
+};
+
+// Kích hoạt khi load trang
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('listcongty.html')) {
+        renderCompanyList(1);
     }
 });
