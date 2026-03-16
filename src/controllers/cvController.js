@@ -4,18 +4,22 @@ const CV = require('../models/cv');
 // 👱‍♂️ NHÓM API CHO ỨNG VIÊN (CANDIDATE)
 // ==========================================
 
-// 1. TẢI CV LÊN
+// 1. TẢI CV LÊN (Đã nâng cấp lên Cloudinary)
 exports.uploadCV = async (req, res) => {
   try {
-    const { cv_title, file_url } = req.body;
+    const { cv_title } = req.body;
     const candidate_id = req.user?.id || req.body.candidate_id; 
+
+    // 💡 Thằng Multer cất link của Cloudinary vào biến req.file.path
+    // 1. Lấy thẳng link gốc từ Cloudinary lưu vào DB
+    const file_url = req.file?.path;
 
     if (!candidate_id || !file_url) {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin file hoặc ID ứng viên!' });
     }
 
     const newCV = await CV.create({ candidate_id, cv_title, file_url });
-    res.status(201).json({ success: true, message: 'Lưu CV thành công!', data: newCV });
+    res.status(201).json({ success: true, message: 'Up CV lên mây thành công!', data: newCV });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
