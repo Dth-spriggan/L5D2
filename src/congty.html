@@ -143,8 +143,8 @@
                     </div>
                 </div>
                 <div class="shrink-0 w-full md:w-auto mt-4 md:mt-0">
-                    <button class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> Theo dõi công ty
+                    <button id="btn-follow-company" onclick="toggleFollowCompany()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> <span>Theo dõi công ty</span>
                     </button>
                 </div>
             </div>
@@ -160,11 +160,34 @@
                         </div>
                     </div>
 
+
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Tuyển dụng</h2>
                         <div id="detail-company-jobs" class="flex flex-col gap-4">
                             <p class="text-gray-500 text-sm">Đang tải danh sách việc làm...</p>
                         </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Đánh giá công ty</h2>
+                        
+                        <div id="company-reviews-container" class="flex flex-col gap-4 mb-6 max-h-80 overflow-y-auto pr-2">
+                            <p class="text-gray-500 text-sm italic">Đang tải đánh giá...</p>
+                        </div>
+
+                        <form onsubmit="submitReview(event)" class="border-t border-gray-100 pt-5 mt-2">
+                            <h4 class="font-bold text-gray-800 mb-2">Viết đánh giá của bạn</h4>
+                            <div class="flex gap-1 mb-3 text-2xl text-gray-300" id="star-rating-select">
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(1)"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(2)"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(3)"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(4)"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition text-amber-400" onclick="selectStar(5)"></i>
+                            </div>
+                            <input type="hidden" id="input-rating-val" value="5">
+                            <textarea id="input-review-content" required rows="3" placeholder="Chia sẻ trải nghiệm làm việc hoặc phỏng vấn của bạn..." class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 resize-none text-sm"></textarea>
+                            <button type="submit" class="mt-3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-6 rounded-lg transition text-sm">Gửi đánh giá</button>
+                        </form>
                     </div>
 
                 </div>

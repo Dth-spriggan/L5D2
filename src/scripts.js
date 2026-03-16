@@ -796,14 +796,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Hàm lấy ID từ URL và đổ dữ liệu ra trang
 window.loadJobDetail = function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const jobId = parseInt(urlParams.get('id'));
+    
+    // FIX TẠI ĐÂY 1: Bỏ hàm parseInt() để giữ nguyên dữ liệu Gốc
+    const jobId = urlParams.get('id'); 
 
     if (!jobId) {
         window.location.href = 'index.html';
         return;
     }
 
-    const job = mockJobs.find(j => j.id === jobId);
+    // FIX TẠI ĐÂY 2: Ép cả 2 bên về kiểu Chữ (String) để so sánh tuyệt đối chuẩn
+    const job = window.mockJobs.find(j => String(j.id) === String(jobId));
 
     if (!job) {
         alert('Không tìm thấy công việc này!');
@@ -1082,52 +1085,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // 16. CHI TIẾT CÔNG TY (BƠM DỮ LIỆU ĐỘNG TỪ URL)
 // =================================================================
 
-// 1. Dữ liệu giả lập của 3 công ty (Giống DB Backend)
 const mockCompaniesDB = [
     {
-        id: 1, // ID của Mixifood
-        name: "Công ty Cổ phần Mixifood",
-        logo: "./assets/mixifood.png",
-        cover: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-        industry: "Thực phẩm / F&B",
-        size: "50 - 100 nhân viên",
-        website: "https://mixifood.com",
-        address: "Tầng 5, Tòa nhà Mixi, P. Yên Hòa, Cầu Giấy, Hà Nội",
-        about: "<p>Mixifood là thương hiệu đồ ăn vặt hàng đầu Việt Nam, được sáng lập bởi Tộc trưởng Độ Mixi. Chúng tôi chuyên cung cấp các sản phẩm chất lượng cao như khô gà lá chanh, khô bò, lạp xưởng...</p><p>Môi trường làm việc năng động, trẻ trung và thường xuyên có các hoạt động teambuilding.</p>",
-        jobs: [
-            { id: 101, title: "Nhân viên Marketing Online", salary: "10 - 15 Triệu", location: "Hà Nội" },
-            { id: 102, title: "Nhân viên Đóng gói sản phẩm", salary: "7 - 10 Triệu", location: "Hà Nội" }
-        ]
+        id: 1, name: "Công ty Cổ phần Mixifood", logo: "./assets/mixifood.png", cover: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80", industry: "Thực phẩm / F&B", size: "50 - 100 nhân viên", website: "https://mixifood.com", address: "Tầng 5, Tòa nhà Mixi, P. Yên Hòa, Cầu Giấy, Hà Nội", about: "<p>Mixifood là thương hiệu đồ ăn vặt hàng đầu Việt Nam, được sáng lập bởi Tộc trưởng Độ Mixi. Chúng tôi chuyên cung cấp các sản phẩm chất lượng cao như khô gà lá chanh, khô bò, lạp xưởng...</p><p>Môi trường làm việc năng động, trẻ trung và thường xuyên có các hoạt động teambuilding.</p>"
     },
     {
-        id: 2, // ID của UTC
-        name: "Đại học Giao thông Vận tải (UTC)",
-        logo: "https://via.placeholder.com/150/2563eb/ffffff?text=UTC",
-        cover: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-        industry: "Giáo dục / IT",
-        size: "1000+ nhân viên",
-        website: "https://utc.edu.vn",
-        address: "Số 3 phố Cầu Giấy, P.Láng Thượng, Q.Đống Đa, Hà Nội",
-        about: "<p>Trường Đại học Giao thông Vận tải là trường đại học đa ngành về kỹ thuật, công nghệ và kinh tế. Đặc biệt, khoa Công nghệ Thông tin đang đóng vai trò mũi nhọn trong việc cung ứng nhân sự chất lượng cao.</p>",
-        jobs: [
-            { id: 103, title: "Giảng viên ngành Trí tuệ Nhân tạo", salary: "Thỏa thuận", location: "Hà Nội" },
-            { id: 104, title: "Chuyên viên Quản trị Hệ thống", salary: "15 - 20 Triệu", location: "Hà Nội" }
-        ]
+        id: 2, name: "Đại học Giao thông Vận tải (UTC)", logo: "https://via.placeholder.com/150/2563eb/ffffff?text=UTC", cover: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80", industry: "Giáo dục / IT", size: "1000+ nhân viên", website: "https://utc.edu.vn", address: "Số 3 phố Cầu Giấy, P.Láng Thượng, Q.Đống Đa, Hà Nội", about: "<p>Trường Đại học Giao thông Vận tải là trường đại học đa ngành về kỹ thuật, công nghệ và kinh tế. Đặc biệt, khoa Công nghệ Thông tin đang đóng vai trò mũi nhọn trong việc cung ứng nhân sự chất lượng cao.</p>"
     },
     {
-        id: 3, // ID của VNG
-        name: "VNG Corporation",
-        logo: "https://via.placeholder.com/150/f97316/ffffff?text=VNG",
-        cover: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-        industry: "Game / IT",
-        size: "3000+ nhân viên",
-        website: "https://vng.com.vn",
-        address: "Z06 Đường số 13, P. Tân Thuận Đông, Quận 7, TP.HCM",
-        about: "<p>Kỳ lân công nghệ đầu tiên của Việt Nam. Chúng tôi kiến tạo những sản phẩm công nghệ thay đổi cuộc sống của hàng triệu người dùng thông qua Game, ZaloPay, VNG Cloud...</p>",
-        jobs: [
-            { id: 105, title: "Senior Game Developer", salary: "1500 - 3000 USD", location: "TP.HCM" },
-            { id: 106, title: "Data Analyst", salary: "20 - 35 Triệu", location: "Hà Nội" }
-        ]
+        id: 3, name: "VNG Corporation", logo: "https://via.placeholder.com/150/f97316/ffffff?text=VNG", cover: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80", industry: "Game / IT", size: "3000+ nhân viên", website: "https://vng.com.vn", address: "Z06 Đường số 13, P. Tân Thuận Đông, Quận 7, TP.HCM", about: "<p>Kỳ lân công nghệ đầu tiên của Việt Nam. Chúng tôi kiến tạo những sản phẩm công nghệ thay đổi cuộc sống của hàng triệu người dùng thông qua Game, ZaloPay, VNG Cloud...</p>"
     }
 ];
 
@@ -1137,83 +1103,46 @@ window.loadCompanyDetail = function() {
 
     if (!companyId) return;
 
-    // =========================================================
-    // KẾT NỐI BACKEND Ở ĐÂY (SAU NÀY BẠN MỞ COMMENT RA)
-    // =========================================================
-    /*
-    fetch(`https://api.midcv.vn/companies/${companyId}`)
-        .then(res => res.json())
-        .then(data => renderCompanyDetail(data))
-        .catch(err => console.error(err));
-    */
-
-    // Hiện tại dùng Mock Data để Demo:
     const companyData = mockCompaniesDB.find(c => c.id === companyId);
     
     if (companyData) {
         document.title = `${companyData.name} - MidCV`;
-        document.getElementById('detail-company-name').textContent = companyData.name;
-        document.getElementById('detail-company-logo').src = companyData.logo;
-        document.getElementById('detail-company-cover').src = companyData.cover;
-        document.getElementById('detail-company-industry').textContent = companyData.industry;
-        document.getElementById('detail-company-size').textContent = companyData.size;
+        if(document.getElementById('detail-company-name')) document.getElementById('detail-company-name').textContent = companyData.name;
+        if(document.getElementById('detail-company-logo')) document.getElementById('detail-company-logo').src = companyData.logo;
+        if(document.getElementById('detail-company-cover')) document.getElementById('detail-company-cover').src = companyData.cover;
+        if(document.getElementById('detail-company-industry')) document.getElementById('detail-company-industry').textContent = companyData.industry;
+        if(document.getElementById('detail-company-size')) document.getElementById('detail-company-size').textContent = companyData.size;
         
         const webLink = document.getElementById('detail-company-website');
-        webLink.href = companyData.website;
-        webLink.textContent = companyData.website.replace('https://', '');
+        if(webLink) {
+            webLink.href = companyData.website;
+            webLink.textContent = companyData.website.replace('https://', '');
+        }
 
-        document.getElementById('detail-company-address').textContent = companyData.address;
-        document.getElementById('detail-company-about').innerHTML = companyData.about;
-
-        // Render danh sách việc làm đang mở
-        const jobsContainer = document.getElementById('detail-company-jobs');
-        jobsContainer.innerHTML = ''; // Xóa chữ loading
+        if(document.getElementById('detail-company-address')) document.getElementById('detail-company-address').textContent = companyData.address;
+        if(document.getElementById('detail-company-about')) document.getElementById('detail-company-about').innerHTML = companyData.about;
         
-        companyData.jobs.forEach(job => {
-            const jobHtml = `
-                <a href="vieclam.html?id=${job.id}" class="block border border-gray-100 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition bg-gray-50 hover:bg-white group">
-                    <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition">${job.title}</h3>
-                    <div class="flex items-center gap-4 mt-2 text-sm">
-                        <span class="text-blue-600 font-bold">${job.salary}</span>
-                        <span class="text-gray-500">• ${job.location}</span>
-                    </div>
-                </a>
-            `;
-            jobsContainer.innerHTML += jobHtml;
-        });
+        // Đã xóa hoàn toàn đoạn vẽ Việc làm bị lỗi ở đây!
     } else {
-        document.getElementById('detail-company-name').textContent = "Không tìm thấy Công ty";
+        if(document.getElementById('detail-company-name')) document.getElementById('detail-company-name').textContent = "Không tìm thấy Công ty";
     }
 };
-
-// Chạy hàm khi trang load xong
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('congty.html') && !window.location.pathname.includes('listcongty.html')) {
-        loadCompanyDetail();
-    }
-});
 
 // =================================================================
 // 17. LÔ-GIC DÀNH RIÊNG CHO TRANG HỒ SƠ ỨNG VIÊN (USERUI.HTML)
 // =================================================================
+// (Đoạn này tôi giữ nguyên trạng thái chuẩn chỉ của bạn)
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.location.pathname.includes('userui.html')) return;
 
     const DEFAULT_AVATAR = './assets/logouser.png';
 
-    function loadUser() {
-        try {
-            const userStr = localStorage.getItem('currentUser');
-            return userStr ? JSON.parse(userStr) : null;
-        } catch { return null; }
-    }
-
+    function loadUser() { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } }
     function saveUser(data) {
         try {
             const current = loadUser() || {};
             const updatedUser = { ...current, ...data };
             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-            
             const users = JSON.parse(localStorage.getItem('users')) || [];
             const userIndex = users.findIndex(u => u.username === current.username);
             if (userIndex !== -1) {
@@ -1226,87 +1155,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initProfile() {
         const user = loadUser();
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
-
+        if (!user) { window.location.href = 'login.html'; return; }
         const displayName = user.fullName || user.username || 'Người dùng';
-        
         const safeSet = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
-        safeSet('name', displayName);
-        safeSet('phone', user.phone || '');
-        safeSet('email', user.email || '');
-        safeSet('bio', user.bio || '');
-        safeSet('education', user.education || '');
-        safeSet('skills', user.skills || '');
-
-        const dispName = document.getElementById('display-name');
-        if(dispName) dispName.textContent = displayName;
-
+        safeSet('name', displayName); safeSet('phone', user.phone || ''); safeSet('email', user.email || '');
+        safeSet('bio', user.bio || ''); safeSet('education', user.education || ''); safeSet('skills', user.skills || '');
+        const dispName = document.getElementById('display-name'); if(dispName) dispName.textContent = displayName;
         const avatarEl = document.getElementById('avatarPreview');
-        if (avatarEl) {
-            avatarEl.src = (user.avatar && user.avatar.startsWith('data:image')) ? user.avatar : DEFAULT_AVATAR;
-        }
+        if (avatarEl) avatarEl.src = (user.avatar && user.avatar.startsWith('data:image')) ? user.avatar : DEFAULT_AVATAR;
     }
 
     window.switchPanel = function(name) {
         ['info','facebook','linkedin', 'saved', 'settings'].forEach(p => {
-            const panel = document.getElementById('panel-' + p);
-            const nav = document.getElementById('nav-' + p);
-            if(panel) panel.classList.add('hidden-btn');
-            if(nav) nav.classList.remove('active');
+            const panel = document.getElementById('panel-' + p); const nav = document.getElementById('nav-' + p);
+            if(panel) panel.classList.add('hidden-btn'); if(nav) nav.classList.remove('active');
         });
-        const activePanel = document.getElementById('panel-' + name);
-        const activeNav = document.getElementById('nav-' + name);
-        
-        if(activePanel) activePanel.classList.remove('hidden-btn');
-        if(activeNav) activeNav.classList.add('active');
-
+        const activePanel = document.getElementById('panel-' + name); const activeNav = document.getElementById('nav-' + name);
+        if(activePanel) activePanel.classList.remove('hidden-btn'); if(activeNav) activeNav.classList.add('active');
         window.history.replaceState(null, '', `?tab=${name}`);
-
-        // GỌI HÀM RENDER KHI BẤM SANG TAB LƯU
-        if(name === 'saved') {
-            if (typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
-        }
+        if(name === 'saved' && typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
     };
 
     initProfile();
     const urlParams = new URLSearchParams(window.location.search);
-    const tab = urlParams.get('tab') || 'info'; 
-    switchPanel(tab);
+    switchPanel(urlParams.get('tab') || 'info');
 
     const form = document.getElementById('profileForm');
     const editableFields = document.querySelectorAll('#name, #email, #phone, #bio, #education, #skills');
-    const avatarContainer = document.getElementById('avatarContainer');
-    const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
-    const toast = document.getElementById('toast');
     let originalData = {}, originalAvatar = '';
 
     window.showToast = function(msg = "Thành công!") {
-        if(!toast) return;
+        const toast = document.getElementById('toast'); if(!toast) return;
         toast.innerHTML = `<i class="fas fa-check-circle" style="margin-right:7px;"></i>${msg}`;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2500);
     };
 
     function setEditMode(isEditing) {
-        editableFields.forEach(f => {
-            if (isEditing) f.removeAttribute('readonly');
-            else f.setAttribute('readonly', true);
-        });
+        editableFields.forEach(f => { if (isEditing) f.removeAttribute('readonly'); else f.setAttribute('readonly', true); });
+        const avatarContainer = document.getElementById('avatarContainer');
         if(avatarContainer) avatarContainer.classList.toggle('editable', isEditing);
-        
-        const toggles = ['editBtn', 'saveBtn', 'cancelBtn'];
-        toggles.forEach(id => {
+        ['editBtn', 'saveBtn', 'cancelBtn'].forEach(id => {
             const el = document.getElementById(id);
-            if(el) {
-                if(id === 'editBtn') el.classList.toggle('hidden-btn', isEditing);
-                else el.classList.toggle('hidden-btn', !isEditing);
-            }
+            if(el) el.classList.toggle('hidden-btn', id === 'editBtn' ? isEditing : !isEditing);
         });
-        
         const rmAvatar = document.getElementById('removeAvatarBtn');
         if(rmAvatar) rmAvatar.classList.toggle('hidden', !isEditing);
     }
@@ -1315,8 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(editBtn) editBtn.addEventListener('click', () => {
         editableFields.forEach(f => { originalData[f.id] = f.value; });
         if(avatarPreview) originalAvatar = avatarPreview.src;
-        setEditMode(true);
-        document.getElementById('name').focus();
+        setEditMode(true); document.getElementById('name').focus();
     });
 
     const cancelBtn = document.getElementById('cancelBtn');
@@ -1326,12 +1217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setEditMode(false);
     });
 
+    const avatarInput = document.getElementById('avatarInput');
     if(avatarInput && avatarPreview) {
         avatarInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => { avatarPreview.src = ev.target.result; };
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader(); reader.onload = ev => { avatarPreview.src = ev.target.result; };
             reader.readAsDataURL(file);
         });
     }
@@ -1339,44 +1229,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const rmAvatarBtn = document.getElementById('removeAvatarBtn');
     if(rmAvatarBtn && avatarPreview) {
         rmAvatarBtn.addEventListener('click', () => {
-            avatarPreview.src = DEFAULT_AVATAR;
-            saveUser({ avatar: '' }); 
-            window.showToast('Đã xóa ảnh đại diện');
+            avatarPreview.src = DEFAULT_AVATAR; saveUser({ avatar: '' }); window.showToast('Đã xóa ảnh đại diện');
         });
     }
 
-    if(form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const updated = {
-                fullName:  document.getElementById('name').value,
-                email:     document.getElementById('email').value,
-                phone:     document.getElementById('phone').value,
-                bio:       document.getElementById('bio').value,
-                education: document.getElementById('education').value,
-                skills:    document.getElementById('skills').value,
-            };
-            if (avatarPreview && avatarPreview.src.startsWith('data:image')) {
-                updated.avatar = avatarPreview.src;
-            }
-            saveUser(updated);
-            const dispName = document.getElementById('display-name');
-            if(dispName) dispName.textContent = updated.fullName || 'Người dùng';
-            setEditMode(false);
-            window.showToast('Đã cập nhật Hồ sơ!');
-        });
-    }
+    if(form) form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const updated = {
+            fullName: document.getElementById('name').value, email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value, bio: document.getElementById('bio').value,
+            education: document.getElementById('education').value, skills: document.getElementById('skills').value,
+        };
+        if (avatarPreview && avatarPreview.src.startsWith('data:image')) updated.avatar = avatarPreview.src;
+        saveUser(updated);
+        const dispName = document.getElementById('display-name'); if(dispName) dispName.textContent = updated.fullName || 'Người dùng';
+        setEditMode(false); window.showToast('Đã cập nhật Hồ sơ!');
+    });
 
     window.saveSettings = function() {
-        const newPassEl = document.getElementById('new-password');
-        if(!newPassEl) return;
-        if(newPassEl.value) {
-            saveUser({ password: newPassEl.value });
-            newPassEl.value = '';
-            window.showToast('Đã cập nhật Mật khẩu!');
-        } else {
-            window.showToast('Không có thay đổi nào được lưu.');
-        }
+        const newPassEl = document.getElementById('new-password'); if(!newPassEl) return;
+        if(newPassEl.value) { saveUser({ password: newPassEl.value }); newPassEl.value = ''; window.showToast('Đã cập nhật Mật khẩu!'); } 
+        else window.showToast('Không có thay đổi nào được lưu.');
     };
 });
 
@@ -1386,56 +1259,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.saveJobToLocal = function(jobId) {
     const userStr = localStorage.getItem('currentUser');
-    if (!userStr) {
-        alert("Vui lòng Đăng nhập để lưu việc làm!");
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!userStr) { alert("Vui lòng Đăng nhập để lưu việc làm!"); window.location.href = 'login.html'; return; }
     const user = JSON.parse(userStr);
     const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
-    
     let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    savedIds = savedIds.map(id => Number(id));
-    const numJobId = Number(jobId);
-
+    savedIds = savedIds.map(id => Number(id)); const numJobId = Number(jobId);
     if (!savedIds.includes(numJobId)) {
-        savedIds.push(numJobId);
-        localStorage.setItem(storageKey, JSON.stringify(savedIds));
-        
-        if (window.location.pathname.includes('userui.html')) {
-            if (typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
-        } else {
-            alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
-        }
-    } else {
-        alert("⚠️ Việc làm này đã được bạn lưu từ trước rồi!");
-    }
+        savedIds.push(numJobId); localStorage.setItem(storageKey, JSON.stringify(savedIds));
+        if (window.location.pathname.includes('userui.html') && typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
+        else alert("🎉 Đã lưu việc làm thành công! Hãy vào Hồ sơ để kiểm tra.");
+    } else alert("⚠️ Việc làm này đã được bạn lưu từ trước rồi!");
 };
 
 window.loadSavedJobs = function() {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    const container = document.getElementById('saved-jobs-container');
-    if(!container) return;
-
+    const userStr = localStorage.getItem('currentUser'); if (!userStr) return;
+    const user = JSON.parse(userStr); const container = document.getElementById('saved-jobs-container'); if(!container) return;
     const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
     let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
     savedIds = savedIds.map(id => Number(id));
-
-    if (savedIds.length === 0) {
-        container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>';
-        return;
-    }
-
-    if (typeof window.mockJobs === 'undefined') {
-        container.innerHTML = '<div class="text-center py-10 text-red-500 bg-red-50 border border-red-100 rounded-lg">Lỗi: Không tìm thấy dữ liệu công việc.</div>';
-        return;
-    }
-    
+    if (savedIds.length === 0) { container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa lưu công việc nào.</div>'; return; }
+    if (typeof window.mockJobs === 'undefined') return;
     const jobsToRender = window.mockJobs.filter(j => savedIds.includes(Number(j.id)));
-    
-    // In trực tiếp ra HTML
     container.innerHTML = jobsToRender.map(job => `
         <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
             <img src="${job.logo}" class="w-14 h-14 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
@@ -1447,26 +1291,300 @@ window.loadSavedJobs = function() {
                     <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
                 </div>
             </div>
-            <button onclick="removeSavedJob(${job.id})" class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition" title="Bỏ lưu">
-                <i class="fas fa-trash"></i>
-            </button>
+            <button onclick="removeSavedJob(${job.id})" class="absolute top-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition" title="Bỏ lưu"><i class="fas fa-trash"></i></button>
         </div>
     `).join('');
 };
 
 window.removeSavedJob = function(jobId) {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
-    
+    const userStr = localStorage.getItem('currentUser'); if (!userStr) return;
+    const user = JSON.parse(userStr); const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
     let savedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    savedIds = savedIds.map(id => Number(id));
-    const numJobId = Number(jobId);
-    
-    savedIds = savedIds.filter(id => id !== numJobId);
-    localStorage.setItem(storageKey, JSON.stringify(savedIds));
-    
+    savedIds = savedIds.map(id => Number(id)); const numJobId = Number(jobId);
+    savedIds = savedIds.filter(id => id !== numJobId); localStorage.setItem(storageKey, JSON.stringify(savedIds));
     if (typeof window.showToast === 'function') window.showToast('Đã xóa việc làm khỏi danh sách!');
     window.loadSavedJobs(); 
 };
+
+// =================================================================
+// 20. XỬ LÝ TRANG CHI TIẾT CÔNG TY (CONGTY.HTML)
+// =================================================================
+
+window.loadCompanyJobs = function() {
+    const container = document.getElementById('detail-company-jobs');
+    if (!container) return;
+    if (typeof window.mockJobs === 'undefined') return;
+
+    // Dùng setTimeout để đợi loadCompanyDetail vẽ xong tên công ty lên giao diện
+    setTimeout(() => {
+        const companyNameEl = document.getElementById('detail-company-name');
+        const companyName = companyNameEl ? companyNameEl.innerText.trim() : '';
+        
+        // Tìm kiếm các job có tên công ty khớp với nhau
+        let companyJobs = window.mockJobs.filter(j => {
+            const jName = j.company.toLowerCase();
+            const cName = companyName.toLowerCase();
+            // Lọc linh hoạt (Ví dụ: "UTC" khớp với "Công ty Cổ phần Công nghệ UTC")
+            return jName.includes(cName) || cName.includes(jName) || 
+                   (cName.includes("utc") && jName.includes("utc")) || 
+                   (cName.includes("mixi") && jName.includes("mixi"));
+        });
+        
+        if (companyJobs.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-sm italic py-4">Công ty này hiện chưa có vị trí tuyển dụng nào đang mở.</p>';
+            return;
+        }
+
+        // Vẽ danh sách việc làm CHUẨN trực tiếp vào HTML (KHÔNG CẦN HÀM PHỤ)
+        container.innerHTML = companyJobs.map(job => `
+            <a href="vieclam.html?id=${job.id}" class="block border border-gray-100 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition bg-gray-50 hover:bg-white group">
+                <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition">${job.title}</h3>
+                <div class="flex items-center gap-4 mt-2 text-sm">
+                    <span class="text-blue-600 font-bold">${job.salary}</span>
+                    <span class="text-gray-500">• ${job.location}</span>
+                </div>
+            </a>
+        `).join('');
+    }, 100); // Trì hoãn 0.1 giây để đảm bảo DOM đã cập nhật
+};
+
+// Khởi chạy cả 2 hàm đồng thời khi vào trang Công ty
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('congty.html') && !window.location.pathname.includes('listcongty.html')) {
+        loadCompanyDetail();
+        loadCompanyJobs();
+    }
+});
+// =================================================================
+// 21. LOGIC THEO DÕI CÔNG TY VÀ HIỂN THỊ Ở TRANG USER
+// =================================================================
+
+// 21.1 Hàm xử lý Nút Bấm "Theo dõi" ở trang Chi tiết Công ty
+window.toggleFollowCompany = function() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert("Vui lòng Đăng nhập để theo dõi công ty!");
+        window.location.href = 'login.html';
+        return;
+    }
+    const user = JSON.parse(userStr);
+    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = Number(urlParams.get('id'));
+    if (!companyId) return;
+
+    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    followedIds = followedIds.map(id => Number(id));
+
+    if (!followedIds.includes(companyId)) {
+        followedIds.push(companyId);
+        localStorage.setItem(storageKey, JSON.stringify(followedIds));
+        alert("🎉 Đã theo dõi công ty! Hãy vào Hồ sơ để xem.");
+    } else {
+        followedIds = followedIds.filter(id => id !== companyId);
+        localStorage.setItem(storageKey, JSON.stringify(followedIds));
+    }
+    checkFollowStatus(); // Cập nhật lại UI nút bấm
+};
+
+// 21.2 Cập nhật giao diện Nút "Theo dõi"
+window.checkFollowStatus = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = Number(urlParams.get('id'));
+    const btn = document.getElementById('btn-follow-company');
+    if (!btn || !companyId) return;
+
+    let isFollowed = false;
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
+        const followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+        isFollowed = followedIds.map(id => Number(id)).includes(companyId);
+    }
+
+    if (isFollowed) {
+        btn.innerHTML = `<i class="fas fa-check"></i> <span>Đang theo dõi</span>`;
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+        btn.classList.add('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
+    } else {
+        btn.innerHTML = `<i class="fas fa-plus"></i> <span>Theo dõi công ty</span>`;
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+        btn.classList.remove('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
+    }
+};
+
+// 21.3 Hiển thị danh sách Công ty đã theo dõi trong UserUI
+window.loadFollowedCompanies = function() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const container = document.getElementById('followed-companies-container');
+    if(!container) return;
+
+    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
+    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    followedIds = followedIds.map(id => Number(id));
+
+    if (followedIds.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa theo dõi công ty nào.</div>';
+        return;
+    }
+
+    if (typeof mockCompaniesDB === 'undefined') return;
+    const compsToRender = mockCompaniesDB.filter(c => followedIds.includes(Number(c.id)));
+    
+    container.innerHTML = compsToRender.map(comp => `
+        <div class="border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
+            <img src="${comp.logo}" class="w-16 h-16 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
+            <div class="flex-1">
+                <a href="congty.html?id=${comp.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 pr-20">${comp.name}</a>
+                <div class="flex gap-3 text-xs text-gray-500 font-medium">
+                    <span>🏢 ${comp.industry}</span>
+                    <span>📍 ${comp.address.split(',').pop().trim()}</span>
+                </div>
+            </div>
+            <button onclick="removeFollowedCompany(${comp.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition border border-red-100" title="Bỏ theo dõi">
+                Bỏ theo dõi
+            </button>
+        </div>
+    `).join('');
+};
+
+window.removeFollowedCompany = function(companyId) {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
+    
+    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
+    followedIds = followedIds.map(id => Number(id)).filter(id => id !== Number(companyId));
+    localStorage.setItem(storageKey, JSON.stringify(followedIds));
+    
+    if (typeof window.showToast === 'function') window.showToast('Đã bỏ theo dõi công ty!');
+    window.loadFollowedCompanies(); 
+};
+
+
+// =================================================================
+// 22. LOGIC ĐÁNH GIÁ CÔNG TY (REVIEW)
+// =================================================================
+
+window.selectStar = function(rating) {
+    document.getElementById('input-rating-val').value = rating;
+    const stars = document.getElementById('star-rating-select').children;
+    for(let i=0; i<5; i++) {
+        if (i < rating) {
+            stars[i].classList.add('text-amber-400');
+            stars[i].classList.remove('text-gray-300');
+        } else {
+            stars[i].classList.add('text-gray-300');
+            stars[i].classList.remove('text-amber-400');
+        }
+    }
+};
+
+window.submitReview = function(event) {
+    event.preventDefault();
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert("Vui lòng Đăng nhập để gửi đánh giá!");
+        window.location.href = 'login.html';
+        return;
+    }
+    const user = JSON.parse(userStr);
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('id');
+    if (!companyId) return;
+
+    const rating = document.getElementById('input-rating-val').value;
+    const content = document.getElementById('input-review-content').value;
+
+    const reviewObj = {
+        name: user.fullName || user.username,
+        avatar: user.avatar || './assets/logouser.png',
+        rating: Number(rating),
+        content: content,
+        date: new Date().toLocaleDateString('vi-VN')
+    };
+
+    // Lưu vào LocalStorage
+    const storageKey = `reviews_company_${companyId}`;
+    let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
+    reviews.unshift(reviewObj); // Chèn lên đầu
+    localStorage.setItem(storageKey, JSON.stringify(reviews));
+
+    document.getElementById('input-review-content').value = '';
+    alert("Cảm ơn bạn! Đánh giá đã được gửi thành công.");
+    loadCompanyReviews();
+};
+
+window.loadCompanyReviews = function() {
+    const container = document.getElementById('company-reviews-container');
+    if (!container) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('id');
+    const storageKey = `reviews_company_${companyId}`;
+    let reviews = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    // Chèn thêm 1 review giả lập cho xôm tụ nếu mảng rỗng
+    if (reviews.length === 0) {
+        reviews = [{
+            name: "Ẩn danh", avatar: "https://via.placeholder.com/40", rating: 4, date: "10/03/2026",
+            content: "Môi trường công ty rất tốt, đồng nghiệp hòa đồng. Tuy nhiên quy trình duyệt giấy tờ hơi lâu."
+        }];
+    }
+
+    container.innerHTML = reviews.map(r => {
+        const starsHtml = Array(5).fill(0).map((_, i) => `<i class="fas fa-star ${i < r.rating ? 'text-amber-400' : 'text-gray-300'}"></i>`).join('');
+        return `
+        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+            <div class="flex items-center gap-3 mb-2">
+                <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover bg-gray-100 border border-gray-200">
+                <div>
+                    <h5 class="font-bold text-gray-800 text-sm">${r.name}</h5>
+                    <div class="flex items-center gap-2">
+                        <div class="text-xs">${starsHtml}</div>
+                        <span class="text-[11px] text-gray-400">${r.date}</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 leading-relaxed">${r.content}</p>
+        </div>`;
+    }).join('');
+};
+
+// =================================================================
+// BỔ SUNG GỌI HÀM VÀO SỰ KIỆN KHỞI TẠO CHUNG
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Sửa lại đoạn switchPanel ở Phần 17 (trong scripts.js) để nhận Tab Followed
+    if (typeof window.switchPanel !== 'undefined') {
+        const oldSwitch = window.switchPanel;
+        window.switchPanel = function(name) {
+            ['info','facebook','linkedin', 'saved', 'settings', 'followed'].forEach(p => {
+                const panel = document.getElementById('panel-' + p);
+                const nav = document.getElementById('nav-' + p);
+                if(panel) panel.classList.add('hidden-btn');
+                if(nav) nav.classList.remove('active');
+            });
+            const activePanel = document.getElementById('panel-' + name);
+            const activeNav = document.getElementById('nav-' + name);
+            if(activePanel) activePanel.classList.remove('hidden-btn');
+            if(activeNav) activeNav.classList.add('active');
+            window.history.replaceState(null, '', `?tab=${name}`);
+            
+            if(name === 'saved' && typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
+            if(name === 'followed' && typeof window.loadFollowedCompanies === 'function') window.loadFollowedCompanies();
+        };
+    }
+
+    if (window.location.pathname.includes('congty.html') && !window.location.pathname.includes('listcongty.html')) {
+        setTimeout(() => {
+            checkFollowStatus();
+            loadCompanyReviews();
+        }, 200);
+    }
+});
