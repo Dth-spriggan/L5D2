@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Nộp CV Bằng File</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; font-size: 16px; width: 100%;}
+        button:hover { background: #218838; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Giao Diện Test Nộp Đơn (Upload PDF)</h2>
+    
+    <form id="applyForm">
+        <div class="form-group">
+            <label>Token Ứng Viên (Dán token vào đây để khỏi sửa code):</label>
+            <input type="text" id="token" placeholder="eyJhbGciOiJIUzI1NiIs..." required>
+        </div>
+
+        <div class="form-group">
+            <label>Job ID:</label>
+            <input type="number" id="jobId" value="1" required>
+        </div>
+
+        <div class="form-group">
+            <label>Lời nhắn (Cover Letter):</label>
+            <textarea id="coverLetter" rows="3">Sếp ơi cho em một vé đè tem hộp khô gà nhé!</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Chọn file CV (PDF):</label>
+            <input type="file" id="cvFile" accept=".pdf" required>
+        </div>
+
+        <button type="submit">🚀 Bấm Nộp CV</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('applyForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Chặn việc trình duyệt tự load lại trang
+
+            const token = document.getElementById('token').value;
+            const cvFileInput = document.getElementById('cvFile');
+            const resultDiv = document.getElementById('result');
+
+            // 1. DÙNG FORMDATA ĐỂ ĐÓNG GÓI DỮ LIỆU + FILE
+            const formData = new FormData();
+            formData.append('jobId', document.getElementById('jobId').value);
+            formData.append('coverLetter', document.getElementById('coverLetter').value);
+            formData.append('cvFile', cvFileInput.files[0]); // Đính kèm cái file vào
+
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#f8f9fa';
+            resultDiv.innerHTML = '⏳ Đang tải file lên và nộp đơn...';
+
+            try {
+                // 2. BẮN API
+                const response = await fetch('http://localhost:3000/api/applications', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // LƯU Ý CỰC MẠNH: TUYỆT ĐỐI KHÔNG xét 'Content-Type' ở đây. 
+                        // Trình duyệt sẽ TỰ ĐỘNG nhận diện FormData và gắn đúng Type + Boundary
+                    },
+                    body: formData // Ném nguyên cục formData vào
+                });
+
+                const data = await response.json();
+
+                // 3. XỬ LÝ KẾT QUẢ
+                if (data.success) {
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#155724';
+                    resultDiv.innerHTML = `✅ ${data.message} <br><br> Link file vừa tải lên: <a href="${data.data.cvUrl}" target="_blank">Xem CV</a>`;
+                } else {
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.color = '#721c24';
+                    resultDiv.innerHTML = `❌ Lỗi: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+                resultDiv.innerHTML = `❌ Lỗi kết nối đến Server: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
