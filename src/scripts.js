@@ -270,16 +270,13 @@ window.toggleSubmenu = function(id) {
 // 6. BẢO VỆ ROUTE DÀNH RIÊNG CHO USER (AUTH GATEKEEPER)
 // =================================================================
 window.requireAuth = function(event, targetPage) {
-    event.preventDefault(); // Ngăn trình duyệt nhảy trang tự do
-    
+    event.preventDefault();
     const currentUser = localStorage.getItem('currentUser');
     if (!currentUser) {
         alert("Vui lòng đăng nhập với tư cách Ứng viên để sử dụng chức năng này!");
-        window.location.href = "login.html"; // Đá ra trang đăng nhập
+        window.location.href = "login.html";
     } else {
-        alert("Bạn đã đăng nhập. Sẵn sàng chuyển tới trang: " + targetPage + " (Chờ thiết kế UI)");
-        // Khi nào có trang thật, bạn bỏ comment dòng dưới đây:
-        // window.location.href = targetPage;
+        window.location.href = targetPage;
     }
 };
 // =================================================================
