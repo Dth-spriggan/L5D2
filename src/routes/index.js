@@ -13,6 +13,9 @@ const jobRoutes = require('./jobRoutes');
 
 const cvRoutes = require('./cvRoutes');
 
+// 1. BÊ THÊM DÒNG NÀY VÀO TRÊN CÙNG (phần require):
+const applicationRoutes = require('./applicationRoutes');
+
 // ==========================================
 // Các Route cũ giữ nguyên như ban đầu
 // ==========================================
@@ -24,6 +27,9 @@ router.post('/auth/login', authController.login);
 router.use('/', jobRoutes);
 
 router.use('/cvs', cvRoutes);
+
+// 2. CẮM ĐIỆN CHO API (Thêm vào phần router.use):
+router.use('/applications', applicationRoutes);
 
 // ==========================================
 // Gắn module Escrow vào
