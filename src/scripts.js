@@ -1,4 +1,67 @@
 // =================================================================
+// 0. KHỞI TẠO DỮ LIỆU GỐC (SEED DATA)
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Lấy két sắt chứa danh sách người dùng ra kiểm tra
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    
+    // 2. Tìm xem đã có ai tên là 'admin' chưa
+    const adminExists = users.find(u => u.username === 'admin');
+    
+    // 3. Nếu chưa có thì tự động "đẻ" ra một tài khoản Admin xịn xò
+    if (!adminExists) {
+        const adminAccount = { 
+            username: "admin", 
+            password: "admin", 
+            fullName: "Anh Bộ PC", 
+            email: "admin@midcv.vn",
+            avatar: "./assets/logouser.png" // Cấp luôn cái ảnh đại diện mặc định
+        };
+        users.push(adminAccount);
+        localStorage.setItem('users', JSON.stringify(users));
+        console.log("⚙️ Hệ thống đã tự động khởi tạo tài khoản Admin!");
+    }
+});
+
+// =================================================================
+// 0.1 MÀNG LỌC TOÀN CỤC (ÁP DỤNG LỆNH CỦA ADMIN)
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. KIỂM TRA "THẺ VIP": Ai đang đăng nhập?
+    const userStr = localStorage.getItem('currentUser');
+    let isAdmin = false;
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.username === 'admin') isAdmin = true;
+    }
+
+    // NẾU LÀ ADMIN HOẶC ĐANG Ở TRANG ADMIN -> BỎ QUA MÀNG LỌC (Cho phép xem TẤT CẢ)
+    if (isAdmin || window.location.pathname.includes('admin.html')) return;
+
+    // =========================================================
+    // LUỒNG DƯỚI ĐÂY CHỈ CHẠY ĐỐI VỚI ỨNG VIÊN THƯỜNG
+    // =========================================================
+    
+    // 2. Lọc Việc làm (Jobs)
+    if (typeof window.mockJobs !== 'undefined') {
+        const deletedJobs = JSON.parse(localStorage.getItem('admin_deleted_jobs')) || [];
+        const approvedJobs = JSON.parse(localStorage.getItem('admin_approved_jobs')) || [];
+        
+        window.mockJobs = window.mockJobs.filter(j => {
+            if (deletedJobs.includes(j.id)) return false; // Giấu bài bị xóa
+            if (approvedJobs.includes(j.id) || j.id <= 5) return true; // Hiện bài đã duyệt
+            return false; // Giấu bài chờ duyệt
+        });
+    }
+
+    // 3. Lọc Công ty (Companies)
+    if (typeof window.mockCompaniesDB !== 'undefined') {
+        const deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
+        window.mockCompaniesDB = window.mockCompaniesDB.filter(c => !deletedComps.includes(c.id));
+    }
+});
+
+// =================================================================
 // 1. XỬ LÝ GIAO DIỆN NAVBAR (ĐĂNG NHẬP / ĐĂNG XUẤT)
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -177,19 +240,43 @@ window.login = function() {
     const inputUser = document.getElementById("username").value.trim();
     const inputPass = document.getElementById("password").value;
 
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+
+    // =========================================================
+    // LỐI ĐI VIP DÀNH RIÊNG CHO ADMIN (Bỏ qua mọi kiểm tra)
+    // =========================================================
+    if (inputUser === "admin") {
+        const adminUser = users.find(u => u.username === "admin" && u.password === inputPass);
+        
+        if (adminUser) {
+            alert("Đăng nhập thành công! Chào mừng Quản trị viên hệ thống.");
+            localStorage.setItem("currentUser", JSON.stringify(adminUser));
+            window.location.href = "admin.html"; // Đá thẳng vào đại bản doanh
+            return; // Dừng toàn bộ hàm tại đây, không chạy xuống dưới nữa
+        } else {
+            alert("Sai mật khẩu Admin!");
+            return;
+        }
+    }
+
+    // =========================================================
+    // LUỒNG KIỂM TRA DÀNH CHO ỨNG VIÊN (USER THƯỜNG)
+    // =========================================================
+    
+    // 1. Kiểm tra định dạng Email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inputUser)) {
         alert("Email không đúng định dạng! Vui lòng nhập đúng dạng example@email.com");
         return;
     }
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
+    // 2. Kiểm tra thông tin trong Database
     const validUser = users.find(u => u.username === inputUser && u.password === inputPass && u.type === "personal");
 
     if (validUser) {
         alert("Đăng nhập thành công! Chào mừng " + validUser.fullName);
         localStorage.setItem("currentUser", JSON.stringify(validUser));
-        window.location.href = "index.html";
+        window.location.href = "index.html"; // Ứng viên thì về trang chủ
     } else {
         alert("Sai email hoặc mật khẩu! (Lưu ý: Chỉ dành cho tài khoản Ứng viên)");
     }
@@ -1013,7 +1100,7 @@ window.syncUserHeader = function() {
 
         // 1. Cập nhật Tên và Email trong Dropdown
         if (dropdownName) dropdownName.textContent = displayName;
-        if (dropdownEmail) dropdownEmail.textContent = user.email || (user.username + '@midcv.vn');
+        if (dropdownEmail) dropdownEmail.textContent = user.email || (user.username);
 
         // 2. Cập nhật Avatar
         if (user.avatar) {
@@ -1083,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // =================================================================
 
 // 1. Dữ liệu giả lập của 3 công ty (Giống DB Backend)
-const mockCompaniesDB = [
+window.mockCompaniesDB = [
     {
         id: 1, // ID của Mixifood
         name: "Công ty Cổ phần Mixifood",
@@ -1470,3 +1557,219 @@ window.removeSavedJob = function(jobId) {
     if (typeof window.showToast === 'function') window.showToast('Đã xóa việc làm khỏi danh sách!');
     window.loadSavedJobs(); 
 };
+
+// =================================================================
+// 24. LÔ-GIC DÀNH RIÊNG CHO TRANG ADMIN (ADMIN.HTML)
+// =================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.location.pathname.includes('admin.html')) return;
+
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr || JSON.parse(userStr).username !== 'admin') {
+        alert("Truy cập bị từ chối! Tài khoản của bạn không có quyền Quản trị viên.");
+        window.location.href = 'index.html';
+        return;
+    }
+
+    window.switchAdminTab = function(tabName) {
+        document.querySelectorAll('.admin-tab').forEach(t => {
+            t.classList.remove('bg-blue-600', 'text-white');
+            t.classList.add('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
+        });
+        const activeTab = document.getElementById('tab-' + tabName);
+        if(activeTab) {
+            activeTab.classList.remove('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
+            activeTab.classList.add('bg-blue-600', 'text-white');
+        }
+
+        document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('panel-' + tabName).classList.remove('hidden');
+
+        const titles = { 'dashboard': 'Tổng quan hệ thống', 'users': 'Quản lý Người dùng', 'companies': 'Quản lý Công ty', 'jobs': 'Kiểm duyệt Việc làm' };
+        document.getElementById('admin-page-title').innerText = titles[tabName];
+
+        if (tabName === 'dashboard') loadAdminDashboard();
+        if (tabName === 'users') loadAdminUsers();
+        if (tabName === 'companies') loadAdminCompanies();
+        if (tabName === 'jobs') loadAdminJobs();
+    };
+
+    // --- CÁC HÀM LẤY DỮ LIỆU ĐÃ LỌC (LOẠI BỎ NHỮNG THẰNG TRONG SỔ ĐEN) ---
+    function getActiveCompanies() {
+        const deletedIds = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
+        return typeof mockCompaniesDB !== 'undefined' ? mockCompaniesDB.filter(c => !deletedIds.includes(c.id)) : [];
+    }
+
+    function getActiveJobs() {
+        const deletedIds = JSON.parse(localStorage.getItem('admin_deleted_jobs')) || [];
+        return typeof window.mockJobs !== 'undefined' ? window.mockJobs.filter(j => !deletedIds.includes(j.id)) : [];
+    }
+
+    function loadAdminDashboard() {
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        document.getElementById('stat-users').innerText = users.length;
+        document.getElementById('stat-companies').innerText = getActiveCompanies().length;
+        document.getElementById('stat-jobs').innerText = getActiveJobs().length;
+    }
+
+    function loadAdminUsers() {
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const tbody = document.getElementById('admin-users-tbody');
+        if (users.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chưa có người dùng nào.</td></tr>';
+        
+        tbody.innerHTML = users.map((u, index) => `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="py-3 px-6 font-bold text-gray-800">${u.username}</td>
+                <td class="py-3 px-6">${u.fullName || '<span class="text-gray-400 italic">Chưa cập nhật</span>'}</td>
+                <td class="py-3 px-6 text-gray-500">${u.email || '<span class="text-gray-400 italic">Chưa có</span>'}</td>
+                <td class="py-3 px-6 text-center">
+                    ${u.username === 'admin' ? '<span class="text-xs bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded">Trùm cuối</span>' 
+                    : `<button onclick="deleteUser(${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition"><i class="fas fa-trash"></i> Xóa</button>`}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    window.deleteUser = function(index) {
+        if (!confirm("⚠️ Chắc chắn muốn xóa tài khoản này?")) return;
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        users.splice(index, 1);
+        localStorage.setItem('users', JSON.stringify(users));
+        loadAdminUsers(); loadAdminDashboard();
+    };
+
+// --- QUẢN LÝ CÔNG TY ---
+    function loadAdminCompanies() {
+        const comps = getActiveCompanies();
+        const tbody = document.getElementById('admin-companies-tbody');
+        if (comps.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Trống.</td></tr>';
+
+        tbody.innerHTML = comps.map(c => `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="py-3 px-6 font-bold text-gray-500">#${c.id}</td>
+                <td class="py-3 px-6">
+                    <div class="flex items-center gap-3">
+                        <img src="${c.logo}" class="w-8 h-8 object-contain rounded border">
+                        <a href="congty.html?id=${c.id}" target="_blank" class="font-bold text-blue-600 hover:underline" title="Xem trang công ty này">
+                            ${c.name} <i class="fas fa-external-link-alt text-[10px] ml-1"></i>
+                        </a>
+                    </div>
+                </td>
+                <td class="py-3 px-6 text-gray-600">${c.industry}</td>
+                <td class="py-3 px-6 text-center">
+                    <button onclick="deleteCompany(${c.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition" title="Xóa Công ty"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    window.deleteCompany = function(id) {
+        if (!confirm("⚠️ Việc này sẽ ẩn công ty khỏi hệ thống. Bạn có chắc chắn?")) return;
+        const deletedIds = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
+        if (!deletedIds.includes(id)) deletedIds.push(id);
+        localStorage.setItem('admin_deleted_comps', JSON.stringify(deletedIds));
+        loadAdminCompanies(); loadAdminDashboard();
+    };
+
+    // --- QUẢN LÝ VIỆC LÀM (CÓ TÍNH NĂNG DUYỆT) ---
+    function loadAdminJobs() {
+        const jobs = getActiveJobs();
+        const tbody = document.getElementById('admin-jobs-tbody');
+        if (jobs.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Trống.</td></tr>';
+
+        // Giả lập danh sách việc làm đã duyệt (Đọc từ LocalStorage)
+        const approvedIds = JSON.parse(localStorage.getItem('admin_approved_jobs')) || [];
+
+        tbody.innerHTML = jobs.map(j => {
+            const isApproved = approvedIds.includes(j.id) || j.id <= 5; 
+            const statusHtml = isApproved 
+                ? `<span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-1 rounded"><i class="fas fa-check-circle"></i> Đang hiển thị</span>`
+                : `<span class="text-xs bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded"><i class="fas fa-clock"></i> Chờ duyệt</span>`;
+
+            const approveBtn = !isApproved 
+                ? `<button onclick="approveJob(${j.id})" class="text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded transition mr-2" title="Duyệt bài"><i class="fas fa-check"></i> Duyệt</button>`
+                : '';
+
+            return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="py-3 px-6 truncate max-w-[200px]" title="${j.title}">
+                   <button onclick="previewJob(${j.id})" class="font-bold text-blue-600 hover:text-blue-800 hover:underline text-left text-wrap text-sm transition">
+                        ${j.title} <i class="fas fa-eye text-[10px] ml-1 text-gray-400"></i>
+                </button>
+            </td>
+                <td class="py-3 px-6 text-gray-600 truncate max-w-[150px]">${j.company}</td>
+                <td class="py-3 px-6">${statusHtml}</td>
+                <td class="py-3 px-6 text-center">
+                    ${approveBtn}
+                    <button onclick="deleteJob(${j.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition" title="Xóa bài"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    }
+
+    window.approveJob = function(id) {
+        if (!confirm("✅ Xác nhận duyệt tin tuyển dụng này để hiển thị công khai?")) return;
+        const approvedIds = JSON.parse(localStorage.getItem('admin_approved_jobs')) || [];
+        if (!approvedIds.includes(id)) approvedIds.push(id);
+        localStorage.setItem('admin_approved_jobs', JSON.stringify(approvedIds));
+        loadAdminJobs();
+    };
+
+    window.deleteJob = function(id) {
+        if (!confirm("⚠️ Chắc chắn muốn xóa bỏ tin tuyển dụng này?")) return;
+        const deletedIds = JSON.parse(localStorage.getItem('admin_deleted_jobs')) || [];
+        if (!deletedIds.includes(id)) deletedIds.push(id);
+        localStorage.setItem('admin_deleted_jobs', JSON.stringify(deletedIds));
+        loadAdminJobs(); loadAdminDashboard();
+    };
+
+    window.adminLogout = function() {
+        localStorage.removeItem('currentUser');
+        window.location.href = 'login.html';
+    };
+
+    loadAdminDashboard();
+});
+// --- HÀM XEM TRƯỚC VIỆC LÀM NGAY TRÊN ADMIN ---
+    window.previewJob = function(id) {
+        // Tìm việc làm gốc trong kho dữ liệu (bỏ qua mọi màng lọc)
+        const job = (typeof window.mockJobs !== 'undefined') ? window.mockJobs.find(j => j.id === id) : null;
+        if (!job) return alert("Dữ liệu việc làm này không tồn tại hoặc đã bị lỗi!");
+
+        // Bơm nội dung vào khung Modal
+        const contentDiv = document.getElementById('admin-preview-content');
+        contentDiv.innerHTML = `
+            <div class="flex items-start gap-6 mb-8 pb-6 border-b border-gray-100">
+                <img src="${job.logo}" class="w-20 h-20 object-contain border border-gray-200 rounded-lg p-2 bg-white shrink-0">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-900 mb-2 leading-tight">${job.title}</h2>
+                    <p class="text-lg text-gray-600 font-bold mb-3">${job.company}</p>
+                    <div class="flex flex-wrap gap-3 text-sm font-medium">
+                        <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md"><i class="fas fa-money-bill-wave mr-1"></i> ${job.salary}</span>
+                        <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md"><i class="fas fa-map-marker-alt mr-1"></i> ${job.location}</span>
+                        <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md"><i class="fas fa-briefcase mr-1"></i> ${job.type || 'Toàn thời gian'}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-sm text-gray-800 space-y-6">
+                <div>
+                    <h4 class="font-bold text-lg mb-2 text-gray-900 flex items-center gap-2"><i class="fas fa-align-left text-blue-500"></i> Mô tả công việc</h4>
+                    <p class="leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg border border-gray-100">${job.description || 'Chưa cập nhật mô tả.'}</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-2 text-gray-900 flex items-center gap-2"><i class="fas fa-clipboard-check text-blue-500"></i> Yêu cầu ứng viên</h4>
+                    <p class="leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg border border-gray-100">${job.requirements || 'Chưa cập nhật yêu cầu.'}</p>
+                </div>
+            </div>
+        `;
+
+        // Hiện Modal lên
+        document.getElementById('admin-preview-modal').classList.remove('hidden');
+    };
+
+    // Hàm đóng Modal
+    window.closePreviewModal = function() {
+        document.getElementById('admin-preview-modal').classList.add('hidden');
+    };
