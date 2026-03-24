@@ -1473,7 +1473,7 @@ function handleCreateCV(event) {
     const user = localStorage.getItem("currentUser"); // ✅ sửa ở đây
 
     if (!user) {
-        window.location.href = "register.html";
+        window.location.href = "login.html";
     } else {
         window.location.href = "taoCV.html";
     }
