@@ -1783,6 +1783,17 @@ window.deleteReview = function(index) {
     localStorage.setItem(storageKey, JSON.stringify(reviews));
     window.loadCompanyReviews(); // Render lại danh sách
 };
+function handleCreateCV(event) {
+    event.preventDefault();
+
+    const user = localStorage.getItem("currentUser"); // ✅ sửa ở đây
+
+    if (!user) {
+        window.location.href = "login.html";
+    } else {
+        window.location.href = "taoCV.html";
+    }
+}
 
 // --- HÀM SỬA BÌNH LUẬN ---
 window.editReview = function(index) {

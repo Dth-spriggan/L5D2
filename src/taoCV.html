@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter&family=Lato&family=Montserrat&family=Open+Sans&family=Poppins&family=Roboto&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: #0f0f1a; color: #e2e8f0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -24,16 +24,23 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0f1a; color: #e2e8f0; 
 .sb-btn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
 .sb-btn.active { background: rgba(37,99,235,0.18); color: #60a5fa; border-left-color: #3b82f6; }
 .sb-btn i { width: 15px; text-align: center; font-size: 0.78rem; }
-.tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px 14px 12px; }
-.tpl-thumb { aspect-ratio: 3/4; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.18s; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 600; color: rgba(255,255,255,0.7); }
-.tpl-thumb:hover { border-color: #60a5fa; transform: scale(1.04); }
-.tpl-thumb.sel { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
 #canvas { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 28px 20px 60px; background: #111125; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0); background-size: 24px 24px; }
 #cv-wrap { transform-origin: top center; }
 #cv-paper { width: 595px; min-height: 842px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.6); color: #1e293b; position: relative; font-size: 1em; }
 #cv-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 220px; background: #1e3a8a; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; min-height: 842px; }
 #cv-main { margin-left: 220px; padding: 24px 20px; min-height: 842px; }
-.cv-avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; flex-shrink: 0; }
+.cv-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+
+  background-image: url('assets/logouser.png'); /* 👈 mặc định */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  margin-bottom: 12px;
+}
 .cv-name { font-family: 'Playfair Display', serif; font-size: 18px; color: #fff; text-align: center; line-height: 1.2; }
 .cv-role { font-size: 9px; color: #93c5fd; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; text-align: center; }
 .cv-sec-title { font-size: 8px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.1em; margin: 14px 0 5px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 3px; width: 100%; }
@@ -84,13 +91,47 @@ select.rp-input { cursor: pointer; }
   #cv-paper { box-shadow: none !important; width: 100% !important; }
 }
 ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.font-group {
+  margin-top: 12px;
+}
+
+.font-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+#font-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#font-select:hover {
+  border-color: #666;
+}
+
+#font-select:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 2px rgba(77,163,255,0.2);
+}
 </style>
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" class="tbtn tbtn-ghost" style="padding:6px 10px;" title="Về trang chủ"><i class="fas fa-arrow-left"></i></a>
+    <button class="tbtn tbtn-ghost" onclick="goBack()" style="padding:6px 10px;" title="Quay lại">
+  <i class="fas fa-arrow-left"></i>
+</button>
     <a href="index.html"><img src="./assets/logoweb.png" style="height:28px;" alt="MidCV"></a>
     <span style="color:rgba(255,255,255,0.15);">|</span>
     <input id="cv-title-inp" value="CV Của Tôi" style="background:transparent;border:none;color:#e2e8f0;font-size:0.88rem;font-weight:600;outline:none;width:130px;font-family:'DM Sans',sans-serif;">
@@ -106,16 +147,6 @@ select.rp-input { cursor: pointer; }
 <div id="editor-layout">
 
   <div id="left-sb">
-    <div class="sb-title">Mẫu CV</div>
-    <div class="tpl-grid">
-      <div class="tpl-thumb sel" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);" onclick="applyTemplate(1,this)"><span>Xanh</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#111827,#374151);" onclick="applyTemplate(2,this)"><span>Đen</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);" onclick="applyTemplate(3,this)"><span>Tím</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#065f46,#34d399);" onclick="applyTemplate(4,this)"><span>Xanh lá</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#9d174d,#ec4899);" onclick="applyTemplate(5,this)"><span>Hồng</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#92400e,#f59e0b);" onclick="applyTemplate(6,this)"><span>Vàng</span></div>
-    </div>
-    <div style="border-top:1px solid rgba(255,255,255,0.06);margin:4px 0;"></div>
     <div class="sb-title">Thành phần</div>
     <button class="sb-btn active" onclick="gotoSection('personal',this)"><i class="fas fa-user"></i> Thông tin cá nhân</button>
     <button class="sb-btn" onclick="gotoSection('experience',this)"><i class="fas fa-briefcase"></i> Kinh nghiệm</button>
@@ -124,21 +155,13 @@ select.rp-input { cursor: pointer; }
     <button class="sb-btn" onclick="gotoSection('language',this)"><i class="fas fa-language"></i> Ngôn ngữ</button>
     <button class="sb-btn" onclick="gotoSection('certificate',this)"><i class="fas fa-award"></i> Chứng chỉ</button>
     <div style="border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;"></div>
-    <button class="sb-btn" id="btn-add-menu" onclick="toggleAddMenu()" style="color:#60a5fa;"><i class="fas fa-plus" style="color:#60a5fa;margin-right:9px;width:15px;text-align:center;"></i> Thêm mục</button>
-    <div id="add-menu" style="display:none;border-top:1px solid rgba(255,255,255,0.06);">
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-exp"><i class="fas fa-briefcase"></i> Kinh nghiệm</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-edu"><i class="fas fa-graduation-cap"></i> Học vấn</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-sk"><i class="fas fa-star"></i> Kỹ năng</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-lang"><i class="fas fa-language"></i> Ngôn ngữ</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-cert"><i class="fas fa-award"></i> Chứng chỉ</button>
-    </div>
   </div>
 
   <div id="canvas">
     <div id="cv-wrap">
       <div id="cv-paper">
         <div id="cv-sidebar">
-          <div class="cv-avatar"><i class="fas fa-user" style="font-size:26px;color:rgba(255,255,255,0.4);"></i></div>
+          <div class="cv-avatar" id="cv-avatar"></div>
           <div class="cv-name" id="cv-name">Nguyễn Văn A</div>
           <div class="cv-role" id="cv-role">Frontend Developer</div>
           <div class="cv-sec-title">Liên hệ</div>
@@ -182,6 +205,14 @@ select.rp-input { cursor: pointer; }
   </div>
 
   <div id="right-panel">
+    <div style="margin-top:12px;">
+  <div class="rp-sec-title">Avatar</div>
+
+  <input type="file"
+         accept="image/*"
+         onchange="uploadAvatar(event)"
+         class="rp-input">
+</div>
     <div class="rp-tab-bar">
       <button class="rp-tab active" onclick="switchRpTab('content',this)">Nội dung</button>
       <button class="rp-tab" onclick="switchRpTab('style',this)">Giao diện</button>
@@ -237,19 +268,70 @@ select.rp-input { cursor: pointer; }
 
     <div id="rp-style" style="display:none;">
       <div class="rp-sec-title">Màu chủ đạo</div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;">
-        <div class="swatch sel" style="background:#1e3a8a;" onclick="applyColor('#1e3a8a',this)"></div>
-        <div class="swatch" style="background:#111827;" onclick="applyColor('#111827',this)"></div>
-        <div class="swatch" style="background:#7c3aed;" onclick="applyColor('#7c3aed',this)"></div>
-        <div class="swatch" style="background:#065f46;" onclick="applyColor('#065f46',this)"></div>
-        <div class="swatch" style="background:#9d174d;" onclick="applyColor('#9d174d',this)"></div>
-        <div class="swatch" style="background:#92400e;" onclick="applyColor('#92400e',this)"></div>
-        <div class="swatch" style="background:#0369a1;" onclick="applyColor('#0369a1',this)"></div>
-        <div class="swatch" style="background:#166534;" onclick="applyColor('#166534',this)"></div>
+
+      <!-- Màu nhanh -->
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+        <div class="swatch sel" style="background:#1e3a8a;" onclick="pickSwatch('#1e3a8a',this)"></div>
+        <div class="swatch" style="background:#111827;" onclick="pickSwatch('#111827',this)"></div>
+        <div class="swatch" style="background:#7c3aed;" onclick="pickSwatch('#7c3aed',this)"></div>
+        <div class="swatch" style="background:#065f46;" onclick="pickSwatch('#065f46',this)"></div>
+        <div class="swatch" style="background:#9d174d;" onclick="pickSwatch('#9d174d',this)"></div>
+        <div class="swatch" style="background:#92400e;" onclick="pickSwatch('#92400e',this)"></div>
+        <div class="swatch" style="background:#0369a1;" onclick="pickSwatch('#0369a1',this)"></div>
+        <div class="swatch" style="background:#166534;" onclick="pickSwatch('#166534',this)"></div>
       </div>
+
+      <!-- Color picker native -->
+      <label class="rp-label">Chọn màu (RGB picker)</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <input type="color" id="color-picker" value="#1e3a8a"
+          style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;padding:2px;"
+          oninput="onColorPickerChange(this.value)">
+        <div id="color-preview" style="flex:1;height:36px;border-radius:8px;background:#1e3a8a;transition:background 0.15s;"></div>
+      </div>
+
+      <!-- HEX input -->
+      <label class="rp-label">Nhập mã HEX</label>
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <span style="display:flex;align-items:center;padding:0 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px 0 0 7px;color:#64748b;font-size:0.85rem;">#</span>
+        <input id="hex-input" class="rp-input" style="border-radius:0 7px 7px 0;margin-bottom:0;font-family:monospace;letter-spacing:0.05em;"
+          maxlength="6" placeholder="1e3a8a" value="1e3a8a"
+          oninput="onHexInput(this.value)">
+      </div>
+
+      <!-- RGB sliders -->
+      <label class="rp-label">R <span id="r-val">30</span></label>
+      <input type="range" class="range-input" id="r-slider" min="0" max="255" value="30" oninput="onRgbChange()" style="accent-color:#ef4444;">
+      <label class="rp-label" style="margin-top:6px;">G <span id="g-val">58</span></label>
+      <input type="range" class="range-input" id="g-slider" min="0" max="255" value="58" oninput="onRgbChange()" style="accent-color:#22c55e;">
+      <label class="rp-label" style="margin-top:6px;">B <span id="b-val">138</span></label>
+      <input type="range" class="range-input" id="b-slider" min="0" max="255" value="138" oninput="onRgbChange()" style="accent-color:#3b82f6;margin-bottom:14px;">
+
       <div class="rp-sec-title">Cỡ chữ</div>
       <input type="range" class="range-input" min="80" max="120" value="100" id="font-range" oninput="applyFontSize(this.value)">
       <div style="text-align:center;font-size:0.72rem;color:#475569;margin-top:3px;" id="font-label">100%</div>
+      <div style="margin-top:10px;">
+  <div class="font-group">
+  <label>Font chữ</label>
+<select id="font-select" onchange="setFont(this.value)">
+  <!-- font hệ thống -->
+  <option value="Arial">Arial</option>
+  <option value="Tahoma">Tahoma</option>
+  <option value="'Times New Roman', serif">Times New Roman</option>
+  <option value="'Courier New', monospace">Courier New</option>
+  <option value="Georgia, serif">Georgia</option>
+  <option value="Verdana">Verdana</option>
+
+  <!-- font đẹp (Google) -->
+  <option value="'Poppins', sans-serif">Poppins</option>
+  <option value="'Roboto', sans-serif">Roboto</option>
+  <option value="'Montserrat', sans-serif">Montserrat</option>
+  <option value="'Inter', sans-serif">Inter</option>
+  <option value="'Open Sans', sans-serif">Open Sans</option>
+  <option value="'Lato', sans-serif">Lato</option>
+</select>
+</div>
+</div>
     </div>
   </div>
 </div>
@@ -275,7 +357,9 @@ select.rp-input { cursor: pointer; }
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
+var currentAvatar = "";
 var zoom = 100;
 function zoomBy(d) {
   zoom = Math.max(40, Math.min(150, zoom + d));
@@ -325,8 +409,46 @@ function doUndo() {
 function g(id) { return document.getElementById(id); }
 function setCV(id, val) {
   var el = g(id);
-  if (el) el.textContent = val;
+  if (!el) return;
+
+  if (id === 'cv-email') {
+    setProtectedEmail(val);
+  } else {
+    el.textContent = val || '';
+  }
   saveSnap();
+}
+// Hàm gán email vào CV, xử lý cả dạng protected
+function setProtectedEmail(email) {
+  var emailSpan = g('cv-email');
+  if (!emailSpan) return;
+  
+  // Xóa nội dung cũ
+  emailSpan.innerHTML = '';
+  
+  // Tạo text node chứa email thuần
+  emailSpan.textContent = email;
+  
+  // Cập nhật input nếu có
+  var inpEmail = g('inp-email');
+  if (inpEmail) inpEmail.value = email;
+}
+
+// Hoặc nếu muốn giữ nguyên cấu trúc Cloudflare nhưng cập nhật data attribute:
+function setProtectedEmail(email) {
+  var emailSpan = g('cv-email');
+  if (!emailSpan) return;
+  
+  // Cập nhật cả text và data attribute cho Cloudflare
+  emailSpan.textContent = email;
+  
+  // Nếu có thẻ a bên trong, cập nhật cả href
+  var link = emailSpan.querySelector('a');
+  if (link) {
+    link.textContent = email;
+    link.setAttribute('data-cfemail', '');
+    link.removeAttribute('href');
+  }
 }
 
 function switchRpTab(tab, btn) {
@@ -363,7 +485,23 @@ function applyColor(color, el) {
   saveSnap();
 }
 function applyFontSize(val) {
-  g('cv-paper').style.fontSize = (val/100) + 'em';
+  var scale = val / 100;
+
+  document.querySelectorAll(
+    '#cv-paper .cv-text, #cv-paper .cv-job-title, #cv-paper .cv-job-sub, #cv-paper .cv-job-desc, #cv-paper .cv-main-sec, #cv-paper .cv-name, #cv-paper .cv-role'
+  ).forEach(el => {
+    var base = el.getAttribute('data-base-size');
+
+    // lưu size gốc lần đầu
+    if (!base) {
+      base = window.getComputedStyle(el).fontSize;
+      el.setAttribute('data-base-size', parseFloat(base));
+    }
+
+    var newSize = el.getAttribute('data-base-size') * scale;
+    el.style.fontSize = newSize + 'px';
+  });
+
   g('font-label').textContent = val + '%';
 }
 
@@ -378,6 +516,31 @@ function toggleAddMenu() {
   }
 }
 function hideAddMenu() { g('add-menu').style.display = 'none'; }
+
+function setFont(font) {
+  var paper = document.getElementById('cv-paper');
+
+  if (paper) {
+    paper.style.fontFamily = font;
+  }
+
+  // nếu bạn có undo
+  if (typeof saveSnap === 'function') saveSnap();
+}
+
+function setFontSize(size) {
+  var paper = document.getElementById('cv-paper');
+
+  if (paper) {
+    paper.style.fontSize = size + 'px';
+  }
+
+  // hiển thị số px
+  var label = document.getElementById('font-size-value');
+  if (label) label.innerText = size + 'px';
+
+  if (typeof saveSnap === 'function') saveSnap();
+}
 
 /* ── EXPERIENCE ── */
 var expN = 0;
@@ -586,7 +749,7 @@ function saveAsImage() {
   var wrap = g('cv-wrap');
   var prevTransform = wrap.style.transform;
   wrap.style.transform = 'none';
-  var btn = event.target.closest('button');
+  var btn = document.querySelector('.tbtn-primary');
   btn.textContent = 'Đang xử lý...';
   btn.disabled = true;
   setTimeout(function() {
@@ -605,66 +768,150 @@ function saveAsImage() {
       link.href = canvas.toDataURL('image/png');
       link.click();
     }).catch(function(err) {
-      wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-image" style="margin-right:4px;"></i>Lưu ảnh';
-      btn.disabled = false;
-      alert('Lỗi khi lưu ảnh: ' + err.message);
-    });
+  console.error("LỖI THẬT:", err); // 👈 THÊM DÒNG NÀY
+  showToast('Lỗi khi lưu: ' + err.message, 'error');
+});
   }, 100);
 }
 
 /* ── SAVE TO MANAGER ── */
+console.log("CLICK SAVE");
 function saveToManager() {
   var wrap = g('cv-wrap');
   var prevTransform = wrap.style.transform;
   wrap.style.transform = 'none';
-  var btn = event.target.closest('button');
-  btn.textContent = 'Đang lưu...';
-  btn.disabled = true;
-  setTimeout(function() {
+
+  var btn = event?.target?.closest('button') || document.querySelector('.tbtn-primary');
+  if (btn) {
+    btn.textContent = 'Đang lưu...';
+    btn.disabled = true;
+  }
+
+  setTimeout(() => {
     html2canvas(g('cv-paper'), {
-      scale: 1,
+      scale: 0.5,
       useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    }).then(function(canvas) {
+      backgroundColor: '#ffffff'
+    }).then(canvas => {
       wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
-      btn.disabled = false;
-      var thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-      var cvData = {
+
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+        btn.disabled = false;
+      }
+
+      const thumbnail = canvas.toDataURL('image/jpeg', 0.7);
+      const fullImage = canvas.toDataURL('image/png');
+      
+      // 📌 Thu thập dữ liệu kinh nghiệm
+      var experiences = [];
+      document.querySelectorAll('#exp-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input,textarea');
+        experiences.push({
+          title: inputs[0] ? inputs[0].value : '',
+          company: inputs[1] ? inputs[1].value : '',
+          period: inputs[2] ? inputs[2].value : '',
+          description: inputs[3] ? inputs[3].value : ''
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu học vấn
+      var educations = [];
+      document.querySelectorAll('#edu-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        educations.push({
+          degree: inputs[0] ? inputs[0].value : '',
+          school: inputs[1] ? inputs[1].value : '',
+          period: inputs[2] ? inputs[2].value : '',
+          note: inputs[3] ? inputs[3].value : ''
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu kỹ năng
+      var skills = [];
+      document.querySelectorAll('#skill-list .item-card').forEach(function(card) {
+        var nameEl = card.querySelector('input:not([type=range])');
+        var range = card.querySelector('input[type=range]');
+        skills.push({
+          name: nameEl ? nameEl.value.trim() : '',
+          level: range ? range.value : '80'
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu ngôn ngữ
+      var languages = [];
+      document.querySelectorAll('#lang-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        languages.push({
+          name: inputs[0] ? inputs[0].value.trim() : '',
+          level: inputs[1] ? inputs[1].value.trim() : ''
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu chứng chỉ
+      var certificates = [];
+      document.querySelectorAll('#cert-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        certificates.push({
+          name: inputs[0] ? inputs[0].value.trim() : '',
+          organization: inputs[1] ? inputs[1].value.trim() : '',
+          year: inputs[2] ? inputs[2].value.trim() : ''
+        });
+      });
+
+      const cvData = {
         id: Date.now(),
-        title: g('cv-title-inp').value || 'CV Không tên',
+        title: g('cv-title-inp').value.trim() || "CV Của Tôi",
+        name: g('cv-name').textContent.trim(),
+        role: g('cv-role').textContent.trim(),
+        phone: g('cv-phone').textContent.trim(),
+        email: g('cv-email').textContent.trim(),
+        location: g('cv-location').textContent.trim(),
+        bio: g('cv-bio').textContent.trim(),
+        avatar: currentAvatar || "",
+        sidebarBg: g('cv-sidebar').style.background || "#1e3a8a",
+        font: g('cv-paper').style.fontFamily || "",
+        updatedAt: new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        type: 'created',
         thumbnail: thumbnail,
-        data: {
-          name: g('cv-name').textContent,
-          role: g('cv-role').textContent,
-          email: g('cv-email').textContent,
-          phone: g('cv-phone').textContent,
-          location: g('cv-location').textContent,
-          bio: g('cv-bio').textContent,
-          sidebarBg: g('cv-sidebar').style.background
-        },
-        updatedAt: new Date().toLocaleString('vi-VN')
+        dataURL: fullImage,
+        // 🔥 QUAN TRỌNG: Lưu tất cả dữ liệu động
+        experiences: experiences,
+        educations: educations,
+        skills: skills,
+        languages: languages,
+        certificates: certificates
       };
-      var cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-      // Kiểm tra nếu đang sửa CV cũ
-      var editId = parseInt(new URLSearchParams(window.location.search).get('editId'));
-      if (editId) {
-        var idx = cvList.findIndex(function(c){ return c.id === editId; });
-        if (idx !== -1) { cvList[idx] = Object.assign(cvList[idx], cvData, {id: editId}); }
-        else cvList.push(cvData);
+
+      let cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+      const editId = new URLSearchParams(window.location.search).get('editId');
+      const editIdNum = editId ? parseInt(editId) : null;
+
+      if (editIdNum !== null) {
+        const idx = cvList.findIndex(c => c.id === editIdNum);
+        if (idx !== -1) {
+          // Giữ nguyên id, cập nhật toàn bộ dữ liệu
+          cvList[idx] = { ...cvList[idx], ...cvData, id: editIdNum };
+        } else {
+          cvList.push(cvData);
+        }
       } else {
         cvList.push(cvData);
       }
+
       localStorage.setItem('savedCVs', JSON.stringify(cvList));
-      // Toast
-      showToast('Đã lưu vào Quản lý CV!', 'success');
-    }).catch(function(err) {
+      showToast('✅ Đã lưu CV thành công!', 'success');
+
+      if (!editIdNum) {
+        const newUrl = window.location.pathname + '?editId=' + cvData.id;
+        window.history.replaceState({}, '', newUrl);
+      }
+
+    }).catch(err => {
       wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
-      btn.disabled = false;
-      showToast('Lỗi khi lưu: ' + err.message, 'error');
+      if (btn) btn.disabled = false;
+      console.error(err);
+      showToast('❌ Lỗi khi lưu: ' + err.message, 'error');
     });
   }, 100);
 }
@@ -699,59 +946,697 @@ function printCV() {
   setTimeout(function(){ window.print(); wrap.style.transform = prev; }, 120);
 }
 
+
+/* ── COLOR PICKER ── */
+function hexToRgb(hex) {
+  hex = hex.replace('#','');
+  if (hex.length === 3) hex = hex.split('').map(function(h){ return h+h; }).join('');
+  var n = parseInt(hex, 16);
+  return { r: (n>>16)&255, g: (n>>8)&255, b: n&255 };
+}
+function rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+}
+function syncColorUI(hex) {
+  var rgb = hexToRgb(hex);
+  document.getElementById('color-picker').value = hex;
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('hex-input').value = hex.replace('#','');
+  document.getElementById('r-slider').value = rgb.r;
+  document.getElementById('g-slider').value = rgb.g;
+  document.getElementById('b-slider').value = rgb.b;
+  document.getElementById('r-val').textContent = rgb.r;
+  document.getElementById('g-val').textContent = rgb.g;
+  document.getElementById('b-val').textContent = rgb.b;
+}
+function pickSwatch(hex, el) {
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+  if (el) el.classList.add('sel');
+  syncColorUI(hex);
+  applyColor(hex, null);
+}
+function onColorPickerChange(hex) {
+  syncColorUI(hex);
+  applyColor(hex, null);
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+}
+function onHexInput(val) {
+  val = val.replace(/[^0-9a-fA-F]/g,'');
+  if (val.length === 6) {
+    var hex = '#' + val;
+    syncColorUI(hex);
+    applyColor(hex, null);
+    document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+  }
+}
+function onRgbChange() {
+  var r = parseInt(document.getElementById('r-slider').value);
+  var g = parseInt(document.getElementById('g-slider').value);
+  var b = parseInt(document.getElementById('b-slider').value);
+  document.getElementById('r-val').textContent = r;
+  document.getElementById('g-val').textContent = g;
+  document.getElementById('b-val').textContent = b;
+  var hex = rgbToHex(r, g, b);
+  document.getElementById('color-picker').value = hex;
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('hex-input').value = hex.replace('#','');
+  applyColor(hex, null);
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+}
+function uploadAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+
+  reader.onload = function(e) {
+    currentAvatar = e.target.result;
+
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + currentAvatar + "')";
+  };
+
+  reader.readAsDataURL(file);
+}
+function fillForm(cv) {
+  if (cv.avatar) {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + cv.avatar + "')";
+  } else {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('assets/logouser.png')";
+  }
+}
+/* ── LOAD ĐẦY ĐỦ DỮ LIỆU CV KHI CHỈNH SỬA ── */
+function loadFullCVData(cv) {
+  if (!cv) return;
+  
+  // 1. Thông tin cơ bản
+  if (cv.title) g('cv-title-inp').value = cv.title;
+  if (cv.name) { g('inp-name').value = cv.name; setCV('cv-name', cv.name); }
+  if (cv.role) { g('inp-role').value = cv.role; setCV('cv-role', cv.role); }
+  if (cv.email) { g('inp-email').value = cv.email; setCV('cv-email', cv.email); }
+  if (cv.phone) { g('inp-phone').value = cv.phone; setCV('cv-phone', cv.phone); }
+  if (cv.location) { g('inp-location').value = cv.location; setCV('cv-location', cv.location); }
+  if (cv.bio) { g('inp-bio').value = cv.bio; setCV('cv-bio', cv.bio); }
+  
+  // 2. Avatar
+  if (cv.avatar) {
+    currentAvatar = cv.avatar;
+    g('cv-avatar').style.backgroundImage = `url('${cv.avatar}')`;
+  }
+  
+  // 3. Màu sidebar
+  if (cv.sidebarBg) {
+    g('cv-sidebar').style.background = cv.sidebarBg;
+    // Cập nhật UI color picker
+    syncColorUI(cv.sidebarBg);
+  }
+  
+  // 4. Font
+  if (cv.font) {
+    g('cv-paper').style.fontFamily = cv.font;
+    const fontSelect = g('font-select');
+    if (fontSelect) fontSelect.value = cv.font;
+  }
+  
+  // 5. ⭐ QUAN TRỌNG: Load Kinh nghiệm
+  if (cv.experiences && cv.experiences.length > 0) {
+    // Xóa các card cũ
+    g('exp-list').innerHTML = '';
+    expN = 0;
+    cv.experiences.forEach(function(exp) {
+      expN++;
+      var id = 'exp' + expN;
+      var card = document.createElement('div');
+      card.className = 'item-card';
+      card.id = id;
+      var hdr = document.createElement('div');
+      hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span');
+      lbl.className = 'item-card-label';
+      lbl.textContent = 'Kinh nghiệm ' + expN;
+      var del = document.createElement('button');
+      del.className = 'item-del';
+      del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderExpCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      // Thêm các field với giá trị từ dữ liệu
+      var titleField = mkField('Chức vụ', 'text', 'Frontend Developer', renderExpCV);
+      titleField.querySelector('input').value = exp.title || '';
+      card.appendChild(titleField);
+      
+      var companyField = mkField('Công ty', 'text', 'FPT Software', renderExpCV);
+      companyField.querySelector('input').value = exp.company || '';
+      card.appendChild(companyField);
+      
+      var periodField = mkField('Thời gian', 'text', '01/2022 – Hiện tại', renderExpCV);
+      periodField.querySelector('input').value = exp.period || '';
+      card.appendChild(periodField);
+      
+      var descField = mkField('Mô tả', 'textarea', '• Mô tả công việc...', renderExpCV);
+      descField.querySelector('textarea').value = exp.description || '';
+      card.appendChild(descField);
+      
+      g('exp-list').appendChild(card);
+    });
+    renderExpCV();
+  }
+  
+  // 6. Load Học vấn
+  if (cv.educations && cv.educations.length > 0) {
+    g('edu-list').innerHTML = '';
+    eduN = 0;
+    cv.educations.forEach(function(edu) {
+      eduN++;
+      var id = 'edu' + eduN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Học vấn ' + eduN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderEduCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var degreeField = mkField('Bằng cấp / Chuyên ngành', 'text', 'Cử nhân Công nghệ Thông tin', renderEduCV);
+      degreeField.querySelector('input').value = edu.degree || '';
+      card.appendChild(degreeField);
+      
+      var schoolField = mkField('Trường học', 'text', 'Đại học Bách Khoa Hà Nội', renderEduCV);
+      schoolField.querySelector('input').value = edu.school || '';
+      card.appendChild(schoolField);
+      
+      var periodField = mkField('Thời gian', 'text', '2016 – 2020', renderEduCV);
+      periodField.querySelector('input').value = edu.period || '';
+      card.appendChild(periodField);
+      
+      var noteField = mkField('Ghi chú', 'text', 'GPA: 3.4/4.0', renderEduCV);
+      noteField.querySelector('input').value = edu.note || '';
+      card.appendChild(noteField);
+      
+      g('edu-list').appendChild(card);
+    });
+    renderEduCV();
+  }
+  
+  // 7. Load Kỹ năng
+  if (cv.skills && cv.skills.length > 0) {
+    g('skill-list').innerHTML = '';
+    skillN = 0;
+    cv.skills.forEach(function(skill) {
+      skillN++;
+      var id = 'sk' + skillN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      hdr.style.gap = '6px';
+      var inp = document.createElement('input'); inp.className = 'rp-input'; inp.placeholder = 'Tên kỹ năng';
+      inp.style.flex = '1'; inp.style.marginBottom = '0';
+      inp.value = skill.name || '';
+      inp.oninput = renderSkillCV;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderSkillCV); };
+      hdr.appendChild(inp); hdr.appendChild(del); card.appendChild(hdr);
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+      var range = document.createElement('input'); range.type = 'range'; range.className = 'range-input'; range.min = '10'; range.max = '100'; range.value = skill.level || '80';
+      var pctLbl = document.createElement('span'); pctLbl.style.cssText = 'font-size:0.72rem;color:#64748b;width:30px;'; pctLbl.textContent = (skill.level || '80') + '%';
+      range.oninput = function(){ pctLbl.textContent = this.value + '%'; renderSkillCV(); };
+      row.appendChild(range); row.appendChild(pctLbl); card.appendChild(row);
+      g('skill-list').appendChild(card);
+    });
+    renderSkillCV();
+  }
+  
+  // 8. Load Ngôn ngữ
+  if (cv.languages && cv.languages.length > 0) {
+    g('lang-list').innerHTML = '';
+    langN = 0;
+    cv.languages.forEach(function(lang) {
+      langN++;
+      var id = 'lang' + langN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Ngôn ngữ ' + langN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderLangCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var nameField = mkField('Ngôn ngữ', 'text', 'Tiếng Anh', renderLangCV);
+      nameField.querySelector('input').value = lang.name || '';
+      card.appendChild(nameField);
+      
+      var lbl2 = document.createElement('label'); lbl2.className = 'rp-label'; lbl2.textContent = 'Trình độ';
+      var sel = document.createElement('input'); sel.className = 'rp-input'; sel.type = 'text';
+      sel.placeholder = 'VD: B2, Bản ngữ, Thành thạo...';
+      sel.value = lang.level || '';
+      sel.oninput = renderLangCV;
+      card.appendChild(lbl2); card.appendChild(sel);
+      
+      g('lang-list').appendChild(card);
+    });
+    renderLangCV();
+  }
+  
+  // 9. Load Chứng chỉ
+  if (cv.certificates && cv.certificates.length > 0) {
+    g('cert-list').innerHTML = '';
+    certN = 0;
+    cv.certificates.forEach(function(cert) {
+      certN++;
+      var id = 'cert' + certN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Chứng chỉ ' + certN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderCertCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var nameField = mkField('Tên chứng chỉ', 'text', 'AWS Solutions Architect', renderCertCV);
+      nameField.querySelector('input').value = cert.name || '';
+      card.appendChild(nameField);
+      
+      var orgField = mkField('Tổ chức cấp', 'text', 'Amazon Web Services', renderCertCV);
+      orgField.querySelector('input').value = cert.organization || '';
+      card.appendChild(orgField);
+      
+      var yearField = mkField('Năm cấp', 'text', '2023', renderCertCV);
+      yearField.querySelector('input').value = cert.year || '';
+      card.appendChild(yearField);
+      
+      g('cert-list').appendChild(card);
+    });
+    renderCertCV();
+  }
+}
+function goBack() {
+  window.history.back();
+}
+
 /* ── INIT ── */
-window.addEventListener('DOMContentLoaded', function() {
+// ==================== LOAD CV KHI CHỈNH SỬA ====================
+// ==================== DOMContentLoaded - TỰ ĐỘNG ĐIỀN & LOAD EDIT ====================
+window.addEventListener('DOMContentLoaded', function () {
+  
+  // === 1. TỰ ĐỘNG ĐIỀN TỪ TÀI KHOẢN ĐĂNG NHẬP ===
   try {
-    var user = JSON.parse(localStorage.getItem('currentUser'));
+    const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
-      if (user.fullName) { g('inp-name').value = user.fullName; setCV('cv-name', user.fullName); }
-      var em = user.email || user.username || '';
-      if (em) { g('inp-email').value = em; setCV('cv-email', em); }
-      if (user.phone) { g('inp-phone').value = user.phone; setCV('cv-phone', user.phone); }
-      if (user.bio)   { g('inp-bio').value = user.bio; setCV('cv-bio', user.bio); }
+      if (user.fullName) {
+        g('inp-name').value = user.fullName;
+        setCV('cv-name', user.fullName);
+      }
+      if (user.email || user.username) {
+        const email = user.email || user.username;
+        g('inp-email').value = email;
+        setProtectedEmail(email);        // ← Dùng hàm bảo vệ email
+      }
+      if (user.phone) {
+        g('inp-phone').value = user.phone;
+        setCV('cv-phone', user.phone);
+      }
+      if (user.bio) {
+        g('inp-bio').value = user.bio;
+        setCV('cv-bio', user.bio);
+      }
     }
-  } catch(e) {}
+  } catch (e) {
+    console.log("Không tìm thấy thông tin user hoặc lỗi parse");
+  }
+
+  // === 2. LOAD CV KHI CHỈNH SỬA (nếu có editId) ===
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get('editId') ? parseInt(urlParams.get('editId')) : null;
+
+  if (editId) {
+    let cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+    const cv = cvList.find(c => c.id === editId);
+
+    if (cv) {
+      // 2.1 Thông tin cơ bản
+      if (cv.title)     g('cv-title-inp').value = cv.title;
+      if (cv.name)      { g('inp-name').value = cv.name;      setCV('cv-name', cv.name); }
+      if (cv.role)      { g('inp-role').value = cv.role;      setCV('cv-role', cv.role); }
+      // Đoạn mới (thay vào)
+if (cv.email) { 
+  g('inp-email').value = cv.email;    
+  setProtectedEmail(cv.email);  // ← Dùng hàm này thay vì setCV
+}
+      if (cv.phone)     { g('inp-phone').value = cv.phone;    setCV('cv-phone', cv.phone); }
+      if (cv.location)  { g('inp-location').value = cv.location; setCV('cv-location', cv.location); }
+      if (cv.bio)       { g('inp-bio').value = cv.bio;        setCV('cv-bio', cv.bio); }
+
+      // 2.2 Avatar và màu sắc
+      if (cv.avatar) {
+        currentAvatar = cv.avatar;
+        g('cv-avatar').style.backgroundImage = `url('${cv.avatar}')`;
+      }
+      if (cv.sidebarBg) {
+        g('cv-sidebar').style.background = cv.sidebarBg;
+        // Cập nhật UI color picker
+        if (typeof syncColorUI === 'function') syncColorUI(cv.sidebarBg);
+      }
+      if (cv.font) {
+        g('cv-paper').style.fontFamily = cv.font;
+        const fontSelect = g('font-select');
+        if (fontSelect) fontSelect.value = cv.font;
+      }
+
+      // ========== 2.3 LOAD KINH NGHIỆM ==========
+      if (cv.experiences && cv.experiences.length > 0) {
+        // Xóa các card mặc định
+        g('exp-list').innerHTML = '';
+        expN = 0;
+        
+        cv.experiences.forEach(function(exp) {
+          expN++;
+          var id = 'exp' + expN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Kinh nghiệm ' + expN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderExpCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Chức vụ
+          var titleWrap = mkField('Chức vụ', 'text', 'Frontend Developer', renderExpCV);
+          var titleInput = titleWrap.querySelector('input');
+          if (titleInput) titleInput.value = exp.title || '';
+          card.appendChild(titleWrap);
+          
+          // Công ty
+          var companyWrap = mkField('Công ty', 'text', 'FPT Software', renderExpCV);
+          var companyInput = companyWrap.querySelector('input');
+          if (companyInput) companyInput.value = exp.company || '';
+          card.appendChild(companyWrap);
+          
+          // Thời gian
+          var periodWrap = mkField('Thời gian', 'text', '01/2022 – Hiện tại', renderExpCV);
+          var periodInput = periodWrap.querySelector('input');
+          if (periodInput) periodInput.value = exp.period || '';
+          card.appendChild(periodWrap);
+          
+          // Mô tả
+          var descWrap = mkField('Mô tả', 'textarea', '• Mô tả công việc...', renderExpCV);
+          var descTextarea = descWrap.querySelector('textarea');
+          if (descTextarea) descTextarea.value = exp.description || '';
+          card.appendChild(descWrap);
+          
+          g('exp-list').appendChild(card);
+        });
+        renderExpCV(); // Cập nhật hiển thị
+      }
+
+      // ========== 2.4 LOAD HỌC VẤN ==========
+      if (cv.educations && cv.educations.length > 0) {
+        g('edu-list').innerHTML = '';
+        eduN = 0;
+        
+        cv.educations.forEach(function(edu) {
+          eduN++;
+          var id = 'edu' + eduN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Học vấn ' + eduN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderEduCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Bằng cấp
+          var degreeWrap = mkField('Bằng cấp / Chuyên ngành', 'text', 'Cử nhân Công nghệ Thông tin', renderEduCV);
+          var degreeInput = degreeWrap.querySelector('input');
+          if (degreeInput) degreeInput.value = edu.degree || '';
+          card.appendChild(degreeWrap);
+          
+          // Trường học
+          var schoolWrap = mkField('Trường học', 'text', 'Đại học Bách Khoa Hà Nội', renderEduCV);
+          var schoolInput = schoolWrap.querySelector('input');
+          if (schoolInput) schoolInput.value = edu.school || '';
+          card.appendChild(schoolWrap);
+          
+          // Thời gian
+          var periodWrap = mkField('Thời gian', 'text', '2016 – 2020', renderEduCV);
+          var periodInput = periodWrap.querySelector('input');
+          if (periodInput) periodInput.value = edu.period || '';
+          card.appendChild(periodWrap);
+          
+          // Ghi chú
+          var noteWrap = mkField('Ghi chú', 'text', 'GPA: 3.4/4.0', renderEduCV);
+          var noteInput = noteWrap.querySelector('input');
+          if (noteInput) noteInput.value = edu.note || '';
+          card.appendChild(noteWrap);
+          
+          g('edu-list').appendChild(card);
+        });
+        renderEduCV();
+      }
+
+      // ========== 2.5 LOAD KỸ NĂNG ==========
+      if (cv.skills && cv.skills.length > 0) {
+        g('skill-list').innerHTML = '';
+        skillN = 0;
+        
+        cv.skills.forEach(function(skill) {
+          skillN++;
+          var id = 'sk' + skillN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          hdr.style.gap = '6px';
+          
+          var inp = document.createElement('input');
+          inp.className = 'rp-input';
+          inp.placeholder = 'Tên kỹ năng';
+          inp.style.flex = '1';
+          inp.style.marginBottom = '0';
+          inp.value = skill.name || '';
+          inp.oninput = renderSkillCV;
+          
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderSkillCV); };
+          
+          hdr.appendChild(inp);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+          
+          var range = document.createElement('input');
+          range.type = 'range';
+          range.className = 'range-input';
+          range.min = '10';
+          range.max = '100';
+          range.value = skill.level || '80';
+          
+          var pctLbl = document.createElement('span');
+          pctLbl.style.cssText = 'font-size:0.72rem;color:#64748b;width:30px;';
+          pctLbl.textContent = (skill.level || '80') + '%';
+          
+          range.oninput = function(){
+            pctLbl.textContent = this.value + '%';
+            renderSkillCV();
+          };
+          
+          row.appendChild(range);
+          row.appendChild(pctLbl);
+          card.appendChild(row);
+          
+          g('skill-list').appendChild(card);
+        });
+        renderSkillCV();
+      }
+
+      // ========== 2.6 LOAD NGÔN NGỮ ==========
+      if (cv.languages && cv.languages.length > 0) {
+        g('lang-list').innerHTML = '';
+        langN = 0;
+        
+        cv.languages.forEach(function(lang) {
+          langN++;
+          var id = 'lang' + langN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Ngôn ngữ ' + langN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderLangCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Tên ngôn ngữ
+          var nameWrap = mkField('Ngôn ngữ', 'text', 'Tiếng Anh', renderLangCV);
+          var nameInput = nameWrap.querySelector('input');
+          if (nameInput) nameInput.value = lang.name || '';
+          card.appendChild(nameWrap);
+          
+          // Trình độ
+          var lbl2 = document.createElement('label');
+          lbl2.className = 'rp-label';
+          lbl2.textContent = 'Trình độ';
+          var sel = document.createElement('input');
+          sel.className = 'rp-input';
+          sel.type = 'text';
+          sel.placeholder = 'VD: B2, Bản ngữ, Thành thạo...';
+          sel.value = lang.level || '';
+          sel.oninput = renderLangCV;
+          card.appendChild(lbl2);
+          card.appendChild(sel);
+          
+          g('lang-list').appendChild(card);
+        });
+        renderLangCV();
+      }
+
+      // ========== 2.7 LOAD CHỨNG CHỈ ==========
+      if (cv.certificates && cv.certificates.length > 0) {
+        g('cert-list').innerHTML = '';
+        certN = 0;
+        
+        cv.certificates.forEach(function(cert) {
+          certN++;
+          var id = 'cert' + certN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Chứng chỉ ' + certN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderCertCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Tên chứng chỉ
+          var nameWrap = mkField('Tên chứng chỉ', 'text', 'AWS Solutions Architect', renderCertCV);
+          var nameInput = nameWrap.querySelector('input');
+          if (nameInput) nameInput.value = cert.name || '';
+          card.appendChild(nameWrap);
+          
+          // Tổ chức cấp
+          var orgWrap = mkField('Tổ chức cấp', 'text', 'Amazon Web Services', renderCertCV);
+          var orgInput = orgWrap.querySelector('input');
+          if (orgInput) orgInput.value = cert.organization || '';
+          card.appendChild(orgWrap);
+          
+          // Năm cấp
+          var yearWrap = mkField('Năm cấp', 'text', '2023', renderCertCV);
+          var yearInput = yearWrap.querySelector('input');
+          if (yearInput) yearInput.value = cert.year || '';
+          card.appendChild(yearWrap);
+          
+          g('cert-list').appendChild(card);
+        });
+        renderCertCV();
+      }
+
+      console.log("✅ Đã load đầy đủ CV để chỉnh sửa:", cv.title);
+    } else {
+      console.warn("⚠️ Không tìm thấy CV với id:", editId);
+    }
+  }
+
+  // === 3. CÁC KHỞI TẠO KHÁC ===
+  // Template màu nếu có
   var tpl = parseInt(new URLSearchParams(window.location.search).get('template'));
   if (tpl && tplColors[tpl]) {
-    document.querySelectorAll('.tpl-thumb').forEach(function(t,i){ t.classList.toggle('sel', i===tpl-1); });
+    document.querySelectorAll('.tpl-thumb').forEach(function(t,i){ 
+      t.classList.toggle('sel', i === tpl-1); 
+    });
     g('cv-sidebar').style.background = tplColors[tpl];
   }
 
-  // Load CV từ quản lý nếu có editId
-  var editId = parseInt(new URLSearchParams(window.location.search).get('editId'));
-  if (editId) {
-    try {
-      var cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-      var cv = cvList.find(function(c){ return c.id === editId; });
-      if (cv) {
-        g('cv-title-inp').value = cv.title;
-        if (cv.data) {
-          var d = cv.data;
-          if (d.name)     { g('inp-name').value     = d.name;     setCV('cv-name',     d.name);     }
-          if (d.role)     { g('inp-role').value     = d.role;     setCV('cv-role',     d.role);     }
-          if (d.email)    { g('inp-email').value    = d.email;    setCV('cv-email',    d.email);    }
-          if (d.phone)    { g('inp-phone').value    = d.phone;    setCV('cv-phone',    d.phone);    }
-          if (d.location) { g('inp-location').value = d.location; setCV('cv-location', d.location); }
-          if (d.bio)      { g('inp-bio').value      = d.bio;      setCV('cv-bio',      d.bio);      }
-          if (d.sidebarBg) g('cv-sidebar').style.background = d.sidebarBg;
-        }
-      }
-    } catch(e) {}
-  }
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); doUndo(); }
-    if ((e.ctrlKey||e.metaKey) && e.key==='p') { e.preventDefault(); printCV(); }
-    if (e.key==='Escape') closePreview();
-  });
-
   // Quick-add menu bindings
-  g('qk-exp').onclick  = function(){ var b = document.querySelector('.sb-btn[onclick*="experience"]'); gotoSection('experience', b); addExp();   hideAddMenu(); };
-  g('qk-edu').onclick  = function(){ var b = document.querySelector('.sb-btn[onclick*="education"]');  gotoSection('education',  b); addEdu();   hideAddMenu(); };
-  g('qk-sk').onclick   = function(){ var b = document.querySelector('.sb-btn[onclick*="skills"]');     gotoSection('skills',     b); addSkill(); hideAddMenu(); };
-  g('qk-lang').onclick = function(){ var b = document.querySelector('.sb-btn[onclick*="language"]');   gotoSection('language',   b); addLang();  hideAddMenu(); };
-  g('qk-cert').onclick = function(){ var b = document.querySelector('.sb-btn[onclick*="certificate"]');gotoSection('certificate',b); addCert();  hideAddMenu(); };
+  if (g('qk-exp')) {
+    g('qk-exp').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="experience"]'); 
+      gotoSection('experience', b); 
+      addExp();   
+      hideAddMenu(); 
+    };
+    g('qk-edu').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="education"]');  
+      gotoSection('education', b);  
+      addEdu();   
+      hideAddMenu(); 
+    };
+    g('qk-sk').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="skills"]');     
+      gotoSection('skills', b);     
+      addSkill(); 
+      hideAddMenu(); 
+    };
+    g('qk-lang').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="language"]');   
+      gotoSection('language', b);   
+      addLang();  
+      hideAddMenu(); 
+    };
+    g('qk-cert').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="certificate"]');
+      gotoSection('certificate', b);
+      addCert();  
+      hideAddMenu(); 
+    };
+  }
 
+  // Lưu snapshot ban đầu
   saveSnap();
+  
+  // Load avatar từ localStorage nếu có
+  var savedAvatar = localStorage.getItem('cv-avatar');
+  if (savedAvatar) {
+    document.getElementById('cv-avatar').style.backgroundImage = "url('" + savedAvatar + "')";
+  }
+});
+window.addEventListener('DOMContentLoaded', function () {
+  var savedAvatar = localStorage.getItem('cv-avatar');
+
+  if (savedAvatar) {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + savedAvatar + "')";
+  }
 });
 </script>
 </body>
