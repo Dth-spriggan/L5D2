@@ -7,7 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter&family=Lato&family=Montserrat&family=Open+Sans&family=Poppins&family=Roboto&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: #0f0f1a; color: #e2e8f0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -24,10 +24,6 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0f1a; color: #e2e8f0; 
 .sb-btn:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
 .sb-btn.active { background: rgba(37,99,235,0.18); color: #60a5fa; border-left-color: #3b82f6; }
 .sb-btn i { width: 15px; text-align: center; font-size: 0.78rem; }
-.tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px 14px 12px; }
-.tpl-thumb { aspect-ratio: 3/4; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.18s; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 600; color: rgba(255,255,255,0.7); }
-.tpl-thumb:hover { border-color: #60a5fa; transform: scale(1.04); }
-.tpl-thumb.sel { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
 #canvas { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 28px 20px 60px; background: #111125; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0); background-size: 24px 24px; }
 #cv-wrap { transform-origin: top center; }
 #cv-paper { width: 595px; min-height: 842px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.6); color: #1e293b; position: relative; font-size: 1em; }
@@ -84,6 +80,38 @@ select.rp-input { cursor: pointer; }
   #cv-paper { box-shadow: none !important; width: 100% !important; }
 }
 ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.font-group {
+  margin-top: 12px;
+}
+
+.font-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+#font-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#font-select:hover {
+  border-color: #666;
+}
+
+#font-select:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 2px rgba(77,163,255,0.2);
+}
 </style>
 </head>
 <body>
@@ -106,16 +134,6 @@ select.rp-input { cursor: pointer; }
 <div id="editor-layout">
 
   <div id="left-sb">
-    <div class="sb-title">Mẫu CV</div>
-    <div class="tpl-grid">
-      <div class="tpl-thumb sel" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);" onclick="applyTemplate(1,this)"><span>Xanh</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#111827,#374151);" onclick="applyTemplate(2,this)"><span>Đen</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);" onclick="applyTemplate(3,this)"><span>Tím</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#065f46,#34d399);" onclick="applyTemplate(4,this)"><span>Xanh lá</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#9d174d,#ec4899);" onclick="applyTemplate(5,this)"><span>Hồng</span></div>
-      <div class="tpl-thumb" style="background:linear-gradient(135deg,#92400e,#f59e0b);" onclick="applyTemplate(6,this)"><span>Vàng</span></div>
-    </div>
-    <div style="border-top:1px solid rgba(255,255,255,0.06);margin:4px 0;"></div>
     <div class="sb-title">Thành phần</div>
     <button class="sb-btn active" onclick="gotoSection('personal',this)"><i class="fas fa-user"></i> Thông tin cá nhân</button>
     <button class="sb-btn" onclick="gotoSection('experience',this)"><i class="fas fa-briefcase"></i> Kinh nghiệm</button>
@@ -237,19 +255,70 @@ select.rp-input { cursor: pointer; }
 
     <div id="rp-style" style="display:none;">
       <div class="rp-sec-title">Màu chủ đạo</div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;">
-        <div class="swatch sel" style="background:#1e3a8a;" onclick="applyColor('#1e3a8a',this)"></div>
-        <div class="swatch" style="background:#111827;" onclick="applyColor('#111827',this)"></div>
-        <div class="swatch" style="background:#7c3aed;" onclick="applyColor('#7c3aed',this)"></div>
-        <div class="swatch" style="background:#065f46;" onclick="applyColor('#065f46',this)"></div>
-        <div class="swatch" style="background:#9d174d;" onclick="applyColor('#9d174d',this)"></div>
-        <div class="swatch" style="background:#92400e;" onclick="applyColor('#92400e',this)"></div>
-        <div class="swatch" style="background:#0369a1;" onclick="applyColor('#0369a1',this)"></div>
-        <div class="swatch" style="background:#166534;" onclick="applyColor('#166534',this)"></div>
+
+      <!-- Màu nhanh -->
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+        <div class="swatch sel" style="background:#1e3a8a;" onclick="pickSwatch('#1e3a8a',this)"></div>
+        <div class="swatch" style="background:#111827;" onclick="pickSwatch('#111827',this)"></div>
+        <div class="swatch" style="background:#7c3aed;" onclick="pickSwatch('#7c3aed',this)"></div>
+        <div class="swatch" style="background:#065f46;" onclick="pickSwatch('#065f46',this)"></div>
+        <div class="swatch" style="background:#9d174d;" onclick="pickSwatch('#9d174d',this)"></div>
+        <div class="swatch" style="background:#92400e;" onclick="pickSwatch('#92400e',this)"></div>
+        <div class="swatch" style="background:#0369a1;" onclick="pickSwatch('#0369a1',this)"></div>
+        <div class="swatch" style="background:#166534;" onclick="pickSwatch('#166534',this)"></div>
       </div>
+
+      <!-- Color picker native -->
+      <label class="rp-label">Chọn màu (RGB picker)</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <input type="color" id="color-picker" value="#1e3a8a"
+          style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none;padding:2px;"
+          oninput="onColorPickerChange(this.value)">
+        <div id="color-preview" style="flex:1;height:36px;border-radius:8px;background:#1e3a8a;transition:background 0.15s;"></div>
+      </div>
+
+      <!-- HEX input -->
+      <label class="rp-label">Nhập mã HEX</label>
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <span style="display:flex;align-items:center;padding:0 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px 0 0 7px;color:#64748b;font-size:0.85rem;">#</span>
+        <input id="hex-input" class="rp-input" style="border-radius:0 7px 7px 0;margin-bottom:0;font-family:monospace;letter-spacing:0.05em;"
+          maxlength="6" placeholder="1e3a8a" value="1e3a8a"
+          oninput="onHexInput(this.value)">
+      </div>
+
+      <!-- RGB sliders -->
+      <label class="rp-label">R <span id="r-val">30</span></label>
+      <input type="range" class="range-input" id="r-slider" min="0" max="255" value="30" oninput="onRgbChange()" style="accent-color:#ef4444;">
+      <label class="rp-label" style="margin-top:6px;">G <span id="g-val">58</span></label>
+      <input type="range" class="range-input" id="g-slider" min="0" max="255" value="58" oninput="onRgbChange()" style="accent-color:#22c55e;">
+      <label class="rp-label" style="margin-top:6px;">B <span id="b-val">138</span></label>
+      <input type="range" class="range-input" id="b-slider" min="0" max="255" value="138" oninput="onRgbChange()" style="accent-color:#3b82f6;margin-bottom:14px;">
+
       <div class="rp-sec-title">Cỡ chữ</div>
       <input type="range" class="range-input" min="80" max="120" value="100" id="font-range" oninput="applyFontSize(this.value)">
       <div style="text-align:center;font-size:0.72rem;color:#475569;margin-top:3px;" id="font-label">100%</div>
+      <div style="margin-top:10px;">
+  <div class="font-group">
+  <label>Font chữ</label>
+<select id="font-select" onchange="setFont(this.value)">
+  <!-- font hệ thống -->
+  <option value="Arial">Arial</option>
+  <option value="Tahoma">Tahoma</option>
+  <option value="'Times New Roman', serif">Times New Roman</option>
+  <option value="'Courier New', monospace">Courier New</option>
+  <option value="Georgia, serif">Georgia</option>
+  <option value="Verdana">Verdana</option>
+
+  <!-- font đẹp (Google) -->
+  <option value="'Poppins', sans-serif">Poppins</option>
+  <option value="'Roboto', sans-serif">Roboto</option>
+  <option value="'Montserrat', sans-serif">Montserrat</option>
+  <option value="'Inter', sans-serif">Inter</option>
+  <option value="'Open Sans', sans-serif">Open Sans</option>
+  <option value="'Lato', sans-serif">Lato</option>
+</select>
+</div>
+</div>
     </div>
   </div>
 </div>
@@ -378,6 +447,17 @@ function toggleAddMenu() {
   }
 }
 function hideAddMenu() { g('add-menu').style.display = 'none'; }
+
+function setFont(font) {
+  var paper = document.getElementById('cv-paper');
+
+  if (paper) {
+    paper.style.fontFamily = font;
+  }
+
+  // nếu bạn có undo
+  if (typeof saveSnap === 'function') saveSnap();
+}
 
 /* ── EXPERIENCE ── */
 var expN = 0;
@@ -697,6 +777,64 @@ function printCV() {
   var wrap = g('cv-wrap'), prev = wrap.style.transform;
   wrap.style.transform = 'none';
   setTimeout(function(){ window.print(); wrap.style.transform = prev; }, 120);
+}
+
+
+/* ── COLOR PICKER ── */
+function hexToRgb(hex) {
+  hex = hex.replace('#','');
+  if (hex.length === 3) hex = hex.split('').map(function(h){ return h+h; }).join('');
+  var n = parseInt(hex, 16);
+  return { r: (n>>16)&255, g: (n>>8)&255, b: n&255 };
+}
+function rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+}
+function syncColorUI(hex) {
+  var rgb = hexToRgb(hex);
+  document.getElementById('color-picker').value = hex;
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('hex-input').value = hex.replace('#','');
+  document.getElementById('r-slider').value = rgb.r;
+  document.getElementById('g-slider').value = rgb.g;
+  document.getElementById('b-slider').value = rgb.b;
+  document.getElementById('r-val').textContent = rgb.r;
+  document.getElementById('g-val').textContent = rgb.g;
+  document.getElementById('b-val').textContent = rgb.b;
+}
+function pickSwatch(hex, el) {
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+  if (el) el.classList.add('sel');
+  syncColorUI(hex);
+  applyColor(hex, null);
+}
+function onColorPickerChange(hex) {
+  syncColorUI(hex);
+  applyColor(hex, null);
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+}
+function onHexInput(val) {
+  val = val.replace(/[^0-9a-fA-F]/g,'');
+  if (val.length === 6) {
+    var hex = '#' + val;
+    syncColorUI(hex);
+    applyColor(hex, null);
+    document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
+  }
+}
+function onRgbChange() {
+  var r = parseInt(document.getElementById('r-slider').value);
+  var g = parseInt(document.getElementById('g-slider').value);
+  var b = parseInt(document.getElementById('b-slider').value);
+  document.getElementById('r-val').textContent = r;
+  document.getElementById('g-val').textContent = g;
+  document.getElementById('b-val').textContent = b;
+  var hex = rgbToHex(r, g, b);
+  document.getElementById('color-picker').value = hex;
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('hex-input').value = hex.replace('#','');
+  applyColor(hex, null);
+  document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
 }
 
 /* ── INIT ── */
