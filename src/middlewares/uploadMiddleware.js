@@ -1,38 +1,52 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-require('dotenv').config(); // Lấy 3 cái mã bí mật từ file .env
+require('dotenv').config();
 
-// 1. Cấu hình chìa khóa vào nhà kho Cloudinary
+// 1. Cấu hình chìa khóa (Dùng chung cho cả CV và Logo)
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Thiết lập quy tắc xếp kho (Phiên bản Pro)
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  // Dùng function để bắt được thông tin file sếp vừa gửi lên
-  params: async (req, file) => {
-    // Tách lấy cái đuôi file (pdf, doc, docx)
-    const fileExtension = file.originalname.split('.').pop(); 
-    // Tách lấy cái tên gốc (bỏ đuôi)
-    const fileName = file.originalname.split('.')[0]; 
-
-    return {
-      folder: 'topcv_cvs',
-      resource_type: 'auto', // Vẫn là tài liệu
-      format: fileExtension, // 💡 ÉP CLOUDINARY PHẢI GẮN ĐUÔI .PDF VÀO LINK
-      public_id: `${fileName}_${Date.now()}` // 💡 Lấy tên gốc ghép với thời gian để link đẹp và không bị trùng
-    };
-  },
+// ==========================================
+// 📦 TRẠM BƠM 1: DÀNH CHO CV (CỦA TEAM SẾP)
+// ==========================================
+const storageCV = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        const fileExtension = file.originalname.split('.').pop();
+        const fileName = file.originalname.split('.')[0];
+        return {
+            folder: 'topcv_cvs',
+            resource_type: 'auto',
+            format: fileExtension,
+            public_id: `${fileName}_${Date.now()}`
+        };
+    },
+});
+const uploadCV = multer({ 
+    storage: storageCV,
+    limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn 5MB
 });
 
-// 3. Giao cho bảo vệ Multer cầm còi (Giới hạn file tối đa 5MB)
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+// ==========================================
+// 🖼️ TRẠM BƠM 2: DÀNH CHO LOGO CÔNG TY (CỦA SẾP)
+// ==========================================
+const storageLogo = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'TopCV_Logos',
+        allowed_formats: ['jpg', 'jpeg', 'png'] // Cấm up file lạ
+    },
 });
+const uploadLogo = multer({ storage: storageLogo });
 
-module.exports = upload;
+// ==========================================
+// ĐÓNG GÓI XUẤT KHẨU CẢ 2 TRẠM BƠM
+// ==========================================
+module.exports = {
+    uploadCV,
+    uploadLogo
+};
