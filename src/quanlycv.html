@@ -276,7 +276,30 @@ function getCVs() {
 function saveCVs(list) {
   localStorage.setItem('savedCVs', JSON.stringify(list));
 }
+function getEditId() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('editId');
+}
+function saveCV(data) {
+  var list = JSON.parse(localStorage.getItem('savedCVs') || '[]');
 
+  var editId = getEditId();
+
+  if (editId) {
+    // ✅ UPDATE CV
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id == editId) {
+        list[i] = { ...list[i], ...data };
+      }
+    }
+  } else {
+    // ✅ TẠO MỚI
+    data.id = Date.now();
+    list.push(data);
+  }
+
+  saveCVs(list); // 👈 dùng lại hàm của bạn
+}
 function renderList() {
   var list = getCVs();
 
@@ -368,7 +391,12 @@ function closeDeleteModal() {
 function confirmDelete() {
   if (!deleteId) return;
   var list = getCVs().filter(function(c){ return c.id !== deleteId; });
-  saveCVs(list);
+  var data = {
+  name: g('name').value,
+  // thêm các field khác của bạn
+};
+
+saveCV(data);
   closeDeleteModal();
   renderList();
 }
@@ -410,6 +438,10 @@ function confirmRename() {
   closeRenameModal();
   renderList();
 }
+function getEditId() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('editId');
+}
 
 document.getElementById('rename-modal').addEventListener('click', function(e){
   if (e.target === this) closeRenameModal();
@@ -422,6 +454,18 @@ document.getElementById('rename-inp').addEventListener('keydown', function(e){
 /* INIT */
 window.addEventListener('DOMContentLoaded', function() {
   renderList();
+});
+window.addEventListener('DOMContentLoaded', function () {
+  var id = getEditId();
+  if (!id) return;
+
+  var list = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].id == id) {
+      fillForm(list[i]); // hoặc tự set input
+    }
+  }
 });
 </script>
 

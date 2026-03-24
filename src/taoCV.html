@@ -29,7 +29,18 @@ body { font-family: 'DM Sans', sans-serif; background: #0f0f1a; color: #e2e8f0; 
 #cv-paper { width: 595px; min-height: 842px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.6); color: #1e293b; position: relative; font-size: 1em; }
 #cv-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 220px; background: #1e3a8a; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; min-height: 842px; }
 #cv-main { margin-left: 220px; padding: 24px 20px; min-height: 842px; }
-.cv-avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; flex-shrink: 0; }
+.cv-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+
+  background-image: url('assets/logouser.png'); /* 👈 mặc định */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  margin-bottom: 12px;
+}
 .cv-name { font-family: 'Playfair Display', serif; font-size: 18px; color: #fff; text-align: center; line-height: 1.2; }
 .cv-role { font-size: 9px; color: #93c5fd; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; text-align: center; }
 .cv-sec-title { font-size: 8px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.1em; margin: 14px 0 5px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 3px; width: 100%; }
@@ -156,7 +167,7 @@ select.rp-input { cursor: pointer; }
     <div id="cv-wrap">
       <div id="cv-paper">
         <div id="cv-sidebar">
-          <div class="cv-avatar"><i class="fas fa-user" style="font-size:26px;color:rgba(255,255,255,0.4);"></i></div>
+          <div class="cv-avatar" id="cv-avatar"></div>
           <div class="cv-name" id="cv-name">Nguyễn Văn A</div>
           <div class="cv-role" id="cv-role">Frontend Developer</div>
           <div class="cv-sec-title">Liên hệ</div>
@@ -200,6 +211,14 @@ select.rp-input { cursor: pointer; }
   </div>
 
   <div id="right-panel">
+    <div style="margin-top:12px;">
+  <div class="rp-sec-title">Avatar</div>
+
+  <input type="file"
+         accept="image/*"
+         onchange="uploadAvatar(event)"
+         class="rp-input">
+</div>
     <div class="rp-tab-bar">
       <button class="rp-tab active" onclick="switchRpTab('content',this)">Nội dung</button>
       <button class="rp-tab" onclick="switchRpTab('style',this)">Giao diện</button>
@@ -344,7 +363,9 @@ select.rp-input { cursor: pointer; }
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
+var currentAvatar = "";
 var zoom = 100;
 function zoomBy(d) {
   zoom = Math.max(40, Math.min(150, zoom + d));
@@ -432,7 +453,23 @@ function applyColor(color, el) {
   saveSnap();
 }
 function applyFontSize(val) {
-  g('cv-paper').style.fontSize = (val/100) + 'em';
+  var scale = val / 100;
+
+  document.querySelectorAll(
+    '#cv-paper .cv-text, #cv-paper .cv-job-title, #cv-paper .cv-job-sub, #cv-paper .cv-job-desc, #cv-paper .cv-main-sec, #cv-paper .cv-name, #cv-paper .cv-role'
+  ).forEach(el => {
+    var base = el.getAttribute('data-base-size');
+
+    // lưu size gốc lần đầu
+    if (!base) {
+      base = window.getComputedStyle(el).fontSize;
+      el.setAttribute('data-base-size', parseFloat(base));
+    }
+
+    var newSize = el.getAttribute('data-base-size') * scale;
+    el.style.fontSize = newSize + 'px';
+  });
+
   g('font-label').textContent = val + '%';
 }
 
@@ -456,6 +493,20 @@ function setFont(font) {
   }
 
   // nếu bạn có undo
+  if (typeof saveSnap === 'function') saveSnap();
+}
+
+function setFontSize(size) {
+  var paper = document.getElementById('cv-paper');
+
+  if (paper) {
+    paper.style.fontSize = size + 'px';
+  }
+
+  // hiển thị số px
+  var label = document.getElementById('font-size-value');
+  if (label) label.innerText = size + 'px';
+
   if (typeof saveSnap === 'function') saveSnap();
 }
 
@@ -666,7 +717,7 @@ function saveAsImage() {
   var wrap = g('cv-wrap');
   var prevTransform = wrap.style.transform;
   wrap.style.transform = 'none';
-  var btn = event.target.closest('button');
+  var btn = document.querySelector('.tbtn-primary');
   btn.textContent = 'Đang xử lý...';
   btn.disabled = true;
   setTimeout(function() {
@@ -685,22 +736,26 @@ function saveAsImage() {
       link.href = canvas.toDataURL('image/png');
       link.click();
     }).catch(function(err) {
-      wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-image" style="margin-right:4px;"></i>Lưu ảnh';
-      btn.disabled = false;
-      alert('Lỗi khi lưu ảnh: ' + err.message);
-    });
+  console.error("LỖI THẬT:", err); // 👈 THÊM DÒNG NÀY
+  showToast('Lỗi khi lưu: ' + err.message, 'error');
+});
   }, 100);
 }
 
 /* ── SAVE TO MANAGER ── */
+console.log("CLICK SAVE");
 function saveToManager() {
   var wrap = g('cv-wrap');
   var prevTransform = wrap.style.transform;
   wrap.style.transform = 'none';
-  var btn = event.target.closest('button');
+
+var btn = event?.target?.closest('button');
+
+if (btn) {
   btn.textContent = 'Đang lưu...';
   btn.disabled = true;
+}
+
   setTimeout(function() {
     html2canvas(g('cv-paper'), {
       scale: 1,
@@ -708,44 +763,72 @@ function saveToManager() {
       backgroundColor: '#ffffff',
       logging: false
     }).then(function(canvas) {
+
       wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+      if (btn) {
+  btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+  btn.disabled = false;
+}
       btn.disabled = false;
+
       var thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-      var cvData = {
-        id: Date.now(),
-        title: g('cv-title-inp').value || 'CV Không tên',
-        thumbnail: thumbnail,
-        data: {
-          name: g('cv-name').textContent,
-          role: g('cv-role').textContent,
-          email: g('cv-email').textContent,
-          phone: g('cv-phone').textContent,
-          location: g('cv-location').textContent,
-          bio: g('cv-bio').textContent,
-          sidebarBg: g('cv-sidebar').style.background
-        },
-        updatedAt: new Date().toLocaleString('vi-VN')
-      };
+
+      // 🔥 LẤY editId
+      var editId = new URLSearchParams(window.location.search).get('editId');
+      editId = editId ? parseInt(editId) : null;
+
+var d = cv.data || cv;
+
+if (d.name) g('inp-name').value = d.name;
+if (d.role) g('inp-role').value = d.role;
+if (d.email) g('inp-email').value = d.email;
+if (d.phone) g('inp-phone').value = d.phone;
+if (d.location) g('inp-location').value = d.location;
+if (d.bio) g('inp-bio').value = d.bio;
+
+if (d.sidebarBg) g('cv-sidebar').style.background = d.sidebarBg;
+
+if (d.avatar) {
+  currentAvatar = d.avatar;
+  g('cv-avatar').style.backgroundImage = "url('" + d.avatar + "')";
+}
+
+// thêm cái này nếu bạn có font
+if (d.font) g('cv-paper').style.fontFamily = d.font;
+if (d.fontSize) g('cv-paper').style.fontSize = d.fontSize;
+
       var cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-      // Kiểm tra nếu đang sửa CV cũ
-      var editId = parseInt(new URLSearchParams(window.location.search).get('editId'));
-      if (editId) {
-        var idx = cvList.findIndex(function(c){ return c.id === editId; });
-        if (idx !== -1) { cvList[idx] = Object.assign(cvList[idx], cvData, {id: editId}); }
-        else cvList.push(cvData);
+
+      if (editId !== null) {
+        var idx = cvList.findIndex(function(c){
+          return c.id === editId;
+        });
+
+        if (idx !== -1) {
+          cvList[idx] = cvData; // 🔥 GHI ĐÈ
+        } else {
+          cvList.push(cvData);
+        }
       } else {
         cvList.push(cvData);
       }
+
       localStorage.setItem('savedCVs', JSON.stringify(cvList));
-      // Toast
+
       showToast('Đã lưu vào Quản lý CV!', 'success');
+
     }).catch(function(err) {
+
       wrap.style.transform = prevTransform;
-      btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+      if (btn) {
+  btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+  btn.disabled = false;
+}
       btn.disabled = false;
+
       showToast('Lỗi khi lưu: ' + err.message, 'error');
     });
+
   }, 100);
 }
 
@@ -836,6 +919,30 @@ function onRgbChange() {
   applyColor(hex, null);
   document.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('sel'); });
 }
+function uploadAvatar(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+
+  reader.onload = function(e) {
+    currentAvatar = e.target.result;
+
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + currentAvatar + "')";
+  };
+
+  reader.readAsDataURL(file);
+}
+function fillForm(cv) {
+  if (cv.avatar) {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + cv.avatar + "')";
+  } else {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('assets/logouser.png')";
+  }
+}
 
 /* ── INIT ── */
 window.addEventListener('DOMContentLoaded', function() {
@@ -857,25 +964,17 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // Load CV từ quản lý nếu có editId
   var editId = parseInt(new URLSearchParams(window.location.search).get('editId'));
-  if (editId) {
-    try {
-      var cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-      var cv = cvList.find(function(c){ return c.id === editId; });
-      if (cv) {
-        g('cv-title-inp').value = cv.title;
-        if (cv.data) {
-          var d = cv.data;
-          if (d.name)     { g('inp-name').value     = d.name;     setCV('cv-name',     d.name);     }
-          if (d.role)     { g('inp-role').value     = d.role;     setCV('cv-role',     d.role);     }
-          if (d.email)    { g('inp-email').value    = d.email;    setCV('cv-email',    d.email);    }
-          if (d.phone)    { g('inp-phone').value    = d.phone;    setCV('cv-phone',    d.phone);    }
-          if (d.location) { g('inp-location').value = d.location; setCV('cv-location', d.location); }
-          if (d.bio)      { g('inp-bio').value      = d.bio;      setCV('cv-bio',      d.bio);      }
-          if (d.sidebarBg) g('cv-sidebar').style.background = d.sidebarBg;
-        }
-      }
-    } catch(e) {}
+if (editId) {
+  var index = cvList.findIndex(function(c){
+    return c.id === editId;
+  });
+
+  if (index !== -1) {
+    cvList[index] = newCV; // 👈 ghi đè
   }
+} else {
+  cvList.push(newCV); // 👈 tạo mới
+}
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); doUndo(); }
     if ((e.ctrlKey||e.metaKey) && e.key==='p') { e.preventDefault(); printCV(); }
@@ -890,6 +989,15 @@ window.addEventListener('DOMContentLoaded', function() {
   g('qk-cert').onclick = function(){ var b = document.querySelector('.sb-btn[onclick*="certificate"]');gotoSection('certificate',b); addCert();  hideAddMenu(); };
 
   saveSnap();
+  
+});
+window.addEventListener('DOMContentLoaded', function () {
+  var savedAvatar = localStorage.getItem('cv-avatar');
+
+  if (savedAvatar) {
+    document.getElementById('cv-avatar').style.backgroundImage =
+      "url('" + savedAvatar + "')";
+  }
 });
 </script>
 </body>

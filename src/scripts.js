@@ -1467,3 +1467,14 @@ window.removeSavedJob = function(jobId) {
     if (typeof window.showToast === 'function') window.showToast('Đã xóa việc làm khỏi danh sách!');
     window.loadSavedJobs(); 
 };
+function handleCreateCV(event) {
+    event.preventDefault();
+
+    const user = localStorage.getItem("currentUser"); // ✅ sửa ở đây
+
+    if (!user) {
+        window.location.href = "register.html";
+    } else {
+        window.location.href = "taoCV.html";
+    }
+}
