@@ -4,17 +4,23 @@ const cors = require('cors');
 
 const app = express();
 
-
-// 1. Import Database & Models
+// ==========================================================
+// 1. IMPORT DATABASE & MODELS
+// ==========================================================
 const { connectDB, sequelize } = require('./db');
+
 const User = require('./models/user');
+// 🌟 MỚI: Import 2 model Hồ sơ riêng anh em mình vừa tạo
+const CandidateProfile = require('./models/candidateProfile');
+const Company = require('./models/company');
+
 const Job = require('./models/job');
 const Application = require('./models/application');
-// Import 2 model mới của hệ thống Thanh toán đảm bảo
 const EscrowContract = require('./models/escrowContract');
 const Transaction = require('./models/transaction');
 
-const routes = require('./routes/index');
+// Tùy sếp dùng routes/index.js hay tách lẻ. Nếu có file index.js gom route thì giữ nguyên dòng này:
+const routes = require('./routes/index'); 
 
 // 2. Middlewares (Xử lý dữ liệu đầu vào)
 app.use(cors());
@@ -24,6 +30,16 @@ app.use(express.urlencoded({ extended: true }));
 // ==========================================================
 // 3. THIẾT LẬP QUAN HỆ CÁC BẢNG (ASSOCIATIONS)
 // ==========================================================
+
+// 🌟 [QUAN HỆ MỚI] Danh tính (User) & Hồ sơ Ứng viên (CandidateProfile)
+User.hasOne(CandidateProfile, { foreignKey: 'user_id' });
+CandidateProfile.belongsTo(User, { foreignKey: 'user_id' });
+
+// 🌟 [QUAN HỆ MỚI] Danh tính (User) & Hồ sơ Công ty (Company)
+User.hasOne(Company, { foreignKey: 'employer_id' });
+Company.belongsTo(User, { as: 'company_profile', foreignKey: 'employer_id' });
+
+// --- QUAN HỆ CŨ SẾP ĐÃ VIẾT (GIỮ NGUYÊN) ---
 // - Nhà tuyển dụng (User) & Công việc (Job)
 User.hasMany(Job, { foreignKey: 'employerId' });
 Job.belongsTo(User, { as: 'employer', foreignKey: 'employerId' });
@@ -36,10 +52,10 @@ Application.belongsTo(User, { as: 'candidate', foreignKey: 'candidateId' });
 Job.hasMany(Application, { foreignKey: 'jobId' });
 Application.belongsTo(Job, { foreignKey: 'jobId' });
 
-// --- QUAN HỆ CHO MODULE ESCROW (MỚI) ---
+// --- QUAN HỆ CHO MODULE ESCROW ---
 // - Nhà tuyển dụng & Hợp đồng Escrow
 User.hasMany(EscrowContract, { foreignKey: 'employerId' });
-EscrowContract.belongsTo(User, { as: 'employer', foreignKey: 'employerId' });
+EscrowContract.belongsTo(User, { as: 'escrow_employer', foreignKey: 'employerId' });
 
 // - Freelancer & Hợp đồng Escrow
 User.hasMany(EscrowContract, { foreignKey: 'freelancerId' });
@@ -67,7 +83,7 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
     .then(() => sequelize.sync({ alter: true })) // alter: true giúp cập nhật bảng mà không xóa mất data cũ
     .then(() => sequelize.query('SET FOREIGN_KEY_CHECKS = 1'))
     .then(() => {
-        console.log('🚀 Đã đồng bộ cấu trúc bảng MySQL thành công! (Bao gồm cả Escrow & Transaction)');
+        console.log('🚀 Đã đồng bộ cấu trúc bảng MySQL thành công! (Bao gồm Profile, Escrow & Transaction)');
     })
     .catch(err => {
         console.error('❌ Lỗi đồng bộ MySQL:', err.message);
@@ -76,12 +92,11 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
 // ==========================================================
 // 5. KHAI BÁO API ROUTES
 // ==========================================================
-// Test API nhanh từ file 1
 app.get('/api/ping', (req, res) => {
     res.json({ success: true, message: "Hệ thống đang chạy mượt mà!" });
 });
 
-// Cắm điện cho toàn bộ route (Auth, Jobs, Escrow...) thông qua routes/index.js
+// Cắm điện cho toàn bộ route thông qua routes/index.js
 app.use('/api', routes);
 
 // ==========================================================
@@ -89,5 +104,5 @@ app.use('/api', routes);
 // ==========================================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🔥 Server Backend TopCV Clone đang chạy tại http://localhost:${PORT}`);
+    console.log(`🔥 Server Backend TopCV Clone đang quẩy tại http://localhost:${PORT}`);
 });

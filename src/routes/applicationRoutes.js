@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const applicationController = require('../controllers/applicationController');
-const upload = require('../middlewares/uploadMiddleware'); 
+const { uploadCV } = require('../middlewares/uploadMiddleware');
 
 // 1. IMPORT LỄ TÂN VÀO ĐÂY
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken, isCandidate } = require('../middlewares/authMiddleware');
 
 // 2. GẮN LỄ TÂN ĐỨNG TRƯỚC MIDDLEWARE UPLOAD
-router.post('/', verifyToken, upload.single('cvFile'), applicationController.applyJob); 
+router.post('/apply/:jobId', verifyToken, isCandidate, uploadCV.single('file'), applicationController.applyJob);
 
 router.delete('/:id', verifyToken, applicationController.withdrawApplication); 
 router.get('/job/:jobId', verifyToken, applicationController.getApplicationsByJob); 

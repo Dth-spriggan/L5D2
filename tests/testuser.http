@@ -1,0 +1,96 @@
+### 1. KIỂM TRA MẠNG LƯỚI
+GET http://localhost:3000/api/ping
+
+### ==========================================
+### KHU VỰC ỨNG VIÊN (CANDIDATE)
+### ==========================================
+
+### 2. Đăng ký Ứng viên
+POST http://localhost:3000/api/auth/register/candidate
+Content-Type: application/json
+
+{
+    "fullName": "Trương Đức Nhật",
+    "email": "nhat251111@gmail.com",
+    "password": "nhat123",
+    "phone": "0987654321"
+}
+
+### 3. Đăng nhập Ứng viên (Lấy Token ở đây để dùng cho các API dưới)
+# @name loginCandidate
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "nhat251111@gmail.com",
+    "password": "nhat123"
+}
+
+### 4. Xem Profile Ứng viên (Sửa chữ TOKEN_CUA_UNG_VIEN bằng token lấy được ở bước 3)
+GET http://localhost:3000/api/profile/candidate
+Authorization: Bearer TOKEN_CUA_UNG_VIEN_O_DAY
+
+### ==========================================
+### TEST CẬP NHẬT NHỎ GIỌT (PARTIAL UPDATE)
+### ==========================================
+
+### Test 1: Hôm nay buồn chán, ứng viên chỉ muốn sửa mỗi dòng Bio
+# ⚠️ Nhớ thay TOKEN_CUA_SEP_O_DAY bằng token của Ứng viên nhé
+PUT http://localhost:3000/api/profile/candidate
+Authorization: Bearer TOKEN_CUA_SEP_O_DAY
+Content-Type: application/json
+
+{
+    "bio": "Hôm nay trời đẹp, em chỉ muốn update mỗi cái Bio này thôi. Đố anh Backend làm mất data cũ của em đấy!"
+}
+
+
+### Test 2: Đổi số điện thoại và thêm link Facebook (Các cái khác giữ nguyên)
+PUT http://localhost:3000/api/profile/candidate
+Authorization: Bearer TOKEN_CUA_SEP_O_DAY
+Content-Type: application/json
+
+{
+    "phone": "0888888888",
+    "facebook_url": "https://www.facebook.com/truong.nhat.759198"
+}
+
+
+### Bước Kiểm Chứng: Xem lại rổ data sau khi update lẻ tẻ
+# Chạy cái này để thấy fullName, education, skills vẫn còn nguyên vẹn!
+GET http://localhost:3000/api/profile/candidate
+Authorization: Bearer TOKEN_CUA_SEP_O_DAY
+
+
+
+
+### ==========================================
+### KHU VỰC NHÀ TUYỂN DỤNG (EMPLOYER)
+### ==========================================
+
+### 5. Đăng ký Nhà Tuyển Dụng
+POST http://localhost:3000/api/auth/register/employer
+Content-Type: application/json
+
+{
+    "fullName": "Sếp Độ Mixi",
+    "email": "hrmixi@gmail.com",
+    "password": "password123",
+    "company_name": "Tập đoàn MixiGaming",
+    "tax_code": "0123456789"
+}
+
+### 6. Đăng nhập Nhà Tuyển Dụng (Lấy Token ở đây)
+# @name loginEmployer
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "hrmixi@gmail.com",
+    "password": "password123"
+}
+
+### 7. Xem Profile Công ty (Sửa chữ TOKEN_CUA_HR bằng token lấy được ở bước 6)
+GET http://localhost:3000/api/profile/employer
+Authorization: Bearer TOKEN_CUA_HR_O_DAY
+
