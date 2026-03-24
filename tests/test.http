@@ -10,6 +10,10 @@ Content-Type: application/json
 
 
 
+### Lấy 6 cái Job mới nhất cho Trang Chủ
+GET http://localhost:3000/api/jobs?limit=6
+
+
 ### ==========================================
 ### BỘ TEST API JOBS 
 ### ==========================================
