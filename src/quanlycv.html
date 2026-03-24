@@ -279,8 +279,15 @@ function saveCVs(list) {
 
 function renderList() {
   var list = getCVs();
+
   var q = document.getElementById('search-inp').value.toLowerCase();
-  if (q) list = list.filter(function(c){ return c.title.toLowerCase().includes(q); });
+
+  if (q) {
+    list = list.filter(function(c){
+      var title = (c.title || c.name || "").toLowerCase();
+      return title.includes(q);
+    });
+  }
 
   var grid = document.getElementById('cv-grid');
   var empty = document.getElementById('empty-state');
@@ -294,29 +301,56 @@ function renderList() {
     empty.classList.remove('hidden');
     return;
   }
-  empty.classList.add('hidden');
 
+  empty.classList.add('hidden');
   grid.innerHTML = '';
+
   list.forEach(function(cv, idx) {
+
+    var title = cv.title || cv.name || "CV không tên";
+
+    // ===== BADGE =====
+    var badge = '';
+    if (cv.type === 'upload') {
+      badge = '<span style="font-size:10px;background:#e0f2fe;color:#0284c7;padding:2px 6px;border-radius:6px;margin-left:6px;">Upload</span>';
+    }
+
     var card = document.createElement('div');
     card.className = 'cv-card';
     card.style.animationDelay = (idx * 0.05) + 's';
 
     var thumbHtml = cv.thumbnail
-      ? '<img class="cv-thumb" src="' + cv.thumbnail + '" alt="' + cv.title + '">'
+      ? '<img class="cv-thumb" src="' + cv.thumbnail + '" alt="' + title + '">'
       : '<div class="cv-thumb-placeholder"><i class="fas fa-file-alt" style="font-size:2.5rem;color:rgba(255,255,255,0.5);"></i></div>';
+
+    // ===== ❌ KHÔNG SỬA NẾU UPLOAD =====
+    var editBtn = '';
+    if (cv.type !== 'upload') {
+      editBtn =
+        '<a href="taoCV.html?editId=' + cv.id + '" class="action-btn btn-edit" style="flex:1;justify-content:center;text-decoration:none;">' +
+        '<i class="fas fa-edit"></i> Sửa</a>';
+    }
+
+    // ===== ❌ KHÔNG ĐỔI TÊN NẾU UPLOAD =====
+    var renameBtn = '';
+    if (cv.type !== 'upload') {
+      renameBtn =
+        '<button onclick="openRenameModal(' + cv.id + ')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:0.8rem;padding:2px 4px;" title="Đổi tên">' +
+        '<i class="fas fa-pencil-alt"></i></button>';
+    }
 
     card.innerHTML =
       thumbHtml +
       '<div style="padding:12px;">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-          '<p style="font-weight:700;font-size:0.88rem;color:#1e293b;flex:1;margin-right:6px;word-break:break-word;">' + cv.title + '</p>' +
-          '<button onclick="openRenameModal(' + cv.id + ')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:0.8rem;padding:2px 4px;" title="Đổi tên"><i class="fas fa-pencil-alt"></i></button>' +
+          '<p style="font-weight:700;font-size:0.88rem;color:#1e293b;flex:1;margin-right:6px;word-break:break-word;">' + title + badge + '</p>' +
+          renameBtn +
         '</div>' +
         '<p class="badge-date"><i class="fas fa-clock" style="margin-right:4px;"></i>' + (cv.updatedAt || '') + '</p>' +
         '<div style="display:flex;gap:6px;margin-top:10px;">' +
-          '<a href="taoCV.html?editId=' + cv.id + '" class="action-btn btn-edit" style="flex:1;justify-content:center;text-decoration:none;"><i class="fas fa-edit"></i> Sửa</a>' +
-          '<button onclick="openDeleteModal(' + cv.id + ',\'' + cv.title.replace(/'/g, "\\'") + '\')" class="action-btn btn-delete" style="flex:1;justify-content:center;"><i class="fas fa-trash"></i> Xóa</button>' +
+          editBtn +
+          '<button onclick="openDeleteModal(' + cv.id + ',\'' + title.replace(/'/g, "\\'") + '\')" class="action-btn btn-delete" style="flex:1;justify-content:center;">' +
+          '<i class="fas fa-trash"></i> Xóa</button>' +
         '</div>' +
       '</div>';
 
@@ -345,11 +379,15 @@ document.getElementById('modal-overlay').addEventListener('click', function(e){
   if (e.target === this) closeDeleteModal();
 });
 
-/* Rename */
+/* Rename (chỉ CV tạo) */
 function openRenameModal(id) {
-  renameId = id;
   var cv = getCVs().find(function(c){ return c.id === id; });
-  document.getElementById('rename-inp').value = cv ? cv.title : '';
+
+  // ❌ chặn rename nếu là upload
+  if (cv && cv.type === 'upload') return;
+
+  renameId = id;
+  document.getElementById('rename-inp').value = cv ? (cv.title || cv.name) : '';
   document.getElementById('rename-modal').classList.add('open');
   setTimeout(function(){ document.getElementById('rename-inp').focus(); }, 50);
 }
@@ -359,14 +397,25 @@ function closeRenameModal() {
 }
 function confirmRename() {
   if (!renameId) return;
-  var newName = document.getElementById('rename-inp').value.trim();
-  if (!newName) return;
+
   var list = getCVs();
   var idx = list.findIndex(function(c){ return c.id === renameId; });
-  if (idx !== -1) { list[idx].title = newName; saveCVs(list); }
+
+  // ❌ chặn rename upload
+  if (list[idx] && list[idx].type === 'upload') return;
+
+  var newName = document.getElementById('rename-inp').value.trim();
+  if (!newName) return;
+
+  if (idx !== -1) {
+    list[idx].title = newName;
+    saveCVs(list);
+  }
+
   closeRenameModal();
   renderList();
 }
+
 document.getElementById('rename-modal').addEventListener('click', function(e){
   if (e.target === this) closeRenameModal();
 });
@@ -375,7 +424,7 @@ document.getElementById('rename-inp').addEventListener('keydown', function(e){
   if (e.key === 'Escape') closeRenameModal();
 });
 
-/* Load editId - nếu vừa lưu từ taoCV */
+/* INIT */
 window.addEventListener('DOMContentLoaded', function() {
   renderList();
 });

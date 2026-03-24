@@ -231,15 +231,37 @@
             </div>
 
             <form onsubmit="submitApplication(event)" class="p-6">
-                <div class="mb-5">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Chọn CV để ứng tuyển <span class="text-red-500">*</span></label>
-                    <div class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-100 transition">
-                        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <p class="text-sm font-medium text-blue-700">Tải lên CV từ máy tính</p>
-                        <p class="text-xs text-gray-500 mt-1">Hỗ trợ định dạng .PDF, .DOC, .DOCX dưới 5MB</p>
-                        <input type="file" required class="mt-3 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full" accept=".pdf,.doc,.docx">
-                    </div>
-                </div>
+<div class="mb-5">
+    <label class="block text-sm font-bold text-gray-700 mb-2">
+        Chọn CV để ứng tuyển <span class="text-red-500">*</span>
+    </label>
+
+    <!-- 🔥 CHỌN CV ĐÃ LƯU -->
+    <select id="cv-select" class="w-full mb-3 px-3 py-2 border rounded-lg">
+        <option value="">-- Chọn CV đã lưu --</option>
+    </select>
+
+    <p class="text-xs text-gray-400 text-center mb-2">hoặc</p>
+
+    <!-- GIỮ NGUYÊN UI UPLOAD -->
+    <div class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-100 transition">
+        <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+            </path>
+        </svg>
+
+        <p class="text-sm font-medium text-blue-700">Tải lên CV từ máy tính</p>
+        <p class="text-xs text-gray-500 mt-1">
+            Hỗ trợ định dạng .PDF, .DOC, .DOCX, .JPG, .JPEG, .PNG dưới 5MB
+        </p>
+
+        <!-- 🔥 thêm id -->
+        <input id="cv-upload" type="file"
+            class="mt-3 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full"
+             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+    </div>
+</div>
 
                 <div class="mb-5">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Thư giới thiệu (Không bắt buộc)</label>
@@ -357,5 +379,119 @@
     </footer>
 
 <script src="./scripts.js"></script>
+<script>
+// ===== LOAD CV TỪ LOCALSTORAGE =====
+function loadCVToSelect() {
+    var select = document.getElementById("cv-select");
+    if (!select) return;
+
+    var list = JSON.parse(localStorage.getItem("savedCVs") || "[]");
+
+    // Reset option
+    select.innerHTML = '<option value="">-- Chọn CV đã lưu --</option>';
+
+    // Nếu không có CV
+    if (list.length === 0) {
+        var option = document.createElement("option");
+        option.textContent = "Không có CV nào";
+        option.disabled = true;
+        select.appendChild(option);
+        return;
+    }
+
+    // Đổ dữ liệu vào select
+    list.forEach(function(cv) {
+        var option = document.createElement("option");
+        option.value = cv.id;
+        option.textContent = cv.title || cv.name || "CV không tên";
+        select.appendChild(option);
+    });
+}
+
+
+// ===== MỞ MODAL APPLY =====
+function openApplyModal() {
+    var modal = document.getElementById("apply-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    loadCVToSelect(); // 🔥 load CV khi mở
+}
+
+
+// ===== ĐÓNG MODAL =====
+function closeApplyModal() {
+    var modal = document.getElementById("apply-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+
+// ===== XỬ LÝ NÚT =====
+function handleJobAction(action) {
+    if (action === 'apply') {
+        openApplyModal();
+    }
+
+    if (action === 'save') {
+        alert("Đã lưu tin!");
+    }
+}
+
+
+// ===== SUBMIT FORM =====
+function submitApplication() {
+    var selectedCV = document.getElementById("cv-select").value;
+    var fileInput = document.getElementById("cv-upload");
+    var uploadedFile = fileInput.files[0];
+
+    // Validate
+    if (!selectedCV && !uploadedFile) {
+        alert("Vui lòng chọn CV hoặc upload CV!");
+        return;
+    }
+
+    // 👉 Nếu chọn CV có sẵn
+    if (selectedCV) {
+        alert("Ứng tuyển bằng CV đã lưu!");
+        closeApplyModal();
+        return;
+    }
+
+    // 👉 Nếu upload file mới
+    if (uploadedFile) {
+        var confirmSave = confirm("Bạn có muốn lưu CV này không?");
+
+        if (confirmSave) {
+            saveCV(uploadedFile);
+            alert("Đã lưu và ứng tuyển thành công!");
+        } else {
+            alert("Ứng tuyển thành công!");
+        }
+
+        closeApplyModal();
+    }
+}
+function saveCV(file) {
+    var list = JSON.parse(localStorage.getItem("savedCVs") || "[]");
+
+    var newCV = {
+        id: Date.now(),
+        name: file.name,
+        type: "upload", // 🔥 BẮT BUỘC
+        updatedAt: new Date().toLocaleString()
+    };
+
+    list.push(newCV);
+
+    localStorage.setItem("savedCVs", JSON.stringify(list));
+}
+
+
+// ===== AUTO LOAD (PHÒNG TRƯỜNG HỢP) =====
+document.addEventListener("DOMContentLoaded", function () {
+    loadCVToSelect();
+});
+</script>
 </body>
 </html>
