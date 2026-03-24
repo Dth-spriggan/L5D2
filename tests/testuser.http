@@ -1,96 +1,81 @@
-### 1. KIỂM TRA MẠNG LƯỚI
-GET http://localhost:3000/api/ping
-
 ### ==========================================
-### KHU VỰC ỨNG VIÊN (CANDIDATE)
+### 1. TEST HỆ THỐNG ỨNG VIÊN (CANDIDATE)
 ### ==========================================
 
-### 2. Đăng ký Ứng viên
-POST http://localhost:3000/api/auth/register/candidate
+### 1.1 Đăng ký Ứng viên mới
+POST http://localhost:3000/api/auth/register-candidate
 Content-Type: application/json
 
 {
     "fullName": "Trương Đức Nhật",
     "email": "nhat251111@gmail.com",
-    "password": "nhat123",
-    "phone": "0987654321"
+    "password": "123"
 }
 
-### 3. Đăng nhập Ứng viên (Lấy Token ở đây để dùng cho các API dưới)
+### 1.2 Đăng nhập Ứng viên (Để lấy Token)
 # @name loginCandidate
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
     "email": "nhat251111@gmail.com",
-    "password": "nhat123"
+    "password": "123"
 }
 
-### 4. Xem Profile Ứng viên (Sửa chữ TOKEN_CUA_UNG_VIEN bằng token lấy được ở bước 3)
-GET http://localhost:3000/api/profile/candidate
-Authorization: Bearer TOKEN_CUA_UNG_VIEN_O_DAY
+### 1.3 Cập nhật Profile (Lưu ý: Giờ nó nằm chung trong User luôn)
+@tokenCandidate = {{loginCandidate.response.body.token}}
 
-### ==========================================
-### TEST CẬP NHẬT NHỎ GIỌT (PARTIAL UPDATE)
-### ==========================================
-
-### Test 1: Hôm nay buồn chán, ứng viên chỉ muốn sửa mỗi dòng Bio
-# ⚠️ Nhớ thay TOKEN_CUA_SEP_O_DAY bằng token của Ứng viên nhé
 PUT http://localhost:3000/api/profile/candidate
-Authorization: Bearer TOKEN_CUA_SEP_O_DAY
+Authorization: Bearer {{tokenCandidate}}
 Content-Type: application/json
 
 {
-    "bio": "Hôm nay trời đẹp, em chỉ muốn update mỗi cái Bio này thôi. Đố anh Backend làm mất data cũ của em đấy!"
+    "bio": "Chuyên gia fix bug đêm khuya",
+    "skills": "NodeJS, React, Docker",
+    "phone": "0912345678"
 }
-
-
-### Test 2: Đổi số điện thoại và thêm link Facebook (Các cái khác giữ nguyên)
-PUT http://localhost:3000/api/profile/candidate
-Authorization: Bearer TOKEN_CUA_SEP_O_DAY
-Content-Type: application/json
-
-{
-    "phone": "0888888888",
-    "facebook_url": "https://www.facebook.com/truong.nhat.759198"
-}
-
-
-### Bước Kiểm Chứng: Xem lại rổ data sau khi update lẻ tẻ
-# Chạy cái này để thấy fullName, education, skills vẫn còn nguyên vẹn!
-GET http://localhost:3000/api/profile/candidate
-Authorization: Bearer TOKEN_CUA_SEP_O_DAY
-
-
 
 
 ### ==========================================
-### KHU VỰC NHÀ TUYỂN DỤNG (EMPLOYER)
+### 2. TEST HỆ THỐNG NHÀ TUYỂN DỤNG (EMPLOYER)
 ### ==========================================
 
-### 5. Đăng ký Nhà Tuyển Dụng
-POST http://localhost:3000/api/auth/register/employer
+### 2.1 Đăng ký Nhà tuyển dụng mới
+POST http://localhost:3000/api/auth/register-employer
 Content-Type: application/json
 
 {
-    "fullName": "Sếp Độ Mixi",
-    "email": "hrmixi@gmail.com",
-    "password": "password123",
-    "company_name": "Tập đoàn MixiGaming",
-    "tax_code": "0123456789"
+    "company_name": "Mixi Corp",
+    "tax_code": "0123456789",
+    "email": "hr@mixicorp.com",
+    "password": "123"
 }
 
-### 6. Đăng nhập Nhà Tuyển Dụng (Lấy Token ở đây)
+### 2.2 Đăng nhập Nhà tuyển dụng
 # @name loginEmployer
 POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "hrmixi@gmail.com",
-    "password": "password123"
+    "email": "hr@mixicorp.com",
+    "password": "123"
 }
 
-### 7. Xem Profile Công ty (Sửa chữ TOKEN_CUA_HR bằng token lấy được ở bước 6)
-GET http://localhost:3000/api/profile/employer
-Authorization: Bearer TOKEN_CUA_HR_O_DAY
+### 2.3 Cập nhật thông tin Công ty
+@tokenEmployer = {{loginEmployer.response.body.token}}
+
+PUT http://localhost:3000/api/profile/employer
+Authorization: Bearer {{tokenEmployer}}
+Content-Type: application/json
+
+{
+    "address": "Số 1 Trần Duy Hưng, Hà Nội",
+    "website_url": "https://mixicorp.vn",
+    "description": "Công ty chuyên phân phối niềm vui"
+}
+
+
+### ==========================================
+### 3. TEST TÍNH NĂNG LƯU JOB (SAVED JOBS) chưa có gì
+### ==========================================
 
