@@ -1,9 +1,62 @@
-POST http://localhost:3000/api/auth/register
+### =========================================================
+### CẤU HÌNH BIẾN CHUNG
+### =========================================================
+@baseUrl = http://localhost:3000/api
+
+# ⚠️ LƯU Ý: Sau khi bấm chạy API Đăng nhập (số 2), đại ca copy 
+# cái đoạn chuỗi token dài loằng ngoằng dán đè vào chữ "token_cua_dai_ca_o_day" bên dưới nhé!
+@token = token_cua_dai_ca_o_day
+
+
+### =========================================================
+### 1. ĐĂNG KÝ TÀI KHOẢN NHÀ TUYỂN DỤNG
+### =========================================================
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-    "email": "test@example.com",
-    "password": "password123",
-    "name": "Test User",
-    "role": "Candidate"
+    "email": "test@example1.com",
+    "password": "password1234",
+    "name": "Test User 1",
+    "role": "Employer"
 }
+
+
+### =========================================================
+### 2. ĐĂNG NHẬP (ĐỂ LẤY TOKEN)
+### =========================================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example1.com",
+    "password": "password1234"
+}
+
+
+### =========================================================
+### 3. TẠO CÔNG VIỆC MỚI (Cần dán Token lên dòng 8 trước khi bấm)
+### =========================================================
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Lập trình viên Frontend (ReactJS)",
+  "description": "- Tham gia phát triển các tính năng UI/UX cho nền tảng web nội bộ của UTC.\n- Phối hợp cùng team Backend để tích hợp RESTful API.\n- Tối ưu hóa hiệu năng, đảm bảo trang web chạy mượt mà trên mọi thiết bị.",
+  "job_type": "Toàn thời gian",
+  "location": "Hà Nội",
+  "salary_min": 15,
+  "salary_max": 25,
+  "requirements": "- Có ít nhất 1 năm kinh nghiệm thực chiến với ReactJS và TailwindCSS.\n- Nắm vững kiến thức nền tảng HTML, CSS, JavaScript (ES6+).\n- Ưu tiên sinh viên tốt nghiệp hoặc đang theo học tại UTC.",
+  "benefits": "- Mức lương cạnh tranh 15 - 25 triệu tùy năng lực.\n- Môi trường làm việc trẻ trung, năng động, sếp tâm lý.\n- Được cấp Macbook Pro M2 để làm việc.",
+  "level": "Nhân viên",
+  "quantity": 2,
+  "skills": ["ReactJS", "Tailwind"]
+}
+
+
+### =========================================================
+### 4. LẤY DANH SÁCH CÔNG VIỆC (Check xem nãy tạo thành công chưa)
+### =========================================================
+GET {{baseUrl}}/jobs
