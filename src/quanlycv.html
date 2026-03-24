@@ -519,6 +519,63 @@ function logout() {
   localStorage.removeItem('currentUser');
   window.location.href = 'index.html';
 }
+// Thêm vào cuối file, trước khi đóng 
+function updateAuthUI() {
+  var user = localStorage.getItem('currentUser');
+  var guestMenu = document.getElementById('guest-menu');
+  var userMenu = document.getElementById('user-menu');
+  var employerBtnDesktop = document.getElementById('employer-btn-desktop');
+  var employerDivider = document.getElementById('employer-divider');
+  
+  if (user) {
+    // Đã đăng nhập
+    try {
+      var userData = JSON.parse(user);
+      if (guestMenu) guestMenu.style.display = 'none';
+      if (userMenu) userMenu.style.display = 'flex';
+      if (employerBtnDesktop) employerBtnDesktop.style.display = 'flex';
+      if (employerDivider) employerDivider.style.display = 'block';
+      
+      // Cập nhật avatar và tên
+      var headerAvatar = document.getElementById('header-avatar');
+      var dropdownAvatar = document.getElementById('dropdown-avatar');
+      var dropdownName = document.getElementById('dropdown-name');
+      var dropdownEmail = document.getElementById('dropdown-email');
+      
+      if (dropdownName) dropdownName.textContent = userData.fullName || userData.username || 'Người dùng';
+      if (dropdownEmail) dropdownEmail.textContent = userData.email || '';
+      
+      // Avatar mặc định nếu không có
+      var avatarUrl = userData.avatar || './assets/logouser.png';
+      if (headerAvatar) headerAvatar.src = avatarUrl;
+      if (dropdownAvatar) dropdownAvatar.src = avatarUrl;
+      
+    } catch(e) {
+      console.error("Lỗi parse user:", e);
+    }
+  } else {
+    // Chưa đăng nhập
+    if (guestMenu) guestMenu.style.display = 'flex';
+    if (userMenu) userMenu.style.display = 'none';
+    if (employerBtnDesktop) employerBtnDesktop.style.display = 'flex';
+    if (employerDivider) employerDivider.style.display = 'block';
+  }
+}
+
+// Gọi khi trang load
+window.addEventListener('DOMContentLoaded', function() {
+  renderList();
+  updateAuthUI();  // ← Thêm dòng này
+  
+  // Kiểm tra và hiển thị thông tin user nếu có (giữ lại để debug)
+  try {
+    var user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user && user.fullName) {
+      document.getElementById('dropdown-name').textContent = user.fullName;
+      document.getElementById('dropdown-email').textContent = user.email || user.username || '';
+    }
+  } catch(e) {}
+});
 </script>
 </body>
 </html>
