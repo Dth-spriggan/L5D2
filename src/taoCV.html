@@ -129,7 +129,9 @@ select.rp-input { cursor: pointer; }
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" class="tbtn tbtn-ghost" style="padding:6px 10px;" title="Về trang chủ"><i class="fas fa-arrow-left"></i></a>
+    <button class="tbtn tbtn-ghost" onclick="goBack()" style="padding:6px 10px;" title="Quay lại">
+  <i class="fas fa-arrow-left"></i>
+</button>
     <a href="index.html"><img src="./assets/logoweb.png" style="height:28px;" alt="MidCV"></a>
     <span style="color:rgba(255,255,255,0.15);">|</span>
     <input id="cv-title-inp" value="CV Của Tôi" style="background:transparent;border:none;color:#e2e8f0;font-size:0.88rem;font-weight:600;outline:none;width:130px;font-family:'DM Sans',sans-serif;">
@@ -153,14 +155,6 @@ select.rp-input { cursor: pointer; }
     <button class="sb-btn" onclick="gotoSection('language',this)"><i class="fas fa-language"></i> Ngôn ngữ</button>
     <button class="sb-btn" onclick="gotoSection('certificate',this)"><i class="fas fa-award"></i> Chứng chỉ</button>
     <div style="border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;"></div>
-    <button class="sb-btn" id="btn-add-menu" onclick="toggleAddMenu()" style="color:#60a5fa;"><i class="fas fa-plus" style="color:#60a5fa;margin-right:9px;width:15px;text-align:center;"></i> Thêm mục</button>
-    <div id="add-menu" style="display:none;border-top:1px solid rgba(255,255,255,0.06);">
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-exp"><i class="fas fa-briefcase"></i> Kinh nghiệm</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-edu"><i class="fas fa-graduation-cap"></i> Học vấn</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-sk"><i class="fas fa-star"></i> Kỹ năng</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-lang"><i class="fas fa-language"></i> Ngôn ngữ</button>
-      <button class="sb-btn" style="font-size:0.78rem;padding-left:28px;" id="qk-cert"><i class="fas fa-award"></i> Chứng chỉ</button>
-    </div>
   </div>
 
   <div id="canvas">
@@ -1236,6 +1230,9 @@ function loadFullCVData(cv) {
     });
     renderCertCV();
   }
+}
+function goBack() {
+  window.history.back();
 }
 
 /* ── INIT ── */
