@@ -27,34 +27,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // 0.1 MÀNG LỌC TOÀN CỤC (ÁP DỤNG LỆNH CỦA ADMIN)
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. KIỂM TRA "THẺ VIP": Ai đang đăng nhập?
-    const userStr = localStorage.getItem('currentUser');
-    let isAdmin = false;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        if (user.username === 'admin') isAdmin = true;
-    }
-
-    // NẾU LÀ ADMIN HOẶC ĐANG Ở TRANG ADMIN -> BỎ QUA MÀNG LỌC (Cho phép xem TẤT CẢ)
-    if (isAdmin || window.location.pathname.includes('admin.html')) return;
+    // CHỈ TẮT MÀNG LỌC KHI ĐANG ĐỨNG TRONG ĐẠI BẢN DOANH ADMIN.HTML
+    // Nếu Admin bước ra ngoài trang public (index, listvieclam...), 
+    // họ sẽ bị lọc giao diện y hệt như một User bình thường!
+    if (window.location.pathname.includes('admin.html')) return;
 
     // =========================================================
-    // LUỒNG DƯỚI ĐÂY CHỈ CHẠY ĐỐI VỚI ỨNG VIÊN THƯỜNG
+    // LUỒNG DƯỚI ĐÂY SẼ ÁP DỤNG CHO TẤT CẢ MỌI NGƯỜI (KỂ CẢ ADMIN)
+    // KHI HIỂN THỊ Ở CÁC TRANG PUBLIC
     // =========================================================
     
-    // 2. Lọc Việc làm (Jobs)
+    // 1. Lọc Việc làm (Jobs)
     if (typeof window.mockJobs !== 'undefined') {
         const deletedJobs = JSON.parse(localStorage.getItem('admin_deleted_jobs')) || [];
         const approvedJobs = JSON.parse(localStorage.getItem('admin_approved_jobs')) || [];
         
         window.mockJobs = window.mockJobs.filter(j => {
             if (deletedJobs.includes(j.id)) return false; // Giấu bài bị xóa
-            if (approvedJobs.includes(j.id) || j.id <= 5) return true; // Hiện bài đã duyệt
+            if (approvedJobs.includes(j.id) || j.id <= 5) return true; // Chỉ hiện bài ĐÃ DUYỆT
             return false; // Giấu bài chờ duyệt
         });
     }
 
-    // 3. Lọc Công ty (Companies)
+    // 2. Lọc Công ty (Companies)
     if (typeof window.mockCompaniesDB !== 'undefined') {
         const deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
         window.mockCompaniesDB = window.mockCompaniesDB.filter(c => !deletedComps.includes(c.id));
@@ -1100,15 +1095,44 @@ window.syncUserHeader = function() {
 
         // 1. Cập nhật Tên và Email trong Dropdown
         if (dropdownName) dropdownName.textContent = displayName;
-        if (dropdownEmail) dropdownEmail.textContent = user.email || (user.username);
+        if (dropdownEmail) {
+            dropdownEmail.textContent = user.email || user.username;
+            dropdownEmail.style.display = 'block'; // Reset trạng thái hiển thị
+        }
 
         // 2. Cập nhật Avatar
-        if (user.avatar) {
+        if (user.avatar && user.avatar.startsWith('data:image')) {
             if (headerAvatar) headerAvatar.src = user.avatar;
             if (dropdownAvatar) dropdownAvatar.src = user.avatar;
         }
-        // Nếu chưa có avatar thì giữ ảnh mặc định logouser.png
-        
+
+        // 3. LOGIC BIẾN HÌNH MENU DROPDOWN DÀNH RIÊNG CHO ADMIN
+        if (user.username === 'admin' && dropdownName) {
+            // Đổi danh xưng cực ngầu
+            dropdownName.textContent = "ADMIN";
+            
+            // Ẩn hoàn toàn dòng Email cho gọn gàng
+            if (dropdownEmail) dropdownEmail.style.display = 'none';
+
+            // Tìm khu vực chứa các đường link menu
+            const linksContainer = dropdownName.closest('#dropdown-menu').querySelector('.p-2:not(.border-t)');
+            if (linksContainer) {
+                // Ẩn nút "Việc làm đã lưu" đi
+                const savedJobsLink = linksContainer.querySelector('a[href*="tab=saved"]');
+                if (savedJobsLink) savedJobsLink.style.display = 'none';
+
+                // Kiểm tra xem đã chèn nút Admin chưa (để tránh bị nhân bản khi F5)
+                if (!document.getElementById('admin-dashboard-btn')) {
+                    const adminBtnHtml = `
+                        <a id="admin-dashboard-btn" href="admin.html" class="flex items-center gap-3 px-3 py-2.5 mb-2 text-sm text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition font-bold border border-blue-200 shadow-sm">
+                            <i class="fas fa-shield-alt w-5 text-center text-lg"></i> Bảng điều khiển Admin
+                        </a>
+                    `;
+                    // Dùng afterbegin để NHÉT NÚT NÀY LÊN ĐỈNH CỦA DANH SÁCH MENU
+                    linksContainer.insertAdjacentHTML('afterbegin', adminBtnHtml);
+                }
+            }
+        }
     } catch (e) {
         console.error("Lỗi đồng bộ Header:", e);
     }
@@ -1243,11 +1267,55 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) { window.location.href = 'login.html'; return; }
         const displayName = user.fullName || user.username || 'Người dùng';
         const safeSet = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+        
         safeSet('name', displayName); safeSet('phone', user.phone || ''); safeSet('email', user.email || '');
         safeSet('bio', user.bio || ''); safeSet('education', user.education || ''); safeSet('skills', user.skills || '');
-        const dispName = document.getElementById('display-name'); if(dispName) dispName.textContent = displayName;
+        
+        const dispName = document.getElementById('display-name'); 
+        if(dispName) dispName.textContent = displayName;
+        
         const avatarEl = document.getElementById('avatarPreview');
         if (avatarEl) avatarEl.src = (user.avatar && user.avatar.startsWith('data:image')) ? user.avatar : DEFAULT_AVATAR;
+
+        // ==========================================
+        // DỌN DẸP GIAO DIỆN HỒ SƠ NẾU LÀ ADMIN
+        // ==========================================
+        if (user.username === 'admin') {
+            // 1. Đổi danh xưng
+            if(dispName) dispName.textContent = displayName + ' (ADMIN)';
+            const roleText = document.querySelector('.user-role');
+            if(roleText) roleText.textContent = 'Quản trị viên Hệ thống';
+
+            // 2. Ẩn các Tab Menu không dành cho Admin
+            const hiddenTabs = ['nav-facebook', 'nav-linkedin', 'nav-saved', 'nav-followed'];
+            hiddenTabs.forEach(tabId => {
+                const el = document.getElementById(tabId);
+                if (el) el.style.display = 'none';
+            });
+
+            // Ẩn bớt các đường kẻ ngang (hr) trên menu cho đỡ trống
+            const dividers = document.querySelectorAll('.side-nav div[style*="border-top"]');
+            if(dividers.length > 0) dividers[0].style.display = 'none';
+
+            // 3. ẨN CÁC Ô NHẬP LIỆU THỪA THÃI CỦA ỨNG VIÊN
+            const candidateFields = ['phone', 'education', 'skills'];
+            candidateFields.forEach(id => {
+                const inputEl = document.getElementById(id);
+                if (inputEl) {
+                    // Tìm thẻ cha bọc ngoài (div.form-group) và giấu nó đi
+                    const formGroup = inputEl.closest('.form-group');
+                    if (formGroup) formGroup.style.display = 'none';
+                }
+            });
+
+            // 4. "Độ" lại ô Giới thiệu bản thân cho ngầu hơn
+            const bioInput = document.getElementById('bio');
+            if (bioInput) {
+                const bioLabel = bioInput.closest('.form-group').querySelector('label');
+                if (bioLabel) bioLabel.innerText = 'Thông điệp / Chữ ký Admin';
+                bioInput.placeholder = 'Nhập thông điệp hiển thị khi bình luận...';
+            }
+        }
     }
 
     window.switchPanel = function(name) {
