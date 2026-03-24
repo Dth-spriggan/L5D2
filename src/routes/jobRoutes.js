@@ -58,4 +58,10 @@ router.put('/admin/jobs/:id/approve', jobController.approveJob);
 // - Link test: /api/admin/jobs/1/reject
 router.put('/admin/jobs/:id/reject', jobController.rejectJob);
 
+
+// 1. API LẤY DANH SÁCH JOB (Dành cho Trang chủ & Trang Xem tất cả)
+// Frontend sẽ gọi: GET http://localhost:3000/api/jobs
+// Hoặc thêm phân trang: GET http://localhost:3000/api/jobs?limit=6&page=1
+router.get('/', jobController.getAllJobs);
+
 module.exports = router;

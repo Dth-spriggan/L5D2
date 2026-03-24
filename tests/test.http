@@ -10,6 +10,10 @@ Content-Type: application/json
 
 
 
+### Lấy 6 cái Job mới nhất cho Trang Chủ
+GET http://localhost:3000/api/jobs?limit=6
+
+
 ### ==========================================
 ### BỘ TEST API JOBS 
 ### ==========================================
@@ -24,7 +28,7 @@ Content-Type: application/json
   "salary_gross": 36000000,
   "job_type": "PART_TIME",
   "location": "Hà Nội",
-  "employerId": 1 
+  "employerId": 7 
 }
 
 ### ------------------------------------------
@@ -46,7 +50,7 @@ Content-Type: application/json
 ### ------------------------------------------
 
 ### 4. ADMIN DUYỆT TIN
-PUT http://localhost:3000/api/admin/jobs/2/approve
+PUT http://localhost:3000/api/admin/jobs/5/approve
 
 ### ------------------------------------------
 
@@ -138,3 +142,105 @@ DELETE http://localhost:3000/api/cvs/admin/8/force
 ### 8. 👱‍♂️ [ỨNG VIÊN] KHÔI PHỤC CV (UNDO XÓA MỀM)
 # Lấy ID của cái CV sếp vừa bấm XÓA MỀM ở bước 5, thay vào số 1 ở link dưới rồi bóp cò!
 POST http://localhost:3000/api/cvs/4/restore
+
+
+
+
+### BỘ TEST API AUTH
+###===========================================
+###TOKEN Ứng viên: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IkNhbmRpZGF0ZSIsImlhdCI6MTc3MzY3OTYwNCwiZXhwIjoxNzczNzY2MDA0fQ.t3OVlUUg6lJS0zVOGcFQb4zR6ZbVxdfjwKCHh4HK6KY
+###TOKEN Nhà tuyển dụng: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczNjc5NzE0LCJleHAiOjE3NzM3NjYxMTR9.B2NHNGBaJvTPldXG2tAjNPppNmmBuQN6ja4oiV5X_SU
+
+### 1. ĐĂNG KÝ TÀI KHOẢN ỨNG VIÊN
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "anhoii@example.com",
+  "password": "25112005",
+  "fullName": "NTG",
+  "role": "Candidate",
+  "phone": "0987654321"
+}
+
+### 2. ĐĂNG KÝ TÀI KHOẢN HR (NHÀ TUYỂN DỤNG)
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "hr_mixifood@example.com",
+  "password": "password123",
+  "fullName": "HR MixiFood",
+  "role": "Employer",
+  "phone": "0912345678"
+}
+
+
+### 3. ĐĂNG NHẬP Ứng viên (Lấy Token ở dưới Terminal)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "anhoii@example.com",
+  "password": "25112005"
+}
+
+### 3. ĐĂNG NHẬP (Lấy Token ở dưới Terminal)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "hr_mixifood@example.com",
+  "password": "password123"
+}
+
+
+
+### BỘ TEST API APPLICATIONS (NỘP ĐƠN)
+
+
+### 1. ỨNG VIÊN NỘP CV VÀO JOB (Nhớ thay token của ứng viên)
+POST http://localhost:3000/api/applications
+Content-Type: application/json
+Authorization: Bearer <COPY_TOKEN_CỦA_ỨNG_VIÊN_DÁN_VÀO_ĐÂY>
+
+{
+  "jobId": 1,
+  "cvUrl": "https://res.cloudinary.com/demo/cv_duc_nhat.pdf",
+  "coverLetter": "Cho em xin một chân đè tem hộp khô gà nhé!"
+}
+
+
+### 2. HR XEM DANH SÁCH ỨNG VIÊN CỦA 1 JOB
+GET http://localhost:3000/api/applications/job/5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
+
+
+### 3. HR ĐỔI TRẠNG THÁI ĐƠN SANG "REVIEWING"
+PUT http://localhost:3000/api/applications/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
+
+{
+  "newStatus": "REVIEWING"
+}
+
+
+### 4. HR ĐỔI TRẠNG THÁI ĐƠN SANG "REJECTED" (Đánh trượt)
+PUT http://localhost:3000/api/applications/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
+
+{
+  "newStatus": "REJECTED"
+}
+
+
+### 5. HR HOÀN TÁC (UNDO) TRẠNG THÁI LỠ TAY
+POST http://localhost:3000/api/applications/1/undo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
+
+
+### 6. ỨNG VIÊN RÚT ĐƠN (Chỉ rút được khi HR chưa xem)
+DELETE http://localhost:3000/api/applications/1
+Authorization: Bearer <COPY_TOKEN_CỦA_ỨNG_VIÊN_DÁN_VÀO_ĐÂY>
