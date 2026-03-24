@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Doanh Nghiệp - MidCV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="bg-slate-50 font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <div id="admin-overlay" class="fixed inset-0 bg-slate-900/60 z-[60] hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleAdminSidebar()"></div>
+
+    <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-[70] w-64 bg-slate-900 text-slate-300 flex flex-col transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-300 shadow-2xl">
+        
+        <div class="h-16 flex items-center gap-4 px-6 border-b border-slate-800 bg-slate-950 shrink-0">
+            <img src="./assets/logoweb.png" alt="Logo" class="h-12 w-12 object-cover bg-white p-1.5 rounded-lg shadow-sm">
+            <div class="flex flex-col items-center justify-center"> 
+                <span class="text-lg font-black tracking-[0.15em] text-white leading-none mb-1">
+                    MID<span class="text-blue-500">CV</span>
+                </span>
+                <span class="text-lg font-black tracking-[0.15em] text-slate-400 leading-none">
+                    BUSINESS
+                </span>
+            </div>
+        </div>
+        
+        <nav class="flex-1 px-3 py-6 space-y-2 overflow-y-auto font-medium" id="admin-nav-links">
+            <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-2">Quản lý tuyển dụng</p>
+            
+            <button onclick="switchAdminView('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-900/20 transition admin-nav-btn">
+                <span class="text-xl">📊</span> Tổng quan
+            </button>
+            
+            <button onclick="switchAdminView('post-job')" id="nav-post-job" class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
+                <span class="text-xl">📝</span> Đăng tin mới
+            </button>
+            
+            <button onclick="switchAdminView('candidates')" id="nav-candidates" class="w-full flex items-center justify-between px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
+                <div class="flex items-center gap-3"><span class="text-xl">📁</span> Hồ sơ ứng viên</div>
+                <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">12</span>
+            </button>
+            
+            <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Cài đặt</p>
+            
+            <button onclick="switchAdminView('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
+                <span class="text-xl">⚙️</span> Thông tin công ty
+            </button>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative z-0">
+        
+        <header class="h-16 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleAdminSidebar()" class="lg:hidden text-gray-600 hover:text-blue-600 focus:outline-none p-2 -ml-2 rounded-md">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h1 id="dashboard-title" class="text-xl font-extrabold text-slate-800">Bảng điều khiển</h1>
+            </div>
+            
+            <div class="flex items-center gap-3 lg:gap-5">
+                <button class="relative text-gray-500 hover:text-blue-600 transition hidden sm:block">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="h-8 w-px bg-gray-200 hidden sm:block"></div>
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col text-right hidden lg:flex">
+                        <span id="header-company-name" class="text-sm font-bold text-gray-800">Công ty TNHH Demo</span>
+                        <span class="text-xs font-medium text-blue-600">Tài khoản Doanh nghiệp</span>
+                    </div>
+                    <img src="./assets/logouser.png" alt="Avatar" class="w-9 h-9 lg:w-10 lg:h-10 rounded-full border-2 border-blue-100 object-cover shadow-sm">
+                </div>
+                <button onclick="logout()" class="ml-1 lg:ml-2 p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition" title="Đăng xuất">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            
+            <div id="view-overview" class="admin-view block">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <p class="text-sm font-medium text-gray-500 mb-1">Tin đang mở</p>
+                        <h3 class="text-3xl font-bold text-gray-800">03</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                        <p class="text-sm font-medium text-gray-500 mb-1">CV Ứng tuyển mới</p>
+                        <h3 class="text-3xl font-bold text-gray-800">12</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500">
+                        <p class="text-sm font-medium text-gray-500 mb-1">Lượt xem tin (Tuần)</p>
+                        <h3 class="text-3xl font-bold text-gray-800">348</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="font-bold text-gray-800">Chiến dịch tuyển dụng</h2>
+                        <button onclick="switchAdminView('post-job')" class="text-sm bg-blue-50 text-blue-600 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">Đăng tin mới</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-sm">
+                                    <th class="px-6 py-3 font-medium">Vị trí tuyển dụng</th>
+                                    <th class="px-6 py-3 font-medium">Trạng thái</th>
+                                    <th class="px-6 py-3 font-medium">Hạn nộp</th>
+                                    <th class="px-6 py-3 font-medium text-center">Số CV</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="switchAdminView('candidates')">
+                                    <td class="px-6 py-4 font-bold text-gray-800">Thực tập sinh Frontend (ReactJS)</td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">Đang mở</span></td>
+                                    <td class="px-6 py-4 text-gray-500">30/03/2026</td>
+                                    <td class="px-6 py-4 font-bold text-blue-600 text-center text-base">5</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition cursor-pointer" onclick="switchAdminView('candidates')">
+                                    <td class="px-6 py-4 font-bold text-gray-800">Lập trình viên Java Backend</td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">Đang mở</span></td>
+                                    <td class="px-6 py-4 text-gray-500">15/04/2026</td>
+                                    <td class="px-6 py-4 font-bold text-blue-600 text-center text-base">7</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-post-job" class="admin-view hidden max-w-4xl mx-auto">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Tạo tin tuyển dụng mới</h2>
+                    <form onsubmit="event.preventDefault(); alert('Đã lưu nháp! (Chờ kết nối Backend)'); switchAdminView('overview');" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề công việc <span class="text-red-500">*</span></label>
+                            <input type="text" required placeholder="VD: Lập trình viên Frontend (ReactJS)" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ngành nghề</label>
+                                <select class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option>IT - Phần mềm</option>
+                                    <option>Marketing / Truyền thông</option>
+                                    <option>Kế toán / Kiểm toán</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hạn chót nộp CV <span class="text-red-500">*</span></label>
+                                <input type="date" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mức lương (VNĐ)</label>
+                                <input type="text" placeholder="VD: 15.000.000 - 25.000.000" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Địa điểm làm việc</label>
+                                <input type="text" placeholder="Hà Nội, TP.HCM..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả công việc chi tiết <span class="text-red-500">*</span></label>
+                            <textarea rows="6" required placeholder="Nhập yêu cầu, quyền lợi, mô tả..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button" onclick="switchAdminView('overview')" class="px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition">Hủy bỏ</button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md">Đăng tin ngay</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="view-candidates" class="admin-view hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <h2 class="font-bold text-gray-800">Danh sách ứng viên (12)</h2>
+                        <input type="text" placeholder="Tìm tên ứng viên..." class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-64">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-sm">
+                                    <th class="px-6 py-3 font-medium">Ứng viên</th>
+                                    <th class="px-6 py-3 font-medium">Vị trí ứng tuyển</th>
+                                    <th class="px-6 py-3 font-medium">Ngày nộp</th>
+                                    <th class="px-6 py-3 font-medium">Trạng thái</th>
+                                    <th class="px-6 py-3 font-medium text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-gray-100" id="candidate-list-body">
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">N</div>
+                                            <span class="font-bold text-gray-800">Nguyễn Văn A</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600">Thực tập sinh Frontend</td>
+                                    <td class="px-6 py-4 text-gray-500">Hôm nay, 09:30</td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-md text-xs font-bold">Chưa xem</span></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button onclick="alert('Đang tải CV của Nguyễn Văn A...')" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Xem CV</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold">T</div>
+                                            <span class="font-bold text-gray-800">Trần Thị B</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600">Lập trình viên Java</td>
+                                    <td class="px-6 py-4 text-gray-500">Hôm qua, 14:15</td>
+                                    <td class="px-6 py-4"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">Đã duyệt</span></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">Xem CV</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-settings" class="admin-view hidden max-w-4xl mx-auto">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Cài đặt thông tin Công ty</h2>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 items-center sm:items-start">
+                        <img src="./assets/logouser.png" alt="Company Logo" class="w-24 h-24 rounded-lg border-2 border-gray-200 object-cover shadow-sm shrink-0">
+                        
+                        <div class="flex flex-col items-center sm:items-start">
+                            <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition mb-2">Đổi Logo</button>
+                            <p class="text-xs text-gray-500 text-center sm:text-left">Định dạng JPG, PNG. Tối đa 2MB.</p>
+                        </div>
+                    </div>
+
+                    <form id="form-company-settings" onsubmit="updateCompanyProfile(event)" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tên công ty</label>
+                                <input id="setting-company-name" type="text" value="Công ty TNHH Demo" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                                <input id="setting-company-tax" type="text" value="0101234567" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-gray-500" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email liên hệ</label>
+                                <input id="setting-company-email" type="email" value="hr@demo.com" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                                <input id="setting-company-phone" type="tel" value="024 3766 3311" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ trụ sở</label>
+                                <input id="setting-company-address" type="text" value="120 Yên Lãng, Đống Đa, Hà Nội" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Giới thiệu công ty</label>
+                                <textarea id="setting-company-desc" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">Chúng tôi là một công ty công nghệ...</textarea>
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end">
+                            <button type="submit" class="px-8 py-2.5 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition shadow-md">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="./scripts.js"></script>
+</body>
+</html>

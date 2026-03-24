@@ -1,0 +1,42 @@
+### 1. Test API Tạo tin tuyển dụng mới
+POST http://localhost:3000/api/jobs
+Content-Type: application/json
+
+{
+  "title": "Tuyển dụng BLV Xoilac",
+  "description": "Làm việc juventus.",
+  "salary_gross": 300,
+  "job_type": "Fulltime",
+  "location": "Hà Nội"
+}
+
+
+###
+POST http://localhost:3000/api/jobs
+Content-Type: application/json
+
+{
+  "title": "Tuyển dụng nhân viên bán khô gà",
+  "description": "Làm việc UTC.",
+  "job_type": "Part-time",
+  "location": "Hà Nội"
+}
+###
+POST http://localhost:3000/api/jobs
+Content-Type: application/json
+
+{
+  "title": "Tuyển dụng Rapper",
+  "description": "Biết bợ, làm việc tại nhà QNT.",
+  "salary_gross": 18000000,
+  "job_type": "Fulltime",
+  "location": "Hà Nội"
+}
+
+
+### 2. XÓA MỀM TIN SỐ 7 (Vứt vào thùng rác)
+DELETE http://localhost:3000/api/jobs/4
+
+
+### 7. XÓA VĨNH VIỄN (Hard Delete) - Cẩn thận khi bấm!
+DELETE http://localhost:3000/api/jobs/5/force
