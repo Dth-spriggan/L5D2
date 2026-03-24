@@ -2114,30 +2114,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (comps.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Trống.</td></tr>';
 
         const approvedComps = JSON.parse(localStorage.getItem('admin_approved_comps')) || [];
+        const deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
 
         tbody.innerHTML = comps.map(c => {
-            // Lấy danh sách công ty do user tự đăng ký
             const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
-            
-            // ĐÃ FIX: Kiểm tra xem công ty này có phải do user tạo không
             const isUserCreated = customComps.some(cc => cc.id === c.id);
-            
-            // ĐÃ FIX: Chỉ duyệt nếu Admin đã bấm duyệt, HOẶC nó là công ty gốc (không do user tạo)
             const isApproved = approvedComps.includes(c.id) || !isUserCreated;
-
-            // Xử lý cấm/từ chối (kiểm tra thêm sổ đen để hiện đúng trạng thái màu đỏ nếu cần)
-            const deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
             const isRejected = deletedComps.includes(c.id);
 
-            let statusHtml = '';
-            let approveBtn = '';
+            // KIỂM TRA XEM CÓ BẢN SỬA CHỜ DUYỆT KHÔNG
+            const compCustomData = customComps.find(cc => cc.id === c.id);
+            const hasPendingUpdate = compCustomData && compCustomData.pendingUpdate;
+
+            let statusHtml = ''; let approveBtn = '';
 
             if (isRejected) {
                 statusHtml = `<span class="text-xs bg-red-100 text-red-700 font-bold px-2 py-1 rounded"><i class="fas fa-ban"></i> Bị từ chối</span>`;
                 approveBtn = `<button onclick="approveCompany(${c.id})" class="text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded transition mr-2" title="Khôi phục/Duyệt lại"><i class="fas fa-check"></i> Duyệt</button>`;
+            } else if (hasPendingUpdate) {
+                // TRẠNG THÁI MÀU TÍM BÁO HIỆU ĐANG CHỜ DUYỆT SỬA
+                statusHtml = `<span class="text-xs bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded"><i class="fas fa-pen-nib"></i> Chờ duyệt sửa</span>`;
+                approveBtn = `<button onclick="approveCompany(${c.id})" class="text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-3 py-1 rounded transition mr-2" title="Duyệt nội dung mới"><i class="fas fa-check-double"></i> Duyệt sửa</button>`;
             } else if (isApproved) {
                 statusHtml = `<span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-1 rounded"><i class="fas fa-check-circle"></i> Đã duyệt</span>`;
-                approveBtn = ''; // Đã duyệt rồi thì ẩn nút Duyệt
+                approveBtn = ''; 
             } else {
                 statusHtml = `<span class="text-xs bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded"><i class="fas fa-clock"></i> Chờ duyệt</span>`;
                 approveBtn = `<button onclick="approveCompany(${c.id})" class="text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded transition mr-2" title="Duyệt Công ty"><i class="fas fa-check"></i> Duyệt</button>`;
@@ -2166,11 +2166,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.approveCompany = function(id) {
         if (!confirm("✅ Xác nhận duyệt Công ty này để hiển thị công khai trên nền tảng?")) return;
+
+        // GHI ĐÈ BẢN SỬA LÊN BẢN GỐC (NẾU CÓ BẢN NHÁP)
+        let customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
+        const compIdx = customComps.findIndex(c => c.id === id);
+        if (compIdx !== -1 && customComps[compIdx].pendingUpdate) {
+            Object.assign(customComps[compIdx], customComps[compIdx].pendingUpdate);
+            delete customComps[compIdx].pendingUpdate; // Xóa nháp đi
+            localStorage.setItem('custom_companies', JSON.stringify(customComps));
+            
+            // Ép đồng bộ kho tổng để thay đổi hiển thị ra ngay Public
+            if (typeof window.mockCompaniesDB !== 'undefined') {
+                const mjIdx = window.mockCompaniesDB.findIndex(m => m.id === id);
+                if(mjIdx !== -1) window.mockCompaniesDB[mjIdx] = customComps[compIdx];
+            }
+        }
+
         const approvedIds = JSON.parse(localStorage.getItem('admin_approved_comps')) || [];
         if (!approvedIds.includes(id)) approvedIds.push(id);
         localStorage.setItem('admin_approved_comps', JSON.stringify(approvedIds));
         
-        // Rút tên khỏi Sổ đen nếu nó từng bị từ chối
         let deletedIds = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
         deletedIds = deletedIds.filter(dId => dId !== id);
         localStorage.setItem('admin_deleted_comps', JSON.stringify(deletedIds));
@@ -2392,15 +2407,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 // --- HÀM XEM TRƯỚC CÔNG TY NGAY TRÊN ADMIN (ĐÃ FIX LỖI KẾT NỐI DATA) ---
     window.previewCompany = function(id) {
-        // Thay vì gọi hàm bị nhốt, ta chọc thẳng vào kho tổng toàn cục luôn!
-        const comp = (typeof window.mockCompaniesDB !== 'undefined') ? window.mockCompaniesDB.find(c => c.id === id) : null;
-        
+        let comp = (typeof window.mockCompaniesDB !== 'undefined') ? window.mockCompaniesDB.find(c => c.id === id) : null;
         if (!comp) return alert("Dữ liệu công ty này không tồn tại hoặc đã bị lỗi!");
 
-        // Bơm nội dung vào khung Modal (Tái sử dụng lại Modal của Job)
+        // TRỘN BẢN NHÁP VÀO ĐỂ ADMIN DUYỆT THỬ
+        const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
+        const customData = customComps.find(cc => cc.id === id);
+        if (customData && customData.pendingUpdate) {
+            comp = { ...comp, ...customData.pendingUpdate };
+        }
+
         const contentDiv = document.getElementById('admin-preview-content');
         
-        // Render giao diện Ảnh bìa + Logo + Thông tin
         contentDiv.innerHTML = `
             <div class="relative h-40 bg-gray-200 rounded-lg mb-12">
                 <img src="${comp.cover || 'https://placehold.co/800x200/f8fafc/94a3b8?text=Cover'}" class="w-full h-full object-cover rounded-lg border border-gray-100">
@@ -2413,6 +2431,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h2 class="text-2xl font-black text-gray-900 mb-2 leading-tight">${comp.name}</h2>
                 <div class="flex flex-wrap gap-3 text-sm font-medium mb-6">
                     <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md flex items-center gap-1"><i class="fas fa-building"></i> ${comp.industry || 'Chưa cập nhật'}</span>
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md flex items-center gap-1"><i class="fas fa-users"></i> ${comp.size || 'Chưa cập nhật'}</span>
                     <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> ${comp.address || 'Chưa cập nhật'}</span>
                     ${comp.website ? `<a href="${comp.website}" target="_blank" class="bg-gray-100 text-blue-600 hover:underline px-3 py-1.5 rounded-md flex items-center gap-1"><i class="fas fa-globe"></i> Website</a>` : ''}
                 </div>
@@ -2424,7 +2443,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Gọi khung Modal hiện lên
         document.getElementById('admin-preview-modal').classList.remove('hidden');
     };
 // =================================================================
@@ -2564,11 +2582,15 @@ function getCompanyStatus() {
     const deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
     const rejectedReasons = JSON.parse(localStorage.getItem('admin_rejected_reasons')) || {};
 
-    // ƯU TIÊN 1: NẾU NẰM TRONG SỔ ĐEN LÀ BỊ TỪ CHỐI (KÈM LÝ DO)
     if (deletedComps.includes(myComp.id)) {
         return { status: 'rejected', id: myComp.id, reason: rejectedReasons[myComp.id] || "Không đạt tiêu chuẩn. Vui lòng kiểm tra lại." };
     }
-    // ƯU TIÊN 2: NẾU ĐÃ ĐƯỢC DUYỆT
+    
+    // BỔ SUNG TRẠNG THÁI: Cứ có bản nháp là báo Đang chờ duyệt sửa
+    if (myComp.pendingUpdate) {
+        return { status: 'pending_update', id: myComp.id };
+    }
+
     if (approvedComps.includes(myComp.id) || myComp.id <= 10) return { status: 'approved', id: myComp.id };
     
     return { status: 'pending', id: myComp.id };
@@ -2579,14 +2601,16 @@ window.updateEmployerNotifications = function() {
     if (compInfo === 'none') return;
     
     const contentDiv = document.getElementById('noti-content');
-    const postJobBtn = document.querySelector('#view-post-job button[type="submit"]'); // Đổi ID view tùy bạn
+    const postJobBtn = document.querySelector('#view-post-job button[type="submit"]');
 
     if (contentDiv) {
         if (compInfo.status === 'pending') {
             contentDiv.innerHTML = `<div class="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded flex gap-3"><i class="fas fa-clock text-yellow-500 mt-1"></i><div><p class="text-xs font-bold text-yellow-800">Hồ sơ chờ duyệt</p><p class="text-[10px] text-yellow-700">Admin đang xem xét thông tin công ty.</p></div></div>`;
             if(postJobBtn) lockPostJob(postJobBtn, false); 
+        } else if (compInfo.status === 'pending_update') {
+            contentDiv.innerHTML = `<div class="p-3 bg-purple-50 border-l-4 border-purple-500 rounded flex gap-3"><i class="fas fa-pen-nib text-purple-500 mt-1"></i><div><p class="text-xs font-bold text-purple-800">Chờ duyệt bản sửa</p><p class="text-[10px] text-purple-700">Bản cập nhật thông tin đang chờ Admin duyệt để hiển thị ra Public.</p></div></div>`;
+            if(postJobBtn) lockPostJob(postJobBtn, false); 
         } else if (compInfo.status === 'rejected') {
-            // HIỆN RÕ LÝ DO BỊ TỪ CHỐI Ở ĐÂY
             contentDiv.innerHTML = `<div class="p-3 bg-red-50 border-l-4 border-red-500 rounded flex gap-3"><i class="fas fa-ban text-red-500 mt-1"></i><div><p class="text-xs font-bold text-red-800">Từ chối phê duyệt</p><p class="text-[10px] text-red-700 mt-0.5"><b>Lý do:</b> ${compInfo.reason}</p></div></div>`;
             if(postJobBtn) lockPostJob(postJobBtn, true); 
         } else if (compInfo.status === 'approved') {
@@ -2615,13 +2639,12 @@ window.requestAdminApproval = function() {
     if (compInfo === 'none') return;
     
     if (compInfo.status === 'approved') {
-        alert("Thông tin: Công ty của bạn đã ở trạng thái Đã duyệt!");
+        alert("Thông tin: Công ty của bạn đã ở trạng thái Đã duyệt và không có thay đổi nào đang chờ!");
         return;
     }
 
     if (!confirm("Gửi lại yêu cầu phê duyệt hồ sơ công ty cho Admin?")) return;
     
-    // FIX LỖI: Rút tên khỏi sổ đen, rút luôn lý do cũ đi để chuyển về Pending
     let deletedComps = JSON.parse(localStorage.getItem('admin_deleted_comps')) || [];
     deletedComps = deletedComps.filter(id => id !== compInfo.id);
     localStorage.setItem('admin_deleted_comps', JSON.stringify(deletedComps));
@@ -2654,29 +2677,28 @@ window.loadCompanySettings = function() {
     if (!userStr) return;
     const user = JSON.parse(userStr);
 
-    // Tìm đúng công ty của người đang đăng nhập
     const comps = JSON.parse(localStorage.getItem('custom_companies')) || [];
     const myComp = comps.find(c => c.ownerEmail === user.username);
 
     if (myComp) {
-        // Đổ thông tin chữ
-        if (document.getElementById('set-comp-name'))     document.getElementById('set-comp-name').value = myComp.name || "";
-        if (document.getElementById('set-comp-industry')) document.getElementById('set-comp-industry').value = myComp.industry || "";
-        if (document.getElementById('set-comp-web'))      document.getElementById('set-comp-web').value = myComp.website || "";
-        if (document.getElementById('set-comp-addr'))     document.getElementById('set-comp-addr').value = myComp.address || "";
-        if (document.getElementById('set-comp-about'))    document.getElementById('set-comp-about').value = myComp.about || "";
+        // Lấy data hiển thị: Nếu có bản nháp thì ưu tiên hiện bản nháp để edit tiếp
+        const data = myComp.pendingUpdate ? { ...myComp, ...myComp.pendingUpdate } : myComp;
+
+        if (document.getElementById('set-comp-name')) document.getElementById('set-comp-name').value = data.name || "";
+        if (document.getElementById('set-comp-industry')) document.getElementById('set-comp-industry').value = data.industry || "";
+        if (document.getElementById('set-comp-web')) document.getElementById('set-comp-web').value = data.website || "";
+        if (document.getElementById('set-comp-addr')) document.getElementById('set-comp-addr').value = data.address || "";
+        if (document.getElementById('set-comp-about')) document.getElementById('set-comp-about').value = data.about || "";
         
-        // Đổ ảnh Logo và Cover
-        if (myComp.logo && document.getElementById('setting-logo-preview')) {
-            document.getElementById('setting-logo-preview').src = myComp.logo;
+        if (data.logo && document.getElementById('setting-logo-preview')) {
+            document.getElementById('setting-logo-preview').src = data.logo;
         }
-        if (myComp.cover && document.getElementById('setting-cover-preview')) {
-            document.getElementById('setting-cover-preview').src = myComp.cover;
+        if (data.cover && document.getElementById('setting-cover-preview')) {
+            document.getElementById('setting-cover-preview').src = data.cover;
         }
     }
 };
 
-// 3. Hàm lưu chính thức (Tự động khởi tạo nếu bị xóa dữ liệu)
 window.saveCompanyProfile = function(event) {
     event.preventDefault();
     const userStr = localStorage.getItem('currentUser');
@@ -2686,18 +2708,12 @@ window.saveCompanyProfile = function(event) {
     let comps = JSON.parse(localStorage.getItem('custom_companies')) || [];
     let idx = comps.findIndex(c => c.ownerEmail === user.username);
 
-    // BỘ MÁY TỰ CHỮA LÀNH: Nếu mảng rỗng (do clear LocalStorage), tự tạo mới liền!
     if (idx === -1) {
-        comps.push({ 
-            id: Date.now(), 
-            ownerEmail: user.username 
-        });
+        comps.push({ id: Date.now(), ownerEmail: user.username });
         idx = comps.length - 1; 
     }
 
-    // Thu thập dữ liệu từ các ô input
-    const updatedComp = {
-        ...comps[idx],
+    const newData = {
         name: document.getElementById('set-comp-name').value,
         industry: document.getElementById('set-comp-industry').value,
         website: document.getElementById('set-comp-web').value,
@@ -2707,15 +2723,16 @@ window.saveCompanyProfile = function(event) {
         cover: document.getElementById('setting-cover-preview').src
     };
 
-    // Lưu vào kho dữ liệu
-    comps[idx] = updatedComp;
+    // BẢN VÁ LỖI TỐI THƯỢNG: Luôn luôn tống vào kho nháp chờ duyệt, không đàm phán!
+    comps[idx].pendingUpdate = newData;
+    alert("✅ Đã lưu bản sửa! Mọi thông tin sẽ CHỈ được cập nhật công khai SAU KHI Admin duyệt.");
+
     localStorage.setItem('custom_companies', JSON.stringify(comps));
     
-    // Đồng bộ lại Tên hiển thị trên Dashboard
-    user.fullName = updatedComp.name;
+    // Lưu tạm tên mới cho session hiện tại
+    user.fullName = newData.name;
     localStorage.setItem('currentUser', JSON.stringify(user));
 
-    alert("✅ Đã khởi tạo và cập nhật hồ sơ công ty thành công!");
     location.reload(); 
 };
 // =================================================================
@@ -2819,16 +2836,17 @@ window.syncEmployerHeader = function() {
     const headerName = document.getElementById('header-company-name');
     const headerLogo = document.getElementById('employer-header-logo');
     
-    // Tìm profile công ty của tài khoản này
     let customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
     let myComp = customComps.find(c => c.ownerEmail === user.username);
 
-    // Nếu tìm thấy công ty thì ốp Tên và Logo lên Header
     if (myComp) {
-        if (headerName) headerName.textContent = myComp.name;
-        if (headerLogo && myComp.logo) headerLogo.src = myComp.logo;
+        // Trộn bản nháp vào để Doanh nghiệp TỰ NHÌN THẤY Avatar và Tên mới của mình
+        // (Public ở ngoài thì vẫn không thấy do bị Admin chặn)
+        const displayData = myComp.pendingUpdate ? { ...myComp, ...myComp.pendingUpdate } : myComp;
+        
+        if (headerName) headerName.textContent = displayData.name;
+        if (headerLogo && displayData.logo) headerLogo.src = displayData.logo;
     } else {
-        // Nếu chưa có (vừa đăng ký xong) thì lấy tên User tạm
         if (headerName) headerName.textContent = user.fullName || user.username;
     }
 };
