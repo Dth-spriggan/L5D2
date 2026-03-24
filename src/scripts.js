@@ -1784,19 +1784,26 @@ window.renderCompanyList = function(page = 1) {
     const container = document.getElementById('company-list-container');
     const paginationContainer = document.getElementById('company-pagination');
     
-    if (!container || typeof mockCompaniesDB === 'undefined') return;
+    // Nếu không có container hoặc chưa có data thì dừng lại
+    if (!container || typeof window.mockCompaniesDB === 'undefined') return;
 
     currentCompPage = page;
-    const totalCompanies = mockCompaniesDB.length;
+    const totalCompanies = window.mockCompaniesDB.length;
     
     // 1. Tính toán vị trí cắt mảng dữ liệu
     const startIndex = (currentCompPage - 1) * compsPerPage;
     const endIndex = startIndex + compsPerPage;
-    const compsToShow = mockCompaniesDB.slice(startIndex, endIndex);
+    const compsToShow = window.mockCompaniesDB.slice(startIndex, endIndex);
+
+    // Xử lý khi không có công ty nào (VD: Admin xóa hết)
+    if (compsToShow.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500">Chưa có công ty nào trên hệ thống.</p>';
+        if (paginationContainer) paginationContainer.innerHTML = '';
+        return;
+    }
 
     // 2. Vẽ danh sách Công ty
     container.innerHTML = compsToShow.map(comp => {
-        // Giả lập số liệu Follow và Job (Vì trong DB của bạn chưa có các trường này)
         const jobCount = comp.jobs ? comp.jobs.length : Math.floor(Math.random() * 10) + 1;
         const followers = (Math.random() * 50).toFixed(1) + "K";
         
@@ -1833,12 +1840,11 @@ window.renderCompanyList = function(page = 1) {
         </a>`;
     }).join('');
 
-    // 3. Vẽ bộ nút Phân trang (Chỉ hiện khi cần)
+    // 3. Vẽ bộ nút Phân trang
     if (paginationContainer) {
         paginationContainer.innerHTML = '';
         const totalPages = Math.ceil(totalCompanies / compsPerPage);
         
-        // Nếu chỉ có 1 trang, vẫn hiện nút số 1 nhưng không có các nút khác
         for (let i = 1; i <= totalPages; i++) {
             const isActive = i === currentCompPage;
             const btnClass = isActive 
@@ -1851,6 +1857,13 @@ window.renderCompanyList = function(page = 1) {
         }
     }
 };
+
+// Kích hoạt khi load trang listcongty.html
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('listcongty.html')) {
+        renderCompanyList(1);
+    }
+});
 
 // =================================================================
 // 24. LÔ-GIC DÀNH RIÊNG CHO TRANG ADMIN (ADMIN.HTML)
