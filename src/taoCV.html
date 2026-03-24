@@ -415,8 +415,29 @@ function doUndo() {
 function g(id) { return document.getElementById(id); }
 function setCV(id, val) {
   var el = g(id);
-  if (el) el.textContent = val;
+  if (!el) return;
+
+  if (id === 'cv-email') {
+    setProtectedEmail(val);
+  } else {
+    el.textContent = val || '';
+  }
   saveSnap();
+}
+function setProtectedEmail(email) {
+  const el = document.getElementById('cv-email');
+  if (!el) return;
+
+  if (!email) {
+    el.textContent = '(Chưa có email)';
+    return;
+  }
+
+  el.innerHTML = `
+    <a href="mailto:${email}" style="color:inherit;text-decoration:none;border-bottom:1px dotted #93c5fd;">
+      ${email}
+    </a>
+  `;
 }
 
 function switchRpTab(tab, btn) {
@@ -749,63 +770,117 @@ function saveToManager() {
   var prevTransform = wrap.style.transform;
   wrap.style.transform = 'none';
 
-var btn = event?.target?.closest('button');
+  var btn = event?.target?.closest('button') || document.querySelector('.tbtn-primary');
+  if (btn) {
+    btn.textContent = 'Đang lưu...';
+    btn.disabled = true;
+  }
 
-if (btn) {
-  btn.textContent = 'Đang lưu...';
-  btn.disabled = true;
-}
-
-  setTimeout(function() {
+  setTimeout(() => {
     html2canvas(g('cv-paper'), {
-      scale: 1,
+      scale: 0.5,
       useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    }).then(function(canvas) {
-
+      backgroundColor: '#ffffff'
+    }).then(canvas => {
       wrap.style.transform = prevTransform;
+
       if (btn) {
-  btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
-  btn.disabled = false;
-}
-      btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
+        btn.disabled = false;
+      }
 
-      var thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-
-      // 🔥 LẤY editId
-      var editId = new URLSearchParams(window.location.search).get('editId');
-      editId = editId ? parseInt(editId) : null;
-
-var d = cv.data || cv;
-
-if (d.name) g('inp-name').value = d.name;
-if (d.role) g('inp-role').value = d.role;
-if (d.email) g('inp-email').value = d.email;
-if (d.phone) g('inp-phone').value = d.phone;
-if (d.location) g('inp-location').value = d.location;
-if (d.bio) g('inp-bio').value = d.bio;
-
-if (d.sidebarBg) g('cv-sidebar').style.background = d.sidebarBg;
-
-if (d.avatar) {
-  currentAvatar = d.avatar;
-  g('cv-avatar').style.backgroundImage = "url('" + d.avatar + "')";
-}
-
-// thêm cái này nếu bạn có font
-if (d.font) g('cv-paper').style.fontFamily = d.font;
-if (d.fontSize) g('cv-paper').style.fontSize = d.fontSize;
-
-      var cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-
-      if (editId !== null) {
-        var idx = cvList.findIndex(function(c){
-          return c.id === editId;
+      const thumbnail = canvas.toDataURL('image/jpeg', 0.7);
+      const fullImage = canvas.toDataURL('image/png');
+      
+      // 📌 Thu thập dữ liệu kinh nghiệm
+      var experiences = [];
+      document.querySelectorAll('#exp-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input,textarea');
+        experiences.push({
+          title: inputs[0] ? inputs[0].value : '',
+          company: inputs[1] ? inputs[1].value : '',
+          period: inputs[2] ? inputs[2].value : '',
+          description: inputs[3] ? inputs[3].value : ''
         });
+      });
+      
+      // 📌 Thu thập dữ liệu học vấn
+      var educations = [];
+      document.querySelectorAll('#edu-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        educations.push({
+          degree: inputs[0] ? inputs[0].value : '',
+          school: inputs[1] ? inputs[1].value : '',
+          period: inputs[2] ? inputs[2].value : '',
+          note: inputs[3] ? inputs[3].value : ''
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu kỹ năng
+      var skills = [];
+      document.querySelectorAll('#skill-list .item-card').forEach(function(card) {
+        var nameEl = card.querySelector('input:not([type=range])');
+        var range = card.querySelector('input[type=range]');
+        skills.push({
+          name: nameEl ? nameEl.value.trim() : '',
+          level: range ? range.value : '80'
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu ngôn ngữ
+      var languages = [];
+      document.querySelectorAll('#lang-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        languages.push({
+          name: inputs[0] ? inputs[0].value.trim() : '',
+          level: inputs[1] ? inputs[1].value.trim() : ''
+        });
+      });
+      
+      // 📌 Thu thập dữ liệu chứng chỉ
+      var certificates = [];
+      document.querySelectorAll('#cert-list .item-card').forEach(function(card) {
+        var inputs = card.querySelectorAll('input');
+        certificates.push({
+          name: inputs[0] ? inputs[0].value.trim() : '',
+          organization: inputs[1] ? inputs[1].value.trim() : '',
+          year: inputs[2] ? inputs[2].value.trim() : ''
+        });
+      });
 
+      const cvData = {
+        id: Date.now(),
+        title: g('cv-title-inp').value.trim() || "CV Của Tôi",
+        name: g('cv-name').textContent.trim(),
+        role: g('cv-role').textContent.trim(),
+        phone: g('cv-phone').textContent.trim(),
+        email: g('cv-email').textContent.trim(),
+        location: g('cv-location').textContent.trim(),
+        bio: g('cv-bio').textContent.trim(),
+        avatar: currentAvatar || "",
+        sidebarBg: g('cv-sidebar').style.background || "#1e3a8a",
+        font: g('cv-paper').style.fontFamily || "",
+        updatedAt: new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        type: 'created',
+        thumbnail: thumbnail,
+        dataURL: fullImage,
+        // 🔥 QUAN TRỌNG: Lưu tất cả dữ liệu động
+        experiences: experiences,
+        educations: educations,
+        skills: skills,
+        languages: languages,
+        certificates: certificates
+      };
+
+      let cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+      const editId = new URLSearchParams(window.location.search).get('editId');
+      const editIdNum = editId ? parseInt(editId) : null;
+
+      if (editIdNum !== null) {
+        const idx = cvList.findIndex(c => c.id === editIdNum);
         if (idx !== -1) {
-          cvList[idx] = cvData; // 🔥 GHI ĐÈ
+          // Giữ nguyên id, cập nhật toàn bộ dữ liệu
+          cvList[idx] = { ...cvList[idx], ...cvData, id: editIdNum };
         } else {
           cvList.push(cvData);
         }
@@ -814,21 +889,19 @@ if (d.fontSize) g('cv-paper').style.fontSize = d.fontSize;
       }
 
       localStorage.setItem('savedCVs', JSON.stringify(cvList));
+      showToast('✅ Đã lưu CV thành công!', 'success');
 
-      showToast('Đã lưu vào Quản lý CV!', 'success');
+      if (!editIdNum) {
+        const newUrl = window.location.pathname + '?editId=' + cvData.id;
+        window.history.replaceState({}, '', newUrl);
+      }
 
-    }).catch(function(err) {
-
+    }).catch(err => {
       wrap.style.transform = prevTransform;
-      if (btn) {
-  btn.innerHTML = '<i class="fas fa-folder-plus" style="margin-right:4px;"></i>Lưu CV';
-  btn.disabled = false;
-}
-      btn.disabled = false;
-
-      showToast('Lỗi khi lưu: ' + err.message, 'error');
+      if (btn) btn.disabled = false;
+      console.error(err);
+      showToast('❌ Lỗi khi lưu: ' + err.message, 'error');
     });
-
   }, 100);
 }
 
@@ -943,53 +1016,601 @@ function fillForm(cv) {
       "url('assets/logouser.png')";
   }
 }
+/* ── LOAD ĐẦY ĐỦ DỮ LIỆU CV KHI CHỈNH SỬA ── */
+function loadFullCVData(cv) {
+  if (!cv) return;
+  
+  // 1. Thông tin cơ bản
+  if (cv.title) g('cv-title-inp').value = cv.title;
+  if (cv.name) { g('inp-name').value = cv.name; setCV('cv-name', cv.name); }
+  if (cv.role) { g('inp-role').value = cv.role; setCV('cv-role', cv.role); }
+  if (cv.email) { g('inp-email').value = cv.email; setCV('cv-email', cv.email); }
+  if (cv.phone) { g('inp-phone').value = cv.phone; setCV('cv-phone', cv.phone); }
+  if (cv.location) { g('inp-location').value = cv.location; setCV('cv-location', cv.location); }
+  if (cv.bio) { g('inp-bio').value = cv.bio; setCV('cv-bio', cv.bio); }
+  
+  // 2. Avatar
+  if (cv.avatar) {
+    currentAvatar = cv.avatar;
+    g('cv-avatar').style.backgroundImage = `url('${cv.avatar}')`;
+  }
+  
+  // 3. Màu sidebar
+  if (cv.sidebarBg) {
+    g('cv-sidebar').style.background = cv.sidebarBg;
+    // Cập nhật UI color picker
+    syncColorUI(cv.sidebarBg);
+  }
+  
+  // 4. Font
+  if (cv.font) {
+    g('cv-paper').style.fontFamily = cv.font;
+    const fontSelect = g('font-select');
+    if (fontSelect) fontSelect.value = cv.font;
+  }
+  
+  // 5. ⭐ QUAN TRỌNG: Load Kinh nghiệm
+  if (cv.experiences && cv.experiences.length > 0) {
+    // Xóa các card cũ
+    g('exp-list').innerHTML = '';
+    expN = 0;
+    cv.experiences.forEach(function(exp) {
+      expN++;
+      var id = 'exp' + expN;
+      var card = document.createElement('div');
+      card.className = 'item-card';
+      card.id = id;
+      var hdr = document.createElement('div');
+      hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span');
+      lbl.className = 'item-card-label';
+      lbl.textContent = 'Kinh nghiệm ' + expN;
+      var del = document.createElement('button');
+      del.className = 'item-del';
+      del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderExpCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      // Thêm các field với giá trị từ dữ liệu
+      var titleField = mkField('Chức vụ', 'text', 'Frontend Developer', renderExpCV);
+      titleField.querySelector('input').value = exp.title || '';
+      card.appendChild(titleField);
+      
+      var companyField = mkField('Công ty', 'text', 'FPT Software', renderExpCV);
+      companyField.querySelector('input').value = exp.company || '';
+      card.appendChild(companyField);
+      
+      var periodField = mkField('Thời gian', 'text', '01/2022 – Hiện tại', renderExpCV);
+      periodField.querySelector('input').value = exp.period || '';
+      card.appendChild(periodField);
+      
+      var descField = mkField('Mô tả', 'textarea', '• Mô tả công việc...', renderExpCV);
+      descField.querySelector('textarea').value = exp.description || '';
+      card.appendChild(descField);
+      
+      g('exp-list').appendChild(card);
+    });
+    renderExpCV();
+  }
+  
+  // 6. Load Học vấn
+  if (cv.educations && cv.educations.length > 0) {
+    g('edu-list').innerHTML = '';
+    eduN = 0;
+    cv.educations.forEach(function(edu) {
+      eduN++;
+      var id = 'edu' + eduN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Học vấn ' + eduN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderEduCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var degreeField = mkField('Bằng cấp / Chuyên ngành', 'text', 'Cử nhân Công nghệ Thông tin', renderEduCV);
+      degreeField.querySelector('input').value = edu.degree || '';
+      card.appendChild(degreeField);
+      
+      var schoolField = mkField('Trường học', 'text', 'Đại học Bách Khoa Hà Nội', renderEduCV);
+      schoolField.querySelector('input').value = edu.school || '';
+      card.appendChild(schoolField);
+      
+      var periodField = mkField('Thời gian', 'text', '2016 – 2020', renderEduCV);
+      periodField.querySelector('input').value = edu.period || '';
+      card.appendChild(periodField);
+      
+      var noteField = mkField('Ghi chú', 'text', 'GPA: 3.4/4.0', renderEduCV);
+      noteField.querySelector('input').value = edu.note || '';
+      card.appendChild(noteField);
+      
+      g('edu-list').appendChild(card);
+    });
+    renderEduCV();
+  }
+  
+  // 7. Load Kỹ năng
+  if (cv.skills && cv.skills.length > 0) {
+    g('skill-list').innerHTML = '';
+    skillN = 0;
+    cv.skills.forEach(function(skill) {
+      skillN++;
+      var id = 'sk' + skillN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      hdr.style.gap = '6px';
+      var inp = document.createElement('input'); inp.className = 'rp-input'; inp.placeholder = 'Tên kỹ năng';
+      inp.style.flex = '1'; inp.style.marginBottom = '0';
+      inp.value = skill.name || '';
+      inp.oninput = renderSkillCV;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderSkillCV); };
+      hdr.appendChild(inp); hdr.appendChild(del); card.appendChild(hdr);
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+      var range = document.createElement('input'); range.type = 'range'; range.className = 'range-input'; range.min = '10'; range.max = '100'; range.value = skill.level || '80';
+      var pctLbl = document.createElement('span'); pctLbl.style.cssText = 'font-size:0.72rem;color:#64748b;width:30px;'; pctLbl.textContent = (skill.level || '80') + '%';
+      range.oninput = function(){ pctLbl.textContent = this.value + '%'; renderSkillCV(); };
+      row.appendChild(range); row.appendChild(pctLbl); card.appendChild(row);
+      g('skill-list').appendChild(card);
+    });
+    renderSkillCV();
+  }
+  
+  // 8. Load Ngôn ngữ
+  if (cv.languages && cv.languages.length > 0) {
+    g('lang-list').innerHTML = '';
+    langN = 0;
+    cv.languages.forEach(function(lang) {
+      langN++;
+      var id = 'lang' + langN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Ngôn ngữ ' + langN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderLangCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var nameField = mkField('Ngôn ngữ', 'text', 'Tiếng Anh', renderLangCV);
+      nameField.querySelector('input').value = lang.name || '';
+      card.appendChild(nameField);
+      
+      var lbl2 = document.createElement('label'); lbl2.className = 'rp-label'; lbl2.textContent = 'Trình độ';
+      var sel = document.createElement('input'); sel.className = 'rp-input'; sel.type = 'text';
+      sel.placeholder = 'VD: B2, Bản ngữ, Thành thạo...';
+      sel.value = lang.level || '';
+      sel.oninput = renderLangCV;
+      card.appendChild(lbl2); card.appendChild(sel);
+      
+      g('lang-list').appendChild(card);
+    });
+    renderLangCV();
+  }
+  
+  // 9. Load Chứng chỉ
+  if (cv.certificates && cv.certificates.length > 0) {
+    g('cert-list').innerHTML = '';
+    certN = 0;
+    cv.certificates.forEach(function(cert) {
+      certN++;
+      var id = 'cert' + certN;
+      var card = document.createElement('div');
+      card.className = 'item-card'; card.id = id;
+      var hdr = document.createElement('div'); hdr.className = 'item-card-hdr';
+      var lbl = document.createElement('span'); lbl.className = 'item-card-label'; lbl.textContent = 'Chứng chỉ ' + certN;
+      var del = document.createElement('button'); del.className = 'item-del'; del.innerHTML = '<i class="fas fa-trash"></i>';
+      del.onclick = function(){ delCard(id, renderCertCV); };
+      hdr.appendChild(lbl); hdr.appendChild(del); card.appendChild(hdr);
+      
+      var nameField = mkField('Tên chứng chỉ', 'text', 'AWS Solutions Architect', renderCertCV);
+      nameField.querySelector('input').value = cert.name || '';
+      card.appendChild(nameField);
+      
+      var orgField = mkField('Tổ chức cấp', 'text', 'Amazon Web Services', renderCertCV);
+      orgField.querySelector('input').value = cert.organization || '';
+      card.appendChild(orgField);
+      
+      var yearField = mkField('Năm cấp', 'text', '2023', renderCertCV);
+      yearField.querySelector('input').value = cert.year || '';
+      card.appendChild(yearField);
+      
+      g('cert-list').appendChild(card);
+    });
+    renderCertCV();
+  }
+}
 
 /* ── INIT ── */
-window.addEventListener('DOMContentLoaded', function() {
+// ==================== LOAD CV KHI CHỈNH SỬA ====================
+// ==================== DOMContentLoaded - TỰ ĐỘNG ĐIỀN & LOAD EDIT ====================
+window.addEventListener('DOMContentLoaded', function () {
+  
+  // === 1. TỰ ĐỘNG ĐIỀN TỪ TÀI KHOẢN ĐĂNG NHẬP ===
   try {
-    var user = JSON.parse(localStorage.getItem('currentUser'));
+    const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
-      if (user.fullName) { g('inp-name').value = user.fullName; setCV('cv-name', user.fullName); }
-      var em = user.email || user.username || '';
-      if (em) { g('inp-email').value = em; setCV('cv-email', em); }
-      if (user.phone) { g('inp-phone').value = user.phone; setCV('cv-phone', user.phone); }
-      if (user.bio)   { g('inp-bio').value = user.bio; setCV('cv-bio', user.bio); }
+      if (user.fullName) {
+        g('inp-name').value = user.fullName;
+        setCV('cv-name', user.fullName);
+      }
+      if (user.email || user.username) {
+        const email = user.email || user.username;
+        g('inp-email').value = email;
+        setProtectedEmail(email);        // ← Dùng hàm bảo vệ email
+      }
+      if (user.phone) {
+        g('inp-phone').value = user.phone;
+        setCV('cv-phone', user.phone);
+      }
+      if (user.bio) {
+        g('inp-bio').value = user.bio;
+        setCV('cv-bio', user.bio);
+      }
     }
-  } catch(e) {}
+  } catch (e) {
+    console.log("Không tìm thấy thông tin user hoặc lỗi parse");
+  }
+
+  // === 2. LOAD CV KHI CHỈNH SỬA (nếu có editId) ===
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get('editId') ? parseInt(urlParams.get('editId')) : null;
+
+  if (editId) {
+    let cvList = JSON.parse(localStorage.getItem('savedCVs') || '[]');
+    const cv = cvList.find(c => c.id === editId);
+
+    if (cv) {
+      // 2.1 Thông tin cơ bản
+      if (cv.title)     g('cv-title-inp').value = cv.title;
+      if (cv.name)      { g('inp-name').value = cv.name;      setCV('cv-name', cv.name); }
+      if (cv.role)      { g('inp-role').value = cv.role;      setCV('cv-role', cv.role); }
+      if (cv.email)     { g('inp-email').value = cv.email;    setProtectedEmail(cv.email); }
+      if (cv.phone)     { g('inp-phone').value = cv.phone;    setCV('cv-phone', cv.phone); }
+      if (cv.location)  { g('inp-location').value = cv.location; setCV('cv-location', cv.location); }
+      if (cv.bio)       { g('inp-bio').value = cv.bio;        setCV('cv-bio', cv.bio); }
+
+      // 2.2 Avatar và màu sắc
+      if (cv.avatar) {
+        currentAvatar = cv.avatar;
+        g('cv-avatar').style.backgroundImage = `url('${cv.avatar}')`;
+      }
+      if (cv.sidebarBg) {
+        g('cv-sidebar').style.background = cv.sidebarBg;
+        // Cập nhật UI color picker
+        if (typeof syncColorUI === 'function') syncColorUI(cv.sidebarBg);
+      }
+      if (cv.font) {
+        g('cv-paper').style.fontFamily = cv.font;
+        const fontSelect = g('font-select');
+        if (fontSelect) fontSelect.value = cv.font;
+      }
+
+      // ========== 2.3 LOAD KINH NGHIỆM ==========
+      if (cv.experiences && cv.experiences.length > 0) {
+        // Xóa các card mặc định
+        g('exp-list').innerHTML = '';
+        expN = 0;
+        
+        cv.experiences.forEach(function(exp) {
+          expN++;
+          var id = 'exp' + expN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Kinh nghiệm ' + expN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderExpCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Chức vụ
+          var titleWrap = mkField('Chức vụ', 'text', 'Frontend Developer', renderExpCV);
+          var titleInput = titleWrap.querySelector('input');
+          if (titleInput) titleInput.value = exp.title || '';
+          card.appendChild(titleWrap);
+          
+          // Công ty
+          var companyWrap = mkField('Công ty', 'text', 'FPT Software', renderExpCV);
+          var companyInput = companyWrap.querySelector('input');
+          if (companyInput) companyInput.value = exp.company || '';
+          card.appendChild(companyWrap);
+          
+          // Thời gian
+          var periodWrap = mkField('Thời gian', 'text', '01/2022 – Hiện tại', renderExpCV);
+          var periodInput = periodWrap.querySelector('input');
+          if (periodInput) periodInput.value = exp.period || '';
+          card.appendChild(periodWrap);
+          
+          // Mô tả
+          var descWrap = mkField('Mô tả', 'textarea', '• Mô tả công việc...', renderExpCV);
+          var descTextarea = descWrap.querySelector('textarea');
+          if (descTextarea) descTextarea.value = exp.description || '';
+          card.appendChild(descWrap);
+          
+          g('exp-list').appendChild(card);
+        });
+        renderExpCV(); // Cập nhật hiển thị
+      }
+
+      // ========== 2.4 LOAD HỌC VẤN ==========
+      if (cv.educations && cv.educations.length > 0) {
+        g('edu-list').innerHTML = '';
+        eduN = 0;
+        
+        cv.educations.forEach(function(edu) {
+          eduN++;
+          var id = 'edu' + eduN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Học vấn ' + eduN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderEduCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Bằng cấp
+          var degreeWrap = mkField('Bằng cấp / Chuyên ngành', 'text', 'Cử nhân Công nghệ Thông tin', renderEduCV);
+          var degreeInput = degreeWrap.querySelector('input');
+          if (degreeInput) degreeInput.value = edu.degree || '';
+          card.appendChild(degreeWrap);
+          
+          // Trường học
+          var schoolWrap = mkField('Trường học', 'text', 'Đại học Bách Khoa Hà Nội', renderEduCV);
+          var schoolInput = schoolWrap.querySelector('input');
+          if (schoolInput) schoolInput.value = edu.school || '';
+          card.appendChild(schoolWrap);
+          
+          // Thời gian
+          var periodWrap = mkField('Thời gian', 'text', '2016 – 2020', renderEduCV);
+          var periodInput = periodWrap.querySelector('input');
+          if (periodInput) periodInput.value = edu.period || '';
+          card.appendChild(periodWrap);
+          
+          // Ghi chú
+          var noteWrap = mkField('Ghi chú', 'text', 'GPA: 3.4/4.0', renderEduCV);
+          var noteInput = noteWrap.querySelector('input');
+          if (noteInput) noteInput.value = edu.note || '';
+          card.appendChild(noteWrap);
+          
+          g('edu-list').appendChild(card);
+        });
+        renderEduCV();
+      }
+
+      // ========== 2.5 LOAD KỸ NĂNG ==========
+      if (cv.skills && cv.skills.length > 0) {
+        g('skill-list').innerHTML = '';
+        skillN = 0;
+        
+        cv.skills.forEach(function(skill) {
+          skillN++;
+          var id = 'sk' + skillN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          hdr.style.gap = '6px';
+          
+          var inp = document.createElement('input');
+          inp.className = 'rp-input';
+          inp.placeholder = 'Tên kỹ năng';
+          inp.style.flex = '1';
+          inp.style.marginBottom = '0';
+          inp.value = skill.name || '';
+          inp.oninput = renderSkillCV;
+          
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderSkillCV); };
+          
+          hdr.appendChild(inp);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+          
+          var range = document.createElement('input');
+          range.type = 'range';
+          range.className = 'range-input';
+          range.min = '10';
+          range.max = '100';
+          range.value = skill.level || '80';
+          
+          var pctLbl = document.createElement('span');
+          pctLbl.style.cssText = 'font-size:0.72rem;color:#64748b;width:30px;';
+          pctLbl.textContent = (skill.level || '80') + '%';
+          
+          range.oninput = function(){
+            pctLbl.textContent = this.value + '%';
+            renderSkillCV();
+          };
+          
+          row.appendChild(range);
+          row.appendChild(pctLbl);
+          card.appendChild(row);
+          
+          g('skill-list').appendChild(card);
+        });
+        renderSkillCV();
+      }
+
+      // ========== 2.6 LOAD NGÔN NGỮ ==========
+      if (cv.languages && cv.languages.length > 0) {
+        g('lang-list').innerHTML = '';
+        langN = 0;
+        
+        cv.languages.forEach(function(lang) {
+          langN++;
+          var id = 'lang' + langN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Ngôn ngữ ' + langN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderLangCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Tên ngôn ngữ
+          var nameWrap = mkField('Ngôn ngữ', 'text', 'Tiếng Anh', renderLangCV);
+          var nameInput = nameWrap.querySelector('input');
+          if (nameInput) nameInput.value = lang.name || '';
+          card.appendChild(nameWrap);
+          
+          // Trình độ
+          var lbl2 = document.createElement('label');
+          lbl2.className = 'rp-label';
+          lbl2.textContent = 'Trình độ';
+          var sel = document.createElement('input');
+          sel.className = 'rp-input';
+          sel.type = 'text';
+          sel.placeholder = 'VD: B2, Bản ngữ, Thành thạo...';
+          sel.value = lang.level || '';
+          sel.oninput = renderLangCV;
+          card.appendChild(lbl2);
+          card.appendChild(sel);
+          
+          g('lang-list').appendChild(card);
+        });
+        renderLangCV();
+      }
+
+      // ========== 2.7 LOAD CHỨNG CHỈ ==========
+      if (cv.certificates && cv.certificates.length > 0) {
+        g('cert-list').innerHTML = '';
+        certN = 0;
+        
+        cv.certificates.forEach(function(cert) {
+          certN++;
+          var id = 'cert' + certN;
+          var card = document.createElement('div');
+          card.className = 'item-card';
+          card.id = id;
+          
+          var hdr = document.createElement('div');
+          hdr.className = 'item-card-hdr';
+          var lbl = document.createElement('span');
+          lbl.className = 'item-card-label';
+          lbl.textContent = 'Chứng chỉ ' + certN;
+          var del = document.createElement('button');
+          del.className = 'item-del';
+          del.innerHTML = '<i class="fas fa-trash"></i>';
+          del.onclick = function(){ delCard(id, renderCertCV); };
+          hdr.appendChild(lbl);
+          hdr.appendChild(del);
+          card.appendChild(hdr);
+          
+          // Tên chứng chỉ
+          var nameWrap = mkField('Tên chứng chỉ', 'text', 'AWS Solutions Architect', renderCertCV);
+          var nameInput = nameWrap.querySelector('input');
+          if (nameInput) nameInput.value = cert.name || '';
+          card.appendChild(nameWrap);
+          
+          // Tổ chức cấp
+          var orgWrap = mkField('Tổ chức cấp', 'text', 'Amazon Web Services', renderCertCV);
+          var orgInput = orgWrap.querySelector('input');
+          if (orgInput) orgInput.value = cert.organization || '';
+          card.appendChild(orgWrap);
+          
+          // Năm cấp
+          var yearWrap = mkField('Năm cấp', 'text', '2023', renderCertCV);
+          var yearInput = yearWrap.querySelector('input');
+          if (yearInput) yearInput.value = cert.year || '';
+          card.appendChild(yearWrap);
+          
+          g('cert-list').appendChild(card);
+        });
+        renderCertCV();
+      }
+
+      console.log("✅ Đã load đầy đủ CV để chỉnh sửa:", cv.title);
+    } else {
+      console.warn("⚠️ Không tìm thấy CV với id:", editId);
+    }
+  }
+
+  // === 3. CÁC KHỞI TẠO KHÁC ===
+  // Template màu nếu có
   var tpl = parseInt(new URLSearchParams(window.location.search).get('template'));
   if (tpl && tplColors[tpl]) {
-    document.querySelectorAll('.tpl-thumb').forEach(function(t,i){ t.classList.toggle('sel', i===tpl-1); });
+    document.querySelectorAll('.tpl-thumb').forEach(function(t,i){ 
+      t.classList.toggle('sel', i === tpl-1); 
+    });
     g('cv-sidebar').style.background = tplColors[tpl];
   }
 
-  // Load CV từ quản lý nếu có editId
-  var editId = parseInt(new URLSearchParams(window.location.search).get('editId'));
-if (editId) {
-  var index = cvList.findIndex(function(c){
-    return c.id === editId;
-  });
-
-  if (index !== -1) {
-    cvList[index] = newCV; // 👈 ghi đè
-  }
-} else {
-  cvList.push(newCV); // 👈 tạo mới
-}
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey||e.metaKey) && e.key==='z') { e.preventDefault(); doUndo(); }
-    if ((e.ctrlKey||e.metaKey) && e.key==='p') { e.preventDefault(); printCV(); }
-    if (e.key==='Escape') closePreview();
-  });
-
   // Quick-add menu bindings
-  g('qk-exp').onclick  = function(){ var b = document.querySelector('.sb-btn[onclick*="experience"]'); gotoSection('experience', b); addExp();   hideAddMenu(); };
-  g('qk-edu').onclick  = function(){ var b = document.querySelector('.sb-btn[onclick*="education"]');  gotoSection('education',  b); addEdu();   hideAddMenu(); };
-  g('qk-sk').onclick   = function(){ var b = document.querySelector('.sb-btn[onclick*="skills"]');     gotoSection('skills',     b); addSkill(); hideAddMenu(); };
-  g('qk-lang').onclick = function(){ var b = document.querySelector('.sb-btn[onclick*="language"]');   gotoSection('language',   b); addLang();  hideAddMenu(); };
-  g('qk-cert').onclick = function(){ var b = document.querySelector('.sb-btn[onclick*="certificate"]');gotoSection('certificate',b); addCert();  hideAddMenu(); };
+  if (g('qk-exp')) {
+    g('qk-exp').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="experience"]'); 
+      gotoSection('experience', b); 
+      addExp();   
+      hideAddMenu(); 
+    };
+    g('qk-edu').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="education"]');  
+      gotoSection('education', b);  
+      addEdu();   
+      hideAddMenu(); 
+    };
+    g('qk-sk').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="skills"]');     
+      gotoSection('skills', b);     
+      addSkill(); 
+      hideAddMenu(); 
+    };
+    g('qk-lang').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="language"]');   
+      gotoSection('language', b);   
+      addLang();  
+      hideAddMenu(); 
+    };
+    g('qk-cert').onclick = function(){ 
+      var b = document.querySelector('.sb-btn[onclick*="certificate"]');
+      gotoSection('certificate', b);
+      addCert();  
+      hideAddMenu(); 
+    };
+  }
 
+  // Lưu snapshot ban đầu
   saveSnap();
   
+  // Load avatar từ localStorage nếu có
+  var savedAvatar = localStorage.getItem('cv-avatar');
+  if (savedAvatar) {
+    document.getElementById('cv-avatar').style.backgroundImage = "url('" + savedAvatar + "')";
+  }
 });
 window.addEventListener('DOMContentLoaded', function () {
   var savedAvatar = localStorage.getItem('cv-avatar');

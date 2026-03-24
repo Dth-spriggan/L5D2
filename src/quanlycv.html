@@ -15,7 +15,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f8f7f4; }
 .cv-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.10); border-color: #2563eb; }
 
 .cv-thumb { width: 100%; height: 200px; object-fit: cover; object-position: top; background: #f1f5f9; display: block; }
-.cv-thumb-placeholder { width: 100%; height: 200px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; }
+.cv-thumb-placeholder { width: 100%; height: 200px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: white; }
 
 .action-btn { padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 5px; }
 .btn-edit { background: #eff6ff; color: #2563eb; }
@@ -45,170 +45,141 @@ body { font-family: 'DM Sans', sans-serif; background: #f8f7f4; }
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
 
-
-
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden transition-opacity" onclick="toggleMobileMenu()"></div>
-    <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
-        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <img class="h-8 w-auto" src="./assets/logoweb.png" alt="Logo">
-            <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-red-500 focus:outline-none p-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+<!-- Mobile Menu (giữ nguyên) -->
+<div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden transition-opacity" onclick="toggleMobileMenu()"></div>
+<div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <img class="h-8 w-auto" src="./assets/logoweb.png" alt="Logo">
+        <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-red-500 focus:outline-none p-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+    
+    <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-2">
+        <a href="index.html" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Việc làm</a>
+        
+        <div class="border-b border-gray-100 pb-2">
+            <button onclick="toggleSubmenu('mobile-cv-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
+                Hồ sơ & CV
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
+            <div id="mobile-cv-menu" class="hidden flex-col gap-3 pl-4 pt-3">
+                <a href="listcv.html" class="text-gray-600 hover:text-blue-600">Thư viện Mẫu CV</a>
+                <a href="taoCV.html" class="text-gray-600 hover:text-blue-600">Tạo CV mới</a>
+                <a href="quanlycv.html" onclick="requireAuth(event, 'quanlycv.html')" class="text-gray-600 hover:text-blue-600">Quản lý CV</a>
+            </div>
+        </div>
+
+        <div class="border-b border-gray-100 pb-2 mt-2">
+            <button onclick="toggleSubmenu('mobile-company-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
+                Công ty
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="mobile-company-menu" class="hidden flex-col gap-3 pl-4 pt-3">
+                <a href="#" class="text-gray-600 hover:text-blue-600">Danh sách Công ty</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600">Top Công ty nổi bật</a>
+            </div>
         </div>
         
-        <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-2">
-            <a href="index.html" class="text-lg font-medium text-gray-800 border-b border-gray-100 pb-3">Việc làm</a>
-            
-            <div class="border-b border-gray-100 pb-2">
-                <button onclick="toggleSubmenu('mobile-cv-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
-                    Hồ sơ & CV
-                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div id="mobile-cv-menu" class="hidden flex-col gap-3 pl-4 pt-3">
-                    <a href="listcv.html" class="text-gray-600 hover:text-blue-600">Thư viện Mẫu CV</a>
-                    <a href="taoCV.html" class="text-gray-600 hover:text-blue-600">Tạo CV mới</a>
-                    <a href="quanlycv.html" onclick="requireAuth(event, 'quanlycv.html')" class="text-gray-600 hover:text-blue-600">Quản lý CV</a>
-                </div>
-            </div>
+        <div id="employer-btn-mobile" class="mt-4 pt-2">
+            <a href="#" onclick="handleEmployerAction(event)" class="flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-3 rounded-lg shadow-md">
+                🚀 Dành cho Nhà tuyển dụng
+            </a>
+        </div>
+    </div>
+</div>
 
-            <div class="border-b border-gray-100 pb-2 mt-2">
-                <button onclick="toggleSubmenu('mobile-company-menu')" class="w-full flex justify-between items-center text-lg font-medium text-gray-800 pb-1">
-                    Công ty
-                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div id="mobile-company-menu" class="hidden flex-col gap-3 pl-4 pt-3">
-                    <a href="#" class="text-gray-600 hover:text-blue-600">Danh sách Công ty</a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600">Top Công ty nổi bật</a>
+<header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center gap-8 h-full">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-1">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <a href="index.html"><img class="h-8 md:h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm"></a>
                 </div>
+                <nav class="hidden lg:flex space-x-8 h-full items-center">
+                    <a id="nav-vieclam" href="listvieclam.html" class="text-gray-700 font-medium hover:text-blue-600 transition h-full flex items-center border-b-2 border-transparent mt-[2px]">Việc làm</a>
+                    <a id="nav-congty" href="listcongty.html" class="text-gray-700 font-medium hover:text-blue-600 transition h-full flex items-center border-b-2 border-transparent mt-[2px]">Công ty</a>
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
+                            Hồ sơ & CV <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="absolute left-0 top-full w-56 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            <a href="listcv.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
+                            <a href="taoCV.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
+                            <a href="quanlycv.html" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
+                        </div>
+                    </div>
+                    <div class="relative group h-full flex items-center">
+                        <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
+                            Công cụ <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tính lương Gross - Net</a>
+                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Cẩm nang tìm việc</a>
+                        </div>
+                    </div>
+                </nav>
             </div>
-            
-            <div id="employer-btn-mobile" class="mt-4 pt-2">
-                <a href="#" onclick="handleEmployerAction(event)" class="flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-3 rounded-lg shadow-md">
-                    🚀 Dành cho Nhà tuyển dụng
+            <div class="flex items-center gap-4 lg:gap-6">
+                <a id="employer-btn-desktop" href="#" onclick="handleEmployerAction(event)" class="hidden md:flex flex-col text-right hover:opacity-80 transition group">
+                    <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Bạn là nhà tuyển dụng?</span>
+                    <span class="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition">Đăng tuyển ngay <span class="text-blue-600">»</span></span>
                 </a>
+                <div id="employer-divider" class="hidden md:block bg-gray-200" style="width: 1px; height: 32px;"></div>
+                <div id="auth-container" class="flex items-center h-full">
+                    <div id="guest-menu" class="flex items-center gap-3">
+                        <a href="login.html" class="text-sm md:text-base text-gray-700 font-bold hover:text-blue-600 transition">Đăng nhập</a>
+                        <a href="register.html" class="text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-sm rounded-lg px-4 py-2">Đăng ký</a>
+                    </div>
+                    <div id="user-menu" class="hidden items-center gap-3">
+                        <a id="header-back-btn" href="index.html" class="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Trở về trang trước">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        </a>
+                        <div class="relative group h-16 flex items-center">
+                            <button id="avatar-btn" class="outline-none cursor-pointer flex items-center gap-1.5 pl-1">
+                                <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover group-hover:border-blue-500 transition shadow-sm">
+                                <svg class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div id="dropdown-menu" class="absolute top-full right-0 mt-1 w-72 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 z-50 overflow-hidden text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <div class="absolute -top-2 left-0 w-full h-2 bg-transparent"></div>
+                                <div class="p-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+                                    <img id="dropdown-avatar" src="./assets/logouser.png" alt="Avatar" class="w-12 h-12 rounded-full object-cover border border-gray-200 bg-white shadow-sm">
+                                    <div class="flex-col overflow-hidden">
+                                        <h4 id="dropdown-name" class="font-bold text-gray-900 text-base leading-tight truncate">...</h4>
+                                        <p id="dropdown-email" class="text-xs text-gray-500 mt-0.5 truncate">...</p>
+                                    </div>
+                                </div>
+                                <div class="p-2">
+                                    <a href="userui.html" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Hồ sơ cá nhân
+                                    </a>
+                                    <a href="userui.html?tab=saved" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> Việc làm đã lưu
+                                    </a>
+                                    <a href="userui.html?tab=settings" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Cài đặt tài khoản
+                                    </a>
+                                </div>
+                                <div class="p-2 border-t border-gray-100">
+                                    <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-bold text-left">
+                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Đăng xuất
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                
-                <div class="flex items-center gap-8 h-full">
-                    
-                    <div class="flex items-center gap-3">
-                        <button onclick="toggleMobileMenu()" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-1">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                        </button>
-                        <a href="index.html"><img class="h-8 md:h-10 w-auto" src="./assets/logoweb.png" alt="Logo Nhóm"></a>
-                    </div>
-
-                    <nav class="hidden lg:flex space-x-8 h-full items-center">
-                        
-                        <a id="nav-vieclam" href="listvieclam.html" class="text-gray-700 font-medium hover:text-blue-600 transition h-full flex items-center border-b-2 border-transparent mt-[2px]">
-                            Việc làm
-                        </a>
-                        
-                        <a id="nav-congty" href="listcongty.html" class="text-gray-700 font-medium hover:text-blue-600 transition h-full flex items-center border-b-2 border-transparent mt-[2px]">
-                            Công ty
-                        </a>
-
-                        <div class="relative group h-full flex items-center">
-                            <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
-                                Hồ sơ & CV <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="absolute left-0 top-full w-56 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
-                                <a href="listcv.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
-                                <a href="taoCV.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
-                                <a href="quanlycv.html" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
-                            </div>
-                        </div>
-
-                        <div class="relative group h-full flex items-center">
-                            <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
-                                Công cụ <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tính lương Gross - Net</a>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Cẩm nang tìm việc</a>
-                            </div>
-                        </div>
-                    </nav>
-                </div>
-
-                <div class="flex items-center gap-4 lg:gap-6">
-                    
-                    <a id="employer-btn-desktop" href="#" onclick="handleEmployerAction(event)" class="hidden md:flex flex-col text-right hover:opacity-80 transition group">
-                        <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Bạn là nhà tuyển dụng?</span>
-                        <span class="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition">Đăng tuyển ngay <span class="text-blue-600">»</span></span>
-                    </a>
-
-                    <div id="employer-divider" class="hidden md:block bg-gray-200" style="width: 1px; height: 32px;"></div>
-
-                    <div id="auth-container" class="flex items-center h-full">
-                        <div id="guest-menu" class="flex items-center gap-3">
-                            <a href="login.html" class="text-sm md:text-base text-gray-700 font-bold hover:text-blue-600 transition">Đăng nhập</a>
-                            <a href="register.html" class="text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-sm rounded-lg px-4 py-2">Đăng ký</a>
-                        </div>
-
-                        <div id="user-menu" class="hidden items-center gap-3">
-                            
-                            <a id="header-back-btn" href="index.html" class="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Trở về trang trước">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                            </a>
-
-                            <div class="relative group h-16 flex items-center">
-                                <button id="avatar-btn" class="outline-none cursor-pointer flex items-center gap-1.5 pl-1">
-                                    <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover group-hover:border-blue-500 transition shadow-sm">
-                                    <svg class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                
-                                <div id="dropdown-menu" class="absolute top-full right-0 mt-1 w-72 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 z-50 overflow-hidden text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                    <div class="absolute -top-2 left-0 w-full h-2 bg-transparent"></div>
-                                    
-                                    <div class="p-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
-                                        <img id="dropdown-avatar" src="./assets/logouser.png" alt="Avatar" class="w-12 h-12 rounded-full object-cover border border-gray-200 bg-white shadow-sm">
-                                        <div class="flex-col overflow-hidden">
-                                            <h4 id="dropdown-name" class="font-bold text-gray-900 text-base leading-tight truncate">...</h4>
-                                            <p id="dropdown-email" class="text-xs text-gray-500 mt-0.5 truncate">...</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="p-2">
-                                        <a href="userui.html" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Hồ sơ cá nhân
-                                        </a>
-                                        <a href="userui.html?tab=saved" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> Việc làm đã lưu
-                                        </a>
-                                        <a href="userui.html?tab=settings" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Cài đặt tài khoản
-                                        </a>
-                                    </div>
-                                    
-                                    <div class="p-2 border-t border-gray-100">
-                                        <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-bold text-left">
-                                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Đăng xuất
-                                        </button>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-
+</header>
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-
-  <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Quản lý CV</h1>
@@ -222,7 +193,6 @@ body { font-family: 'DM Sans', sans-serif; background: #f8f7f4; }
     </div>
   </div>
 
-  <!-- Grid -->
   <div id="cv-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
   <div id="empty-state" class="empty-state hidden">
     <i class="fas fa-folder-open"></i>
@@ -230,7 +200,6 @@ body { font-family: 'DM Sans', sans-serif; background: #f8f7f4; }
     <p class="text-sm mb-6">Tạo CV đầu tiên của bạn ngay!</p>
     <a href="taoCV.html" class="action-btn btn-primary" style="display:inline-flex;text-decoration:none;"><i class="fas fa-plus"></i> Tạo CV mới</a>
   </div>
-
 </main>
 
 <!-- Delete Confirm Modal -->
@@ -273,36 +242,18 @@ function getCVs() {
   try { return JSON.parse(localStorage.getItem('savedCVs') || '[]'); }
   catch(e) { return []; }
 }
+
 function saveCVs(list) {
   localStorage.setItem('savedCVs', JSON.stringify(list));
 }
+
 function getEditId() {
   var params = new URLSearchParams(window.location.search);
   return params.get('editId');
 }
-function saveCV(data) {
-  var list = JSON.parse(localStorage.getItem('savedCVs') || '[]');
 
-  var editId = getEditId();
-
-  if (editId) {
-    // ✅ UPDATE CV
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id == editId) {
-        list[i] = { ...list[i], ...data };
-      }
-    }
-  } else {
-    // ✅ TẠO MỚI
-    data.id = Date.now();
-    list.push(data);
-  }
-
-  saveCVs(list); // 👈 dùng lại hàm của bạn
-}
 function renderList() {
   var list = getCVs();
-
   var q = document.getElementById('search-inp').value.toLowerCase();
 
   if (q) {
@@ -329,10 +280,9 @@ function renderList() {
   grid.innerHTML = '';
 
   list.forEach(function(cv, idx) {
-
     var title = cv.title || cv.name || "CV không tên";
-
-    // ===== BADGE =====
+    
+    // Badge cho CV upload
     var badge = '';
     if (cv.type === 'upload') {
       badge = '<span style="font-size:10px;background:#e0f2fe;color:#0284c7;padding:2px 6px;border-radius:6px;margin-left:6px;">Upload</span>';
@@ -342,22 +292,35 @@ function renderList() {
     card.className = 'cv-card';
     card.style.animationDelay = (idx * 0.05) + 's';
 
-    var thumbHtml = cv.thumbnail
-      ? '<img class="cv-thumb" src="' + cv.thumbnail + '" alt="' + title + '">'
-      : '<div class="cv-thumb-placeholder"><i class="fas fa-file-alt" style="font-size:2.5rem;color:rgba(255,255,255,0.5);"></i></div>';
-
-    // ===== ❌ KHÔNG SỬA NẾU UPLOAD =====
-    var editBtn = '';
-    if (cv.type !== 'upload') {
-      editBtn =
-        '<a href="taoCV.html?editId=' + cv.id + '" class="action-btn btn-edit" style="flex:1;justify-content:center;text-decoration:none;">' +
-        '<i class="fas fa-edit"></i> Sửa</a>';
+    // 🔥 QUAN TRỌNG: Xử lý thumbnail - ưu tiên thumbnail trước, nếu không có thì dùng dataURL
+    var thumbHtml = '';
+    
+    if (cv.thumbnail && cv.thumbnail.startsWith('data:image')) {
+      // Nếu có thumbnail dạng dataURL
+      thumbHtml = '<img class="cv-thumb" src="' + cv.thumbnail + '" alt="' + title + '" onerror="this.onerror=null; this.src=\'\';">';
+    } 
+    else if (cv.dataURL) {
+      // Nếu có dataURL từ lúc lưu
+      thumbHtml = '<img class="cv-thumb" src="' + cv.dataURL + '" alt="' + title + '" onerror="this.onerror=null; this.src=\'\';">';
+    }
+    else {
+      // Fallback: hiển thị placeholder
+      thumbHtml = '<div class="cv-thumb-placeholder">' +
+                    '<i class="fas fa-file-alt" style="font-size:2.5rem;color:rgba(255,255,255,0.5);"></i>' +
+                    '<span style="font-size:12px;">' + title + '</span>' +
+                  '</div>';
     }
 
-    // ===== ❌ KHÔNG ĐỔI TÊN NẾU UPLOAD =====
-var renameBtn =
-  '<button onclick="openRenameModal(' + cv.id + ')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:0.8rem;padding:2px 4px;" title="Đổi tên">' +
-  '<i class="fas fa-pencil-alt"></i></button>';
+    // Nút sửa (không cho sửa CV upload)
+    var editBtn = '';
+    if (cv.type !== 'upload') {
+      editBtn = '<a href="taoCV.html?editId=' + cv.id + '" class="action-btn btn-edit" style="flex:1;justify-content:center;text-decoration:none;">' +
+                '<i class="fas fa-edit"></i> Sửa</a>';
+    }
+
+    // Nút đổi tên
+    var renameBtn = '<button onclick="openRenameModal(' + cv.id + ')" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:0.8rem;padding:2px 4px;" title="Đổi tên">' +
+                    '<i class="fas fa-pencil-alt"></i></button>';
 
     card.innerHTML =
       thumbHtml +
@@ -366,7 +329,7 @@ var renameBtn =
           '<p style="font-weight:700;font-size:0.88rem;color:#1e293b;flex:1;margin-right:6px;word-break:break-word;">' + title + badge + '</p>' +
           renameBtn +
         '</div>' +
-        '<p class="badge-date"><i class="fas fa-clock" style="margin-right:4px;"></i>' + (cv.updatedAt || '') + '</p>' +
+        '<p class="badge-date"><i class="fas fa-clock" style="margin-right:4px;"></i>' + (cv.updatedAt || 'Chưa cập nhật') + '</p>' +
         '<div style="display:flex;gap:6px;margin-top:10px;">' +
           editBtn +
           '<button onclick="openDeleteModal(' + cv.id + ',\'' + title.replace(/'/g, "\\'") + '\')" class="action-btn btn-delete" style="flex:1;justify-content:center;">' +
@@ -384,146 +347,178 @@ function openDeleteModal(id, name) {
   document.getElementById('delete-cv-name').textContent = name;
   document.getElementById('modal-overlay').classList.add('open');
 }
+
 function closeDeleteModal() {
   deleteId = null;
   document.getElementById('modal-overlay').classList.remove('open');
 }
+
 function confirmDelete() {
   if (!deleteId) return;
   var list = getCVs().filter(function(c){ return c.id !== deleteId; });
-  var data = {
-  name: g('name').value,
-  // thêm các field khác của bạn
-};
-
-saveCV(data);
+  saveCVs(list);
   closeDeleteModal();
   renderList();
 }
+
 document.getElementById('modal-overlay').addEventListener('click', function(e){
   if (e.target === this) closeDeleteModal();
 });
 
-/* Rename (chỉ CV tạo) */
+/* Rename */
 function openRenameModal(id) {
   var cv = getCVs().find(c => c.id === id);
-
-  renameId = id; // 🔥 QUAN TRỌNG
-
+  renameId = id;
   document.getElementById('rename-inp').value = cv ? (cv.title || cv.name) : '';
   document.getElementById('rename-modal').classList.add('open');
 }
+
 function closeRenameModal() {
   renameId = null;
   document.getElementById('rename-modal').classList.remove('open');
 }
+
 function confirmRename() {
   if (!renameId) return;
-
   var list = getCVs();
   var idx = list.findIndex(function(c){ return c.id === renameId; });
-
   var newName = document.getElementById('rename-inp').value.trim();
-
+  
   if (!newName) {
     alert("Vui lòng nhập tên!");
     return;
   }
-
+  
   if (idx !== -1) {
-    list[idx].title = newName; // ✅ áp dụng cho mọi loại CV
+    // ✅ CHỈ đổi title (tên hiển thị trong quản lý)
+    list[idx].title = newName;
+    // ❌ KHÔNG đổi name (tên trong CV)
+    // list[idx].name = newName;  // XÓA DÒNG NÀY
     saveCVs(list);
   }
-
+  
   closeRenameModal();
   renderList();
-}
-function getEditId() {
-  var params = new URLSearchParams(window.location.search);
-  return params.get('editId');
 }
 
 document.getElementById('rename-modal').addEventListener('click', function(e){
   if (e.target === this) closeRenameModal();
 });
+
 document.getElementById('rename-inp').addEventListener('keydown', function(e){
-  if (list[idx] && list[idx].type === 'upload') return;
   if (e.key === 'Escape') closeRenameModal();
+  if (e.key === 'Enter') confirmRename();
 });
 
 /* INIT */
 window.addEventListener('DOMContentLoaded', function() {
   renderList();
-});
-window.addEventListener('DOMContentLoaded', function () {
-  var id = getEditId();
-  if (!id) return;
-
-  var list = JSON.parse(localStorage.getItem('savedCVs') || '[]');
-
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].id == id) {
-      fillForm(list[i]); // hoặc tự set input
+  
+  // Kiểm tra và hiển thị thông tin user nếu có
+  try {
+    var user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user && user.fullName) {
+      document.getElementById('dropdown-name').textContent = user.fullName;
+      document.getElementById('dropdown-email').textContent = user.email || user.username || '';
     }
-  }
+  } catch(e) {}
 });
 </script>
 
-
 <footer class="bg-slate-900 text-gray-300 pt-16 pb-8 mt-auto border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-                <div>
-                    <img src="./assets/logoweb.png" alt="Logo Nhóm" class="h-10 mb-6">
-                    <p class="text-sm text-gray-400 mb-4">Nền tảng công nghệ tuyển dụng tiên tiến, kết nối hàng triệu ứng viên với các doanh nghiệp hàng đầu.</p>
-                    <div class="text-sm text-gray-400 space-y-2">
-                        <p>📍 Địa chỉ: Số 120 Yên Lãng, Đống Đa, Hà Nội</p>
-                        <p>📞 Điện thoại: (024) 37663311</p>
-                        <p>📧 Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c7afa8b3b5a887aaaea3a4b1e9b1a9">[email&#160;protected]</a></p>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="text-white text-lg font-bold mb-6">Dành cho Ứng viên</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="listvieclam.html" class="hover:text-blue-400 transition">Việc làm mới nhất</a></li>
-                        <li><a href="listcongty.html" class="hover:text-blue-400 transition">Top công ty nổi bật</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tính lương Gross - Net</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-lg font-bold mb-6">Nhà tuyển dụng</h3>
-                    <ul class="space-y-3 text-sm">
-                        <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng nhập Doanh nghiệp</a></li>
-                        <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng tin tuyển dụng</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-lg font-bold mb-6">Tải ứng dụng</h3>
-                    <p class="text-sm text-gray-400 mb-4">Tải ngay ứng dụng để tìm việc và tạo CV mọi lúc mọi nơi.</p>
-                    <div class="flex flex-col gap-3">
-                        <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
-                            <span class="text-2xl">🍎</span>
-                            <div class="text-left"><p class="text-[10px] text-gray-400 leading-none">Download on the</p><p class="text-sm font-bold text-white leading-tight">App Store</p></div>
-                        </a>
-                        <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
-                            <span class="text-2xl">🤖</span>
-                            <div class="text-left"><p class="text-[10px] text-gray-400 leading-none">GET IT ON</p><p class="text-sm font-bold text-white leading-tight">Google Play</p></div>
-                        </a>
-                    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <div>
+                <img src="./assets/logoweb.png" alt="Logo Nhóm" class="h-10 mb-6">
+                <p class="text-sm text-gray-400 mb-4">Nền tảng công nghệ tuyển dụng tiên tiến, kết nối hàng triệu ứng viên với các doanh nghiệp hàng đầu.</p>
+                <div class="text-sm text-gray-400 space-y-2">
+                    <p>📍 Địa chỉ: Số 120 Yên Lãng, Đống Đa, Hà Nội</p>
+                    <p>📞 Điện thoại: (024) 37663311</p>
+                    <p>📧 Email: contact@midcv.com</p>
                 </div>
             </div>
-            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-sm text-gray-500">© 2026 Dự án Web Programming. All rights reserved.</p>
-                <div class="flex gap-4 text-sm text-gray-500">
-                    <a href="#" class="hover:text-white transition">Quy chế hoạt động</a>
-                    <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Dành cho Ứng viên</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="listvieclam.html" class="hover:text-blue-400 transition">Việc làm mới nhất</a></li>
+                    <li><a href="listcongty.html" class="hover:text-blue-400 transition">Top công ty nổi bật</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Tính lương Gross - Net</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Nhà tuyển dụng</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng nhập Doanh nghiệp</a></li>
+                    <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng tin tuyển dụng</a></li>
+                    <li><a href="#" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-white text-lg font-bold mb-6">Tải ứng dụng</h3>
+                <p class="text-sm text-gray-400 mb-4">Tải ngay ứng dụng để tìm việc và tạo CV mọi lúc mọi nơi.</p>
+                <div class="flex flex-col gap-3">
+                    <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
+                        <span class="text-2xl">🍎</span>
+                        <div class="text-left"><p class="text-[10px] text-gray-400 leading-none">Download on the</p><p class="text-sm font-bold text-white leading-tight">App Store</p></div>
+                    </a>
+                    <a href="#" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-4 py-2 flex items-center gap-3 transition">
+                        <span class="text-2xl">🤖</span>
+                        <div class="text-left"><p class="text-[10px] text-gray-400 leading-none">GET IT ON</p><p class="text-sm font-bold text-white leading-tight">Google Play</p></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-sm text-gray-500">© 2026 Dự án Web Programming. All rights reserved.</p>
+            <div class="flex gap-4 text-sm text-gray-500">
+                <a href="#" class="hover:text-white transition">Quy chế hoạt động</a>
+                <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
             </div>
         </div>
     </div>
 </footer>
 
-<script src="./scripts.js"></script>
+<script>
+// Các hàm hỗ trợ cho menu mobile (nếu chưa có)
+function toggleMobileMenu() {
+  var overlay = document.getElementById('mobile-menu-overlay');
+  var sidebar = document.getElementById('mobile-sidebar');
+  if (sidebar.classList.contains('-translate-x-full')) {
+    sidebar.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+  } else {
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  }
+}
+
+function toggleSubmenu(menuId) {
+  var menu = document.getElementById(menuId);
+  if (menu.classList.contains('hidden')) {
+    menu.classList.remove('hidden');
+  } else {
+    menu.classList.add('hidden');
+  }
+}
+
+function handleEmployerAction(event) {
+  event.preventDefault();
+  window.location.href = 'tuyendung.html';
+}
+
+function requireAuth(event, url) {
+  var user = localStorage.getItem('currentUser');
+  if (!user) {
+    event.preventDefault();
+    window.location.href = 'login.html?redirect=' + encodeURIComponent(url);
+  }
+}
+
+function logout() {
+  localStorage.removeItem('currentUser');
+  window.location.href = 'index.html';
+}
+</script>
 </body>
 </html>
