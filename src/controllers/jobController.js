@@ -191,3 +191,43 @@ exports.hardDeleteJob = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// Nằm ở src/controllers/jobController.js
+
+exports.getAllJobs = async (req, res) => {
+  try {
+    // 1. Nhận lệnh từ Frontend gửi lên qua URL (Query Parameters)
+    // Ví dụ: /api/jobs?limit=6&page=1
+    const limit = parseInt(req.query.limit) || 10; // Nếu không bảo gì, mặc định lấy 10 job/trang
+    const page = parseInt(req.query.page) || 1;    // Mặc định ở trang 1
+    const offset = (page - 1) * limit;             // Công thức tính số Job bị bỏ qua
+
+    // 2. Dùng findAndCountAll thay vì findAll (Để lấy được tổng số lượng Job)
+    const jobs = await Job.findAndCountAll({
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']],
+      include: [
+        { 
+          model: Company, 
+          as: 'company',
+          attributes: ['companyName', 'logoUrl'] 
+        }
+      ]
+    });
+
+    // 3. Trả về kết quả siêu chi tiết cho Frontend
+    res.status(200).json({ 
+      success: true, 
+      data: jobs.rows, // Chứa mảng dữ liệu các Job
+      pagination: {
+        totalItems: jobs.count, // Tổng cộng Database có bao nhiêu cái Job
+        totalPages: Math.ceil(jobs.count / limit), // Tổng số trang
+        currentPage: page,
+        itemsPerPage: limit
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
