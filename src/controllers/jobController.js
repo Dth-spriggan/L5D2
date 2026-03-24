@@ -44,15 +44,38 @@ exports.getJobs = async (req, res) => {
 
 // 2. TẠO TIN MỚI
 exports.createJob = async (req, res) => {
-  try {
-    // Lấy thông tin từ body
-    const { title, description, salary_gross, job_type, location } = req.body; 
-    
-    // 💡 XỬ LÝ USER: Nếu có Token đăng nhập thì lấy req.user.id. Nếu đang test chay thì lấy từ body.
-    const employerId = req.user?.id || req.body.employerId;
+    try {
+        // 1. Lôi đích danh các trường ra để kiểm soát, tránh frontend gửi data bậy bạ (ví dụ cố tình gửi status='OPEN')
+        const { 
+            title, description, job_type, location, 
+            salary_min, salary_max, requirements, benefits, level, quantity, skills 
+        } = req.body;
 
-    if (!employerId) {
-      return res.status(400).json({ success: false, message: 'Thiếu thông tin người đăng (employerId)!' });
+        // 2. Xử lý vụ kỹ năng: Nếu frontend gửi lên mảng ['ReactJS', 'Tailwind']
+        // thì đệ gộp lại thành chuỗi 'ReactJS, Tailwind' để lưu vào DB cho mượt.
+        const processedSkills = Array.isArray(skills) ? skills.join(', ') : skills;
+
+        // 3. Tạo job mới với các trường đã chuẩn hóa
+        const newJob = await Job.create({
+            title,
+            description,
+            job_type,
+            location,
+            salary_min,
+            salary_max,
+            requirements,
+            benefits,
+            level,
+            quantity,
+            skills: processedSkills,
+            employerId: req.user.id // Gắn ID công ty/người đăng từ token
+            // status tự động là 'PENDING_REVIEW' theo model
+        });
+
+        res.status(201).json({ message: "Đăng tin thành công!", job: newJob });
+    } catch (error) {
+        console.error("Lỗi tạo job:", error);
+        res.status(500).json({ message: "Lỗi server: " + error.message });
     }
 
     const newJob = await Job.create({
@@ -72,72 +95,23 @@ exports.createJob = async (req, res) => {
   }
 };
 
-// 3. CẬP NHẬT TIN
-exports.updateJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, description } = req.body;
-    
-    const [updatedRows] = await Job.update(
-      { title, description },
-      { where: { id: id } }
-    );
-
-    if (updatedRows > 0) res.status(200).json({ success: true, message: 'Cập nhật thành công' });
-    else res.status(404).json({ success: false, message: 'Không tìm thấy tin này' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-// 4. XÓA MỀM (Soft Delete bằng tay)
-exports.deleteJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [updatedRows] = await Job.update(
-      { deleted_at: new Date() }, 
-      { where: { id: id, deleted_at: null } }
-    );
-    
-    if (updatedRows > 0) res.status(200).json({ success: true, message: 'Đã đưa tin vào thùng rác (Soft Delete)' });
-    else res.status(404).json({ success: false, message: 'Không tìm thấy tin này' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-// 5. KHÔI PHỤC TIN
-exports.restoreJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [updatedRows] = await Job.update(
-      { deleted_at: null }, 
-      { where: { id: id } }
-    );
-    
-    if (updatedRows > 0) res.status(200).json({ success: true, message: 'Đã khôi phục tin thành công' });
-    else res.status(404).json({ success: false, message: 'Không tìm thấy tin này' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-// 6. ADMIN DUYỆT TIN
-// PHIÊN BẢN NÂNG CẤP (Check logic kỹ hơn)
-exports.approveJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // 1. Tìm cái tin đó trước xem nó có tồn tại và chưa bị xóa mềm không
-    const job = await Job.findOne({ where: { id: id, deleted_at: null } });
-
-    if (!job) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tin hoặc tin đã bị xóa!' });
-    }
-
-    // 2. Kiểm tra xem nó đã được duyệt chưa
-    if (job.status === 'ACTIVE') {
-      return res.status(400).json({ success: false, message: 'Tin này đã được duyệt từ trước rồi sếp ơi!' });
+exports.getAllJobs = async (req, res) => {
+    try {
+        const jobs = await Job.findAll({
+            // Tạm thời đệ comment cái điều kiện OPEN lại để đại ca test tạo xong thấy ngay nhé. 
+            // Lúc nào làm tính năng duyệt bài thì mở lại sau.
+            // where: { status: 'OPEN' }, 
+            
+            include: [{ 
+                model: User, 
+                as: 'employer', 
+                attributes: ['fullName', 'email'] 
+            }]
+        });
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error("Lỗi lấy danh sách job:", error);
+        res.status(500).json({ message: "Lỗi server: " + error.message });
     }
 
     // 3. Nếu mọi thứ ok thì mới cập nhật

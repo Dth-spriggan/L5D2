@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db'); // Gọi cái db.js của bạn ông vào đây
 
-// Định nghĩa khung xương của bảng 'jobs'
+// Định nghĩa khung xương mới của bảng 'jobs' (Đã update theo UI Frontend)
 const Job = sequelize.define('Job', {
   id: { 
     type: DataTypes.INTEGER, 
@@ -10,7 +10,18 @@ const Job = sequelize.define('Job', {
   },
   title: { type: DataTypes.STRING, allowNull: false },
   description: { type: DataTypes.TEXT },
-  salary_gross: { type: DataTypes.INTEGER },
+  
+  // --- BẮT ĐẦU DÀN LÍNH MỚI THÊM ---
+  salary_min: { type: DataTypes.INTEGER },         // Lương tối thiểu
+  salary_max: { type: DataTypes.INTEGER },         // Lương tối đa
+  requirements: { type: DataTypes.TEXT },          // Yêu cầu ứng viên
+  benefits: { type: DataTypes.TEXT },              // Quyền lợi
+  level: { type: DataTypes.STRING },               // Cấp bậc
+  quantity: { type: DataTypes.INTEGER, defaultValue: 1 }, // Số lượng
+  skills: { type: DataTypes.STRING },              // Kỹ năng (Lưu chuỗi)
+  employerId: { type: DataTypes.INTEGER },         // Khóa ngoại liên kết nhà tuyển dụng/công ty
+  // --- KẾT THÚC DÀN LÍNH MỚI ---
+
   job_type: { type: DataTypes.STRING },
   location: { type: DataTypes.STRING },
   status: { type: DataTypes.STRING, defaultValue: 'PENDING_REVIEW' },
