@@ -424,20 +424,37 @@ function setCV(id, val) {
   }
   saveSnap();
 }
+// Hàm gán email vào CV, xử lý cả dạng protected
 function setProtectedEmail(email) {
-  const el = document.getElementById('cv-email');
-  if (!el) return;
+  var emailSpan = g('cv-email');
+  if (!emailSpan) return;
+  
+  // Xóa nội dung cũ
+  emailSpan.innerHTML = '';
+  
+  // Tạo text node chứa email thuần
+  emailSpan.textContent = email;
+  
+  // Cập nhật input nếu có
+  var inpEmail = g('inp-email');
+  if (inpEmail) inpEmail.value = email;
+}
 
-  if (!email) {
-    el.textContent = '(Chưa có email)';
-    return;
+// Hoặc nếu muốn giữ nguyên cấu trúc Cloudflare nhưng cập nhật data attribute:
+function setProtectedEmail(email) {
+  var emailSpan = g('cv-email');
+  if (!emailSpan) return;
+  
+  // Cập nhật cả text và data attribute cho Cloudflare
+  emailSpan.textContent = email;
+  
+  // Nếu có thẻ a bên trong, cập nhật cả href
+  var link = emailSpan.querySelector('a');
+  if (link) {
+    link.textContent = email;
+    link.setAttribute('data-cfemail', '');
+    link.removeAttribute('href');
   }
-
-  el.innerHTML = `
-    <a href="mailto:${email}" style="color:inherit;text-decoration:none;border-bottom:1px dotted #93c5fd;">
-      ${email}
-    </a>
-  `;
 }
 
 function switchRpTab(tab, btn) {
@@ -1265,7 +1282,11 @@ window.addEventListener('DOMContentLoaded', function () {
       if (cv.title)     g('cv-title-inp').value = cv.title;
       if (cv.name)      { g('inp-name').value = cv.name;      setCV('cv-name', cv.name); }
       if (cv.role)      { g('inp-role').value = cv.role;      setCV('cv-role', cv.role); }
-      if (cv.email)     { g('inp-email').value = cv.email;    setProtectedEmail(cv.email); }
+      // Đoạn mới (thay vào)
+if (cv.email) { 
+  g('inp-email').value = cv.email;    
+  setProtectedEmail(cv.email);  // ← Dùng hàm này thay vì setCV
+}
       if (cv.phone)     { g('inp-phone').value = cv.phone;    setCV('cv-phone', cv.phone); }
       if (cv.location)  { g('inp-location').value = cv.location; setCV('cv-location', cv.location); }
       if (cv.bio)       { g('inp-bio').value = cv.bio;        setCV('cv-bio', cv.bio); }
