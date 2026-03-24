@@ -33,6 +33,9 @@
             <a href="#" onclick="switchAdminTab('jobs')" id="tab-jobs" class="admin-tab flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition">
                 <i class="fas fa-briefcase w-5"></i> Quản lý Việc làm
             </a>
+            <a href="#" onclick="switchAdminTab('reports')" id="tab-reports" class="admin-tab flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition">
+                <i class="fas fa-flag w-5"></i> Quản lý Báo cáo
+            </a>
         </nav>
         <div class="p-4 border-t border-gray-800">
             <button onclick="adminLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-bold">
@@ -102,9 +105,9 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
-                                    <th class="py-3 px-6">ID</th>
                                     <th class="py-3 px-6">Tên Công ty</th>
                                     <th class="py-3 px-6">Lĩnh vực</th>
+                                    <th class="py-3 px-6">Trạng thái</th>
                                     <th class="py-3 px-6 text-center">Hành động</th>
                                 </tr>
                             </thead>
@@ -115,7 +118,7 @@
                 </div>
             </div>
 
-            <div id="panel-jobs" class="admin-panel hidden">
+<div id="panel-jobs" class="admin-panel hidden">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800">Kiểm duyệt Việc làm</h3>
@@ -131,14 +134,58 @@
                                 </tr>
                             </thead>
                             <tbody id="admin-jobs-tbody" class="text-sm">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <div id="panel-reports" class="admin-panel hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800">Danh sách Khiếu nại / Báo cáo</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+                                    <th class="py-3 px-6">Người gửi</th>
+                                    <th class="py-3 px-6">Nội dung báo cáo</th>
+                                    <th class="py-3 px-6">Thời gian</th>
+                                    <th class="py-3 px-6 text-center">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-reports-tbody" class="text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div> </main>
+
+    <div id="admin-reject-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-red-600"><i class="fas fa-ban mr-2"></i> Từ chối / Ẩn Công ty</h3>
+                <button onclick="closeRejectModal()" class="text-gray-400 hover:text-red-500 text-2xl transition">&times;</button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Vui lòng chọn lý do từ chối để thông báo cho doanh nghiệp biết và khắc phục:</p>
+                <div class="space-y-3 mb-4">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="radio" name="reject-reason" value="Thông tin công ty không rõ ràng hoặc có dấu hiệu giả mạo"> Thông tin không rõ/giả mạo</label>
+                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="radio" name="reject-reason" value="Hình ảnh Logo hoặc Ảnh bìa không đúng quy chuẩn"> Logo/Ảnh bìa không hợp lệ</label>
+                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="radio" name="reject-reason" value="Vi phạm nghiêm trọng chính sách của nền tảng MidCV"> Vi phạm chính sách nền tảng</label>
+                    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="radio" name="reject-reason" value="other" onchange="document.getElementById('reject-other-reason').focus()"> Lý do khác:</label>
+                    <input type="text" id="reject-other-reason" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-red-500 transition" placeholder="Nhập chi tiết lý do...">
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onclick="closeRejectModal()" class="bg-gray-200 hover:bg-gray-300 px-5 py-2.5 rounded-lg font-bold text-gray-700 transition">Hủy</button>
+                <button onclick="confirmRejectCompany()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition">Xác nhận Ẩn</button>
+            </div>
         </div>
-    </main>
+    </div>
 
     <div id="admin-preview-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative animate-fade-in">
