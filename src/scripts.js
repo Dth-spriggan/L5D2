@@ -4288,3 +4288,70 @@ window.previewJob = function(id) {
     const modal = document.getElementById('admin-preview-modal');
     if (modal) modal.classList.remove('hidden');
 };
+// =================================================================
+// TỰ ĐỘNG RENDER NHÀ TUYỂN DỤNG HÀNG ĐẦU DẠNG LOGO (TRANG CHỦ)
+// =================================================================
+window.renderTopEmployers = function() {
+    const container = document.getElementById('top-employers-container');
+    if (!container) return; // Nếu không ở trang chủ thì bỏ qua
+
+    // 1. Lấy tất cả công ty (Mock gốc + Custom doanh nghiệp tạo)
+    const mockComps = typeof window.mockCompaniesDB !== 'undefined' ? window.mockCompaniesDB : [];
+    const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
+    let allComps = [...mockComps, ...customComps];
+
+    // 2. Lấy kho việc làm để đếm số lượng Job
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
+    const allJobs = [...mockJobs, ...customJobs];
+    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
+
+    // 3. Tính số job đang hiển thị (Active) cho từng công ty
+    allComps = allComps.map(comp => {
+        const cName = (comp.name || '').toLowerCase();
+        let activeJobsCount = allJobs.filter(j => {
+            const isAppr = mockJobs.includes(j) ? true : approvedIds.includes(String(j.id));
+            if (!isAppr) return false;
+            
+            const jName = (j.company || '').toLowerCase();
+            return jName.includes(cName) || cName.includes(jName) || 
+                   (cName.includes("utc") && jName.includes("utc")) || 
+                   (cName.includes("mixi") && jName.includes("mixi"));
+        }).length;
+
+        return { ...comp, activeJobsCount };
+    });
+
+    // 4. Sắp xếp ưu tiên công ty nhiều Job nhất lên đầu
+    allComps.sort((a, b) => b.activeJobsCount - a.activeJobsCount);
+
+    // 5. Cắt lấy Top 6 công ty (Vì khung HTML là lg:grid-cols-6)
+    const top6Comps = allComps.slice(0, 6);
+
+    if (top6Comps.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400 text-sm">Chưa có dữ liệu nhà tuyển dụng.</div>';
+        return;
+    }
+
+    // 6. Bơm HTML dạng Logo có hiệu ứng Grayscale + Số lượng Job
+    container.innerHTML = top6Comps.map(comp => `
+        <a href="congty.html?id=${comp.id}" class="border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center hover:shadow-md transition cursor-pointer bg-gray-50 hover:bg-white group relative h-28 overflow-hidden">
+            <span class="absolute top-1.5 right-1.5 bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full z-10 shadow-sm border border-blue-200">
+                ${comp.activeJobsCount} job
+            </span>
+            
+            <img src="${comp.logo || 'https://placehold.co/100x50'}" alt="${comp.name}" class="max-h-12 w-full object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">
+            
+            <span class="text-[10px] font-bold text-gray-400 mt-3 text-center truncate w-full px-1 group-hover:text-gray-700 transition">${comp.name}</span>
+        </a>
+    `).join('');
+};
+
+// Gọi hàm này ngay khi trang web vừa tải xong
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+        setTimeout(() => {
+            renderTopEmployers();
+        }, 100);
+    }
+});
