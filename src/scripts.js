@@ -1179,33 +1179,36 @@ window.submitReport = function(event) {
         senderName = user.fullName || user.username;
     }
 
-    // --- BỔ SUNG: TÓM LẤY ID CÔNG VIỆC TỪ URL ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const reportedJobId = urlParams.get('id');
-
-    // --- 2. LẤY LÝ DO BÁO CÁO ---
+    // --- 2. LẤY LÝ DO BÁO CÁO (ĐÃ FIX LỖI "ON") ---
     let reportReason = "Có hành vi vi phạm quy định"; 
     const radios = document.querySelectorAll('input[name="report_reason"]:checked');
+    
     if (radios.length > 0) {
         let val = radios[0].value;
-        if (val === 'on' || !val) val = radios[0].nextElementSibling ? radios[0].nextElementSibling.textContent.trim() : "Vi phạm quy định";
+        // Nếu value trả về 'on' (do HTML thiếu thuộc tính value), ta móc text từ thẻ span bên cạnh
+        if (val === 'on' || !val) {
+            val = radios[0].nextElementSibling ? radios[0].nextElementSibling.textContent.trim() : "Vi phạm quy định";
+        }
         reportReason = val;
     }
 
+    // Bổ sung lấy nội dung từ ô nhập chi tiết (Textarea)
     const textarea = document.querySelector('#report-modal textarea'); 
     if (textarea && textarea.value.trim()) {
-        if (reportReason === "Lý do khác") reportReason = textarea.value.trim(); 
-        else reportReason += " - Chi tiết: " + textarea.value.trim(); 
+        if (reportReason === "Lý do khác") {
+            reportReason = textarea.value.trim(); // Nếu chọn Lý do khác thì lấy luôn text
+        } else {
+            reportReason += " - Chi tiết: " + textarea.value.trim(); // Nối thêm chi tiết
+        }
     }
 
-    // --- 3. ĐÓNG GÓI & LƯU BÁO CÁO (ĐÃ KÈM JOB ID) ---
+    // --- 3. ĐÓNG GÓI & LƯU BÁO CÁO ---
     const newReport = {
         id: Date.now(),
-        jobId: reportedJobId, // Lưu cứng mã công việc bị tố cáo
         sender: senderName,
         reason: reportReason,
         date: new Date().toLocaleString('vi-VN'),
-        isChecked: false 
+        isChecked: false // Mặc định báo cáo mới là chưa xử lý (Chờ xử lý)
     };
 
     let reports = JSON.parse(localStorage.getItem('user_reports')) || [];
@@ -1215,6 +1218,7 @@ window.submitReport = function(event) {
     // --- 4. XỬ LÝ GIAO DIỆN NÚT BẤM ---
     const btn = document.getElementById('submit-report-btn');
     let originalText = "Gửi báo cáo";
+    
     if (btn) {
         originalText = btn.innerHTML;
         btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi...`;
@@ -1225,7 +1229,13 @@ window.submitReport = function(event) {
     setTimeout(() => {
         alert('Cảm ơn bạn! Báo cáo đã được gửi đến Ban Quản Trị MidCV để xem xét xử lý.');
         if (typeof closeReportModal === 'function') closeReportModal();
-        if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
+        
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+        
         if (typeof loadAdminReports === 'function') loadAdminReports();
     }, 1000);
 };
@@ -1319,7 +1329,54 @@ window.syncUserHeader = function() {
 document.addEventListener('DOMContentLoaded', () => {
     syncUserHeader();
 });
+// =================================================================
+// 15. TÍNH NĂNG SẮP XẾP CÔNG TY
+// =================================================================
+window.sortCompanies = function() {
+    const select = document.getElementById('sort-company');
+    const companyList = document.getElementById('company-list');
+    
+    if (!select || !companyList) return;
 
+    const sortType = select.value;
+    // Lấy tất cả các thẻ công ty biến thành 1 mảng (Array) để dễ sắp xếp
+    const cards = Array.from(companyList.children);
+
+    cards.sort((a, b) => {
+        // Đọc dữ liệu từ data- attributes
+        const jobsA = parseInt(a.dataset.jobs || 0);
+        const jobsB = parseInt(b.dataset.jobs || 0);
+        const folA = parseInt(a.dataset.followers || 0);
+        const folB = parseInt(b.dataset.followers || 0);
+        const featA = parseInt(a.dataset.featured || 0);
+        const featB = parseInt(b.dataset.featured || 0);
+
+        if (sortType === 'featured') {
+            // 1. Ưu tiên công ty Nổi bật (1) lên trước (0)
+            if (featA !== featB) return featB - featA;
+            // 2. Nếu cùng nổi bật thì ai nhiều Follow hơn xếp trên
+            return folB - folA;
+        } 
+        else if (sortType === 'jobs') {
+            return jobsB - jobsA; // Nhiều job nhất lên đầu
+        } 
+        else if (sortType === 'followers') {
+            return folB - folA; // Nhiều người theo dõi nhất lên đầu
+        }
+        return 0;
+    });
+
+    // Xóa danh sách cũ đi và nhét danh sách đã được sắp xếp lại vào
+    companyList.innerHTML = '';
+    cards.forEach(card => companyList.appendChild(card));
+};
+
+// Tự động chạy sắp xếp lần đầu khi vừa vào trang List Công ty
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('congty.html')) {
+        setTimeout(sortCompanies, 50); // Đợi giao diện load xong rồi tự động sort
+    }
+});
 // =================================================================
 // 16. CHI TIẾT CÔNG TY (BƠM DỮ LIỆU ĐỘNG TỪ URL)
 // =================================================================
@@ -1339,62 +1396,32 @@ window.mockCompaniesDB = [
 
 window.loadCompanyDetail = function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const companyId = urlParams.get('id');
+    const companyId = parseInt(urlParams.get('id'));
+
     if (!companyId) return;
 
-    let companyData = null;
-
-    // 1. Tìm trong MockDB gốc (Dành cho 3 công ty mẫu ban đầu)
-    if (typeof window.mockCompaniesDB !== 'undefined') {
-        companyData = window.mockCompaniesDB.find(c => String(c.id) === String(companyId));
-    }
+    const companyData = mockCompaniesDB.find(c => c.id === companyId);
     
-    // 2. Tìm trong Custom DB (Dành cho các công ty do Doanh nghiệp đăng ký)
-    const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
-    const customData = customComps.find(c => String(c.id) === String(companyId) || c.ownerEmail === companyId);
-    
-    if (customData) {
-        // Gộp dữ liệu mới vào
-        companyData = { ...companyData, ...customData };
-    }
-
     if (companyData) {
         document.title = `${companyData.name} - MidCV`;
+        if(document.getElementById('detail-company-name')) document.getElementById('detail-company-name').textContent = companyData.name;
+        if(document.getElementById('detail-company-logo')) document.getElementById('detail-company-logo').src = companyData.logo;
+        if(document.getElementById('detail-company-cover')) document.getElementById('detail-company-cover').src = companyData.cover;
+        if(document.getElementById('detail-company-industry')) document.getElementById('detail-company-industry').textContent = companyData.industry;
+        if(document.getElementById('detail-company-size')) document.getElementById('detail-company-size').textContent = companyData.size;
         
-        const safeSet = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-        const safeSetHTML = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
-        const safeSetSrc = (id, val) => { const el = document.getElementById(id); if(el) el.src = val; };
-
-        // Đổ dữ liệu vào Header
-        safeSet('detail-company-name', companyData.name || 'Công ty ẩn danh');
-        safeSetSrc('detail-company-logo', companyData.logo || 'https://placehold.co/150');
-        safeSetSrc('detail-company-cover', companyData.cover || 'https://placehold.co/1920x400');
-        
-        // Đổ dữ liệu vào Thẻ và Sidebar
-        safeSet('detail-company-industry', companyData.industry || 'Chưa cập nhật');
-        safeSet('sidebar-industry', companyData.industry || 'Chưa cập nhật');
-        
-        safeSet('detail-company-address', companyData.address || 'Chưa cập nhật địa chỉ');
-        safeSet('sidebar-address', companyData.address || 'Chưa cập nhật địa chỉ');
-        
-        safeSetHTML('detail-company-about', (companyData.about || 'Chưa có thông tin giới thiệu.').replace(/\n/g, '<br>'));
-
-        // Xử lý Website
         const webLink = document.getElementById('detail-company-website');
-        const sidebarWeb = document.getElementById('sidebar-website');
-        const webUrl = companyData.website || '';
-        
-        if (webUrl) {
-            const formattedUrl = webUrl.startsWith('http') ? webUrl : `https://${webUrl}`;
-            if(webLink) { webLink.href = formattedUrl; webLink.innerHTML = `<i class="fas fa-globe mr-1.5"></i> Website`; webLink.style.display = 'inline-flex'; }
-            if(sidebarWeb) { sidebarWeb.href = formattedUrl; sidebarWeb.textContent = webUrl.replace('https://', '').replace('http://', ''); }
-        } else {
-            if(webLink) webLink.style.display = 'none';
-            if(sidebarWeb) { sidebarWeb.removeAttribute('href'); sidebarWeb.textContent = 'Chưa cập nhật'; }
+        if(webLink) {
+            webLink.href = companyData.website;
+            webLink.textContent = companyData.website.replace('https://', '');
         }
+
+        if(document.getElementById('detail-company-address')) document.getElementById('detail-company-address').textContent = companyData.address;
+        if(document.getElementById('detail-company-about')) document.getElementById('detail-company-about').innerHTML = companyData.about;
+        
+        // Đã xóa hoàn toàn đoạn vẽ Việc làm bị lỗi ở đây!
     } else {
-        const nameEl = document.getElementById('detail-company-name');
-        if(nameEl) nameEl.textContent = "Không tìm thấy Công ty";
+        if(document.getElementById('detail-company-name')) document.getElementById('detail-company-name').textContent = "Không tìm thấy Công ty";
     }
 };
 
@@ -1986,89 +2013,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 });
-
 // =================================================================
-// 15. TÍNH NĂNG SẮP XẾP CÔNG TY (ĐÃ FIX LỖI ID & BỎ FOLLOWERS)
-// =================================================================
-window.sortCompanies = function() {
-    const select = document.getElementById('sort-company');
-    // FIX LỖI: Tên ID chuẩn xác là 'company-list-container'
-    const companyList = document.getElementById('company-list-container'); 
-    
-    if (!select || !companyList) return;
-
-    const sortType = select.value;
-    const cards = Array.from(companyList.children);
-
-    cards.sort((a, b) => {
-        // Đọc dữ liệu từ data- attributes đã được gán ngầm
-        const jobsA = parseInt(a.dataset.jobs || 0);
-        const jobsB = parseInt(b.dataset.jobs || 0);
-        const featA = parseInt(a.dataset.featured || 0);
-        const featB = parseInt(b.dataset.featured || 0);
-
-        if (sortType === 'featured') {
-            // 1. Ưu tiên công ty Nổi bật (1) lên trước (0)
-            if (featA !== featB) return featB - featA;
-            // 2. Nếu cùng nổi bật thì ai có nhiều việc làm thực tế hơn xếp trên
-            return jobsB - jobsA;
-        } 
-        else if (sortType === 'jobs') {
-            return jobsB - jobsA; // Nhiều job nhất lên đầu
-        } 
-        return 0;
-    });
-
-    companyList.innerHTML = '';
-    cards.forEach(card => companyList.appendChild(card));
-};
-
-// =================================================================
-// 23. RENDER DANH SÁCH CÔNG TY (BƠM DỮ LIỆU ĐẾM JOB THỰC TẾ)
+// 23. XỬ LÝ PHÂN TRANG VÀ RENDER DANH SÁCH CÔNG TY (LISTCONGTY.HTML)
 // =================================================================
 
 let currentCompPage = 1;
-const compsPerPage = 6; 
+const compsPerPage = 6; // Một trang hiển thị tối đa 6 công ty
 
 window.renderCompanyList = function(page = 1) {
     const container = document.getElementById('company-list-container');
     const paginationContainer = document.getElementById('company-pagination');
     
+    // Nếu không có container hoặc chưa có data thì dừng lại
     if (!container || typeof window.mockCompaniesDB === 'undefined') return;
 
     currentCompPage = page;
     const totalCompanies = window.mockCompaniesDB.length;
     
+    // 1. Tính toán vị trí cắt mảng dữ liệu
     const startIndex = (currentCompPage - 1) * compsPerPage;
     const endIndex = startIndex + compsPerPage;
     const compsToShow = window.mockCompaniesDB.slice(startIndex, endIndex);
 
+    // Xử lý khi không có công ty nào (VD: Admin xóa hết)
     if (compsToShow.length === 0) {
         container.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500">Chưa có công ty nào trên hệ thống.</p>';
         if (paginationContainer) paginationContainer.innerHTML = '';
         return;
     }
 
+    // 2. Vẽ danh sách Công ty
     container.innerHTML = compsToShow.map(comp => {
-        
-        // --- THUẬT TOÁN ĐẾM SỐ LƯỢNG JOB THỰC TẾ ĐANG ACTIVE ---
-        let activeJobsCount = 0;
-        if (typeof window.mockJobs !== 'undefined') {
-            const cName = (comp.name || '').toLowerCase();
-            activeJobsCount = window.mockJobs.filter(j => {
-                const jName = (j.company || '').toLowerCase();
-                // Logic quét tên công ty linh hoạt giống trang Chi tiết công ty
-                return jName.includes(cName) || cName.includes(jName) || 
-                       (cName.includes("utc") && jName.includes("utc")) || 
-                       (cName.includes("mixi") && jName.includes("mixi"));
-            }).length;
-        }
-        
-        // Cài đặt độ ưu tiên cho sắp xếp (3 công ty gốc thì ưu tiên)
-        const isFeatured = comp.id <= 3 ? 1 : 0;
+        const jobCount = comp.jobs ? comp.jobs.length : Math.floor(Math.random() * 10) + 1;
+        const followers = (Math.random() * 50).toFixed(1) + "K";
         
         return `
-        <a href="congty.html?id=${comp.id}" data-jobs="${activeJobsCount}" data-featured="${isFeatured}" class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition overflow-hidden flex flex-col group relative cursor-pointer block">
+        <a href="congty.html?id=${comp.id}" class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition overflow-hidden flex flex-col group relative cursor-pointer block">
             <div class="h-24 bg-gradient-to-r from-blue-700 to-blue-500 relative">
                 <div class="absolute -bottom-8 left-6 w-16 h-16 bg-white rounded-lg p-1 shadow-md border border-gray-100 flex items-center justify-center">
                     <img src="${comp.logo}" alt="Logo" class="w-full h-full object-contain rounded">
@@ -2082,9 +2062,14 @@ window.renderCompanyList = function(page = 1) {
                 </div>
                 <div class="mt-auto border-t border-gray-50 pt-5">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg font-black text-blue-600 leading-none">${activeJobsCount}</span>
-                            <span class="text-xs text-gray-500 font-medium">Việc làm đang tuyển</span>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-black text-blue-600 leading-none">${jobCount}</span>
+                            <span class="text-xs text-gray-500 mt-1 font-medium">Việc làm</span>
+                        </div>
+                        <div class="w-px h-8 bg-gray-200"></div>
+                        <div class="flex flex-col text-right">
+                            <span class="text-lg font-black text-gray-700 leading-none">${followers}</span>
+                            <span class="text-xs text-gray-500 mt-1 font-medium">Followers</span>
                         </div>
                     </div>
                     <div class="w-full text-sm font-bold text-blue-600 bg-blue-50 group-hover:bg-blue-600 group-hover:text-white transition py-2.5 rounded-lg flex items-center justify-center gap-2 border border-transparent">
@@ -2095,6 +2080,7 @@ window.renderCompanyList = function(page = 1) {
         </a>`;
     }).join('');
 
+    // 3. Vẽ bộ nút Phân trang
     if (paginationContainer) {
         paginationContainer.innerHTML = '';
         const totalPages = Math.ceil(totalCompanies / compsPerPage);
@@ -2110,11 +2096,9 @@ window.renderCompanyList = function(page = 1) {
             `;
         }
     }
-    
-    // Ép chạy sắp xếp sau khi vẽ xong
-    setTimeout(window.sortCompanies, 50);
 };
 
+// Kích hoạt khi load trang listcongty.html
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('listcongty.html')) {
         renderCompanyList(1);
@@ -2177,14 +2161,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('admin-reports-tbody');
         if(!tbody) return;
 
-        // LẤY KHO VIỆC LÀM ĐỂ ĐỐI CHIẾU
-        const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
-        const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
-        const allJobs = [...mockJobs, ...customJobs];
-
+        // TÌM KIẾM (Chỉ tìm theo tên Người gửi)
         const keyword = (document.getElementById('search-admin-reports')?.value || '').toLowerCase().trim();
-        if (keyword) reports = reports.filter(r => (r.sender || '').toLowerCase().includes(keyword));
+        if (keyword) {
+            reports = reports.filter(r => (r.sender || '').toLowerCase().includes(keyword));
+        }
 
+        // SẮP XẾP
         const { sortCol, sortDir } = adminFilters.reports;
         if (sortCol) {
             reports.sort((a, b) => {
@@ -2192,7 +2175,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sortCol === 'sender') { valA = (a.sender || '').toLowerCase(); valB = (b.sender || '').toLowerCase(); }
                 else if (sortCol === 'reason') { valA = (a.reason || '').toLowerCase(); valB = (b.reason || '').toLowerCase(); }
                 else if (sortCol === 'status') { valA = a.isChecked ? 1 : 0; valB = b.isChecked ? 1 : 0; }
+                // Đặc biệt: Sắp xếp theo Thời gian ta lấy luôn ID vì ID chính là Date.now() lúc gửi
                 else if (sortCol === 'date') { valA = a.id; valB = b.id; }
+
                 if (valA < valB) return sortDir === 'asc' ? -1 : 1;
                 if (valA > valB) return sortDir === 'asc' ? 1 : -1;
                 return 0;
@@ -2200,16 +2185,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updateSortUI('reports', sortCol, sortDir);
 
-        if(reports.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-gray-500 font-medium">Không tìm thấy báo cáo nào.</td></tr>';
+        if(reports.length === 0) return tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-500 font-medium">Không tìm thấy báo cáo nào khớp với tên người gửi.</td></tr>';
 
         tbody.innerHTML = reports.map(r => {
-            // ĐỐI CHIẾU TÊN CÔNG VIỆC BỊ BÁO CÁO
-            const reportedJob = allJobs.find(j => String(j.id) === String(r.jobId));
-            
-            const jobHtml = reportedJob 
-                ? `<div class="font-bold text-blue-600 hover:underline cursor-pointer truncate max-w-[200px]" onclick="previewJob(${reportedJob.id})" title="${reportedJob.title}">${reportedJob.title}</div><div class="text-[10px] text-gray-400 mt-1">ID: ${r.jobId}</div>` 
-                : `<div class="font-bold text-red-500">Tin đã xóa/Không tồn tại</div><div class="text-[10px] text-gray-400 mt-1">ID: ${r.jobId || 'Không xác định'}</div>`;
-
             const statusHtml = r.isChecked 
                 ? `<span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-1 rounded"><i class="fas fa-check-circle"></i> Đã xử lý</span>`
                 : `<span class="text-xs bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded"><i class="fas fa-clock"></i> Chờ xử lý</span>`;
@@ -2221,14 +2199,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                 <td class="py-3 px-6 font-bold text-gray-800">${r.sender}</td>
-                <td class="py-3 px-6">${jobHtml}</td>
                 <td class="py-3 px-6 text-gray-600 truncate max-w-[200px]" title="${r.reason}">${r.reason}</td>
                 <td class="py-3 px-6 text-sm text-gray-500">${r.date}</td>
                 <td class="py-3 px-6 text-center">${statusHtml}</td>
-                <td class="py-3 px-6 text-center whitespace-nowrap">
-                    <button onclick="previewReport(${r.id})" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-3 py-1 rounded transition mr-1" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
+                <td class="py-3 px-6 text-center">
+                    <button onclick="previewReport(${r.id})" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-3 py-1 rounded transition mr-2" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
                     ${actionBtn}
-                    <button onclick="deleteReport(${r.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition ml-1" title="Xóa báo cáo"><i class="fas fa-trash"></i></button>
+                    <button onclick="deleteReport(${r.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition ml-2" title="Xóa báo cáo"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
             `;
@@ -4288,287 +4265,3 @@ window.previewJob = function(id) {
     const modal = document.getElementById('admin-preview-modal');
     if (modal) modal.classList.remove('hidden');
 };
-<<<<<<< HEAD
-// =================================================================
-// TỰ ĐỘNG RENDER NHÀ TUYỂN DỤNG HÀNG ĐẦU DẠNG LOGO (TRANG CHỦ)
-// =================================================================
-window.renderTopEmployers = function() {
-    const container = document.getElementById('top-employers-container');
-    if (!container) return; // Nếu không ở trang chủ thì bỏ qua
-
-    // 1. Lấy tất cả công ty (Mock gốc + Custom doanh nghiệp tạo)
-    const mockComps = typeof window.mockCompaniesDB !== 'undefined' ? window.mockCompaniesDB : [];
-    const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
-    let allComps = [...mockComps, ...customComps];
-
-    // 2. Lấy kho việc làm để đếm số lượng Job
-    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
-    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
-    const allJobs = [...mockJobs, ...customJobs];
-    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
-
-    // 3. Tính số job đang hiển thị (Active) cho từng công ty
-    allComps = allComps.map(comp => {
-        const cName = (comp.name || '').toLowerCase();
-        let activeJobsCount = allJobs.filter(j => {
-            const isAppr = mockJobs.includes(j) ? true : approvedIds.includes(String(j.id));
-            if (!isAppr) return false;
-            
-            const jName = (j.company || '').toLowerCase();
-            return jName.includes(cName) || cName.includes(jName) || 
-                   (cName.includes("utc") && jName.includes("utc")) || 
-                   (cName.includes("mixi") && jName.includes("mixi"));
-        }).length;
-
-        return { ...comp, activeJobsCount };
-    });
-
-    // 4. Sắp xếp ưu tiên công ty nhiều Job nhất lên đầu
-    allComps.sort((a, b) => b.activeJobsCount - a.activeJobsCount);
-
-    // 5. Cắt lấy Top 6 công ty (Vì khung HTML là lg:grid-cols-6)
-    const top6Comps = allComps.slice(0, 6);
-
-    if (top6Comps.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400 text-sm">Chưa có dữ liệu nhà tuyển dụng.</div>';
-        return;
-    }
-
-    // 6. Bơm HTML dạng Logo có hiệu ứng Grayscale + Số lượng Job
-    container.innerHTML = top6Comps.map(comp => `
-        <a href="congty.html?id=${comp.id}" class="border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center hover:shadow-md transition cursor-pointer bg-gray-50 hover:bg-white group relative h-28 overflow-hidden">
-            <span class="absolute top-1.5 right-1.5 bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full z-10 shadow-sm border border-blue-200">
-                ${comp.activeJobsCount} job
-            </span>
-            
-            <img src="${comp.logo || 'https://placehold.co/100x50'}" alt="${comp.name}" class="max-h-12 w-full object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">
-            
-            <span class="text-[10px] font-bold text-gray-400 mt-3 text-center truncate w-full px-1 group-hover:text-gray-700 transition">${comp.name}</span>
-        </a>
-    `).join('');
-};
-
-// Gọi hàm này ngay khi trang web vừa tải xong
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
-        setTimeout(() => {
-            renderTopEmployers();
-        }, 100);
-    }
-});
-// =================================================================
-// TỰ ĐỘNG BẮN THÔNG BÁO VÀO QUẢ CHUÔNG CỦA ỨNG VIÊN KHI DUYỆT CV
-// =================================================================
-window.processCV = function(appId, status) {
-    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
-    const appIndex = applications.findIndex(a => String(a.id) === String(appId));
-    
-    if (appIndex === -1) {
-        alert("❌ Lỗi: Không tìm thấy hồ sơ này!");
-        return;
-    }
-
-    // Xác nhận trước khi duyệt
-    const actionText = status === 'approved' ? 'CHẤP THUẬN' : 'TỪ CHỐI';
-    if (!confirm(`Xác nhận ${actionText} hồ sơ ứng tuyển này?`)) return;
-
-    // 1. Cập nhật trạng thái CV
-    applications[appIndex].status = status;
-    localStorage.setItem('user_applications', JSON.stringify(applications));
-
-    // 2. TẠO VÀ BẮN THÔNG BÁO CHO ỨNG VIÊN
-    const applicantId = applications[appIndex].userId; // Email của ứng viên
-    const jobId = applications[appIndex].jobId;
-    
-    // Đi tìm tên công việc để thông báo cho rõ ràng
-    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
-    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
-    const allJobs = [...mockJobs, ...customJobs];
-    
-    const job = allJobs.find(j => String(j.id) === String(jobId));
-    const jobTitle = job ? job.title : 'Công việc bạn đã ứng tuyển';
-
-    let notifs = JSON.parse(localStorage.getItem('user_notifications')) || [];
-    
-    // Ghi lời nhắn tùy theo kết quả
-    const notifTitle = status === 'approved' 
-        ? '🎉 Xin chúc mừng! CV của bạn đã được duyệt' 
-        : 'Cập nhật trạng thái ứng tuyển';
-        
-    const notifMessage = status === 'approved' 
-        ? `Nhà tuyển dụng đã <b>CHẤP THUẬN</b> hồ sơ của bạn cho vị trí <span class="text-blue-600 font-bold">${jobTitle}</span>. Hãy chú ý điện thoại hoặc email để nhận lịch phỏng vấn nhé!`
-        : `Nhà tuyển dụng đã xem xét và phản hồi về hồ sơ vị trí <b>${jobTitle}</b> của bạn.`; // Từ chối thì báo nhẹ nhàng thôi
-
-    // Nhét thông báo lên đầu danh sách
-    notifs.unshift({
-        id: Date.now(),
-        userId: applicantId, // Chỉ bắn cho đúng ứng viên này
-        title: notifTitle,
-        message: notifMessage,
-        date: new Date().toLocaleString('vi-VN'),
-        isRead: false
-    });
-
-    localStorage.setItem('user_notifications', JSON.stringify(notifs));
-
-    // 3. Hiển thị thông báo thành công và load lại UI doanh nghiệp
-    alert(`✅ Đã ${actionText} hồ sơ và gửi thông báo cho ứng viên!`);
-    
-    if (typeof loadEmployerCVs === 'function') loadEmployerCVs();
-    if (typeof updateEmployerDashboardStats === 'function') updateEmployerDashboardStats();
-};
-// =================================================================
-// 🔥 HỆ THỐNG ĐẾM LƯỢT XEM THẬT (REALTIME VIEW TRACKING)
-// =================================================================
-
-// 1. KHO LƯU TRỮ VÀ XỬ LÝ VIEW
-window.getJobViews = function(jobId) {
-    let viewsDB = JSON.parse(localStorage.getItem('real_job_views')) || {};
-    // Số view thật bắt đầu từ 0. Nếu bạn muốn "hack" thêm mỗi job vài view cho đẹp thì sửa dòng dưới thành: 
-    // return (viewsDB[jobId] || 0) + 15;
-    return viewsDB[jobId] || 0;
-};
-
-window.incrementJobView = function(jobId) {
-    let viewsDB = JSON.parse(localStorage.getItem('real_job_views')) || {};
-    viewsDB[jobId] = (viewsDB[jobId] || 0) + 1;
-    localStorage.setItem('real_job_views', JSON.stringify(viewsDB));
-};
-
-// 2. MÁY BẮT SỰ KIỆN: TỰ ĐỘNG TĂNG VIEW KHI ỨNG VIÊN XEM TIN
-document.addEventListener('DOMContentLoaded', () => {
-    // Cách 1: Bắt URL khi ứng viên vào hẳn trang chi tiết việc làm
-    if (window.location.pathname.includes('chitietvieclam.html')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const jobId = urlParams.get('id');
-        if (jobId) {
-            // Đợi 1 giây rồi mới cộng view (Tránh tình trạng F5 liên tục hoặc spam)
-            setTimeout(() => {
-                incrementJobView(jobId);
-            }, 1000);
-        }
-    }
-});
-
-// Cách 2: Bắt sự kiện Click đối với các Modal xem nhanh
-document.addEventListener('click', function(e) {
-    const target = e.target.closest('a') || e.target.closest('button') || e.target.closest('[onclick]');
-    if (!target) return;
-
-    // Nếu bấm vào nút có href chứa link việc làm
-    if (target.tagName === 'A' && target.href && target.href.includes('chitietvieclam.html?id=')) {
-        const url = new URL(target.href, window.location.origin);
-        const id = url.searchParams.get('id');
-        if (id) incrementJobView(id);
-    }
-});
-
-// 3. NÂNG CẤP DASHBOARD DOANH NGHIỆP ĐỂ ĐỌC VIEW THẬT
-window.updateEmployerDashboardStats = function() {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-
-    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
-    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
-    let myJobs = customJobs.filter(j => j.ownerEmail === user.username || j.employerEmail === user.username);
-    let activeJobs = myJobs.filter(j => approvedIds.includes(String(j.id)));
-
-    if(document.getElementById('emp-stat-jobs')) document.getElementById('emp-stat-jobs').innerText = activeJobs.length;
-    
-    // TÍNH TỔNG LƯỢT XEM THẬT
-    let totalViews = 0; 
-    activeJobs.forEach(j => { totalViews += getJobViews(j.id); });
-    if(document.getElementById('emp-stat-views')) document.getElementById('emp-stat-views').innerText = totalViews;
-    
-    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
-    let myJobIds = myJobs.map(j => String(j.id));
-    let pendingCVs = applications.filter(a => myJobIds.includes(String(a.jobId)) && a.status === 'pending');
-    if(document.getElementById('emp-stat-cvs')) document.getElementById('emp-stat-cvs').innerText = pendingCVs.length;
-
-    // CHIẾN DỊCH GẦN ĐÂY: HIỂN THỊ VIEW THẬT
-    const campaignBox = document.getElementById('emp-recent-campaigns');
-    if (campaignBox) {
-        let recent = [...myJobs].sort((a, b) => b.id - a.id).slice(0, 10);
-        campaignBox.innerHTML = recent.length === 0 ? '<div class="text-center py-20 text-slate-400 text-base font-medium">Chưa có tin tuyển dụng nào được tạo.</div>' : 
-            recent.map(j => {
-                const isAppr = approvedIds.includes(String(j.id));
-                const cvCount = applications.filter(a => String(a.jobId) === String(j.id)).length;
-                const realViews = isAppr ? getJobViews(j.id) : 0; // LẤY VIEW THẬT TỪ DATABASE
-                
-                return `
-                <div class="p-5 border border-slate-100 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300 mb-4 cursor-pointer" onclick="switchAdminView('manage-jobs')">
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="font-bold text-base text-slate-800 truncate pr-4">${j.title}</h4>
-                        <span class="text-xs font-bold px-3 py-1 rounded-full ${isAppr ? 'bg-green-100 text-green-700 border border-green-200':'bg-amber-100 text-amber-700 border border-amber-200'}">${isAppr ? '<i class="fas fa-check-circle mr-1"></i> Đang chạy':'<i class="fas fa-clock mr-1"></i> Chờ duyệt'}</span>
-                    </div>
-                    <div class="flex items-center gap-6 text-sm text-slate-600">
-                        <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100"><i class="fas fa-eye text-blue-500"></i> ${realViews} lượt xem</span>
-                        <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 ${cvCount > 0 ? 'text-emerald-600 font-bold border-emerald-100 bg-emerald-50' : ''}"><i class="fas fa-file-alt text-emerald-500"></i> ${cvCount} ứng tuyển</span>
-                        <span class="text-slate-400 ml-auto hidden sm:block"><i class="fas fa-calendar-alt mr-1"></i> ${new Date(j.id).toLocaleDateString('vi-VN')}</span>
-                    </div>
-                </div>`;
-            }).join('');
-    }
-};
-
-// 4. NÂNG CẤP BẢNG QUẢN LÝ TIN ĐỂ LỌC VÀ SẮP XẾP THEO VIEW THẬT
-window.loadEmployerJobs = function() {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    const tbody = document.getElementById('employer-jobs-tbody');
-    if(!tbody) return;
-
-    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
-    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
-    let myJobs = customJobs.filter(j => j.ownerEmail === user.username || j.employerEmail === user.username);
-
-    const keyword = (document.getElementById('search-emp-jobs')?.value || '').toLowerCase().trim();
-    if (keyword) myJobs = myJobs.filter(j => j.title.toLowerCase().includes(keyword));
-
-    const sortCol = window.empFilters && window.empFilters.jobs ? window.empFilters.jobs.sortCol : 'id';
-    const sortDir = window.empFilters && window.empFilters.jobs ? window.empFilters.jobs.sortDir : 'desc';
-    
-    myJobs.sort((a, b) => {
-        let vA = a[sortCol], vB = b[sortCol];
-        if (sortCol === 'views') { vA = getJobViews(a.id); vB = getJobViews(b.id); }
-        if (vA < vB) return sortDir === 'asc' ? -1 : 1;
-        if (vA > vB) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-    });
-
-    if (myJobs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">Không tìm thấy tin tuyển dụng nào.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = myJobs.map(j => {
-        const isAppr = approvedIds.includes(String(j.id));
-        const realViews = isAppr ? getJobViews(j.id) : 0; // LẤY VIEW THẬT TỪ DATABASE
-        
-        return `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="py-5 px-6 font-bold text-slate-800">${j.title}</td>
-            <td class="py-5 px-6 text-slate-600 text-sm">${j.salary || 'Thỏa thuận'}</td>
-            <td class="py-5 px-6">
-                <span class="px-3 py-1.5 rounded-full text-[11px] font-bold border ${isAppr ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
-                    ${isAppr ? 'Đang hiển thị' : 'Chờ duyệt'}
-                </span>
-            </td>
-            <td class="py-5 px-6 text-slate-500 text-sm"><i class="fas fa-eye mr-1 opacity-50"></i> ${realViews}</td>
-            <td class="py-5 px-6 text-right">
-                <div class="flex justify-end gap-2">
-                    <button onclick="editJob(${j.id})" class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition border border-blue-100 shadow-sm" title="Chỉnh sửa tin">
-                        <i class="fas fa-edit text-sm"></i>
-                    </button>
-                    <button onclick="deleteJob(${j.id})" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition border border-red-100 shadow-sm" title="Xóa tin vĩnh viễn">
-                        <i class="fas fa-trash-alt text-sm"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-};
-=======
->>>>>>> parent of 30cd978 (.)
