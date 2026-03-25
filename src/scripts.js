@@ -4355,3 +4355,217 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 });
+// =================================================================
+// TỰ ĐỘNG BẮN THÔNG BÁO VÀO QUẢ CHUÔNG CỦA ỨNG VIÊN KHI DUYỆT CV
+// =================================================================
+window.processCV = function(appId, status) {
+    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    const appIndex = applications.findIndex(a => String(a.id) === String(appId));
+    
+    if (appIndex === -1) {
+        alert("❌ Lỗi: Không tìm thấy hồ sơ này!");
+        return;
+    }
+
+    // Xác nhận trước khi duyệt
+    const actionText = status === 'approved' ? 'CHẤP THUẬN' : 'TỪ CHỐI';
+    if (!confirm(`Xác nhận ${actionText} hồ sơ ứng tuyển này?`)) return;
+
+    // 1. Cập nhật trạng thái CV
+    applications[appIndex].status = status;
+    localStorage.setItem('user_applications', JSON.stringify(applications));
+
+    // 2. TẠO VÀ BẮN THÔNG BÁO CHO ỨNG VIÊN
+    const applicantId = applications[appIndex].userId; // Email của ứng viên
+    const jobId = applications[appIndex].jobId;
+    
+    // Đi tìm tên công việc để thông báo cho rõ ràng
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
+    const allJobs = [...mockJobs, ...customJobs];
+    
+    const job = allJobs.find(j => String(j.id) === String(jobId));
+    const jobTitle = job ? job.title : 'Công việc bạn đã ứng tuyển';
+
+    let notifs = JSON.parse(localStorage.getItem('user_notifications')) || [];
+    
+    // Ghi lời nhắn tùy theo kết quả
+    const notifTitle = status === 'approved' 
+        ? '🎉 Xin chúc mừng! CV của bạn đã được duyệt' 
+        : 'Cập nhật trạng thái ứng tuyển';
+        
+    const notifMessage = status === 'approved' 
+        ? `Nhà tuyển dụng đã <b>CHẤP THUẬN</b> hồ sơ của bạn cho vị trí <span class="text-blue-600 font-bold">${jobTitle}</span>. Hãy chú ý điện thoại hoặc email để nhận lịch phỏng vấn nhé!`
+        : `Nhà tuyển dụng đã xem xét và phản hồi về hồ sơ vị trí <b>${jobTitle}</b> của bạn.`; // Từ chối thì báo nhẹ nhàng thôi
+
+    // Nhét thông báo lên đầu danh sách
+    notifs.unshift({
+        id: Date.now(),
+        userId: applicantId, // Chỉ bắn cho đúng ứng viên này
+        title: notifTitle,
+        message: notifMessage,
+        date: new Date().toLocaleString('vi-VN'),
+        isRead: false
+    });
+
+    localStorage.setItem('user_notifications', JSON.stringify(notifs));
+
+    // 3. Hiển thị thông báo thành công và load lại UI doanh nghiệp
+    alert(`✅ Đã ${actionText} hồ sơ và gửi thông báo cho ứng viên!`);
+    
+    if (typeof loadEmployerCVs === 'function') loadEmployerCVs();
+    if (typeof updateEmployerDashboardStats === 'function') updateEmployerDashboardStats();
+};
+// =================================================================
+// 🔥 HỆ THỐNG ĐẾM LƯỢT XEM THẬT (REALTIME VIEW TRACKING)
+// =================================================================
+
+// 1. KHO LƯU TRỮ VÀ XỬ LÝ VIEW
+window.getJobViews = function(jobId) {
+    let viewsDB = JSON.parse(localStorage.getItem('real_job_views')) || {};
+    // Số view thật bắt đầu từ 0. Nếu bạn muốn "hack" thêm mỗi job vài view cho đẹp thì sửa dòng dưới thành: 
+    // return (viewsDB[jobId] || 0) + 15;
+    return viewsDB[jobId] || 0;
+};
+
+window.incrementJobView = function(jobId) {
+    let viewsDB = JSON.parse(localStorage.getItem('real_job_views')) || {};
+    viewsDB[jobId] = (viewsDB[jobId] || 0) + 1;
+    localStorage.setItem('real_job_views', JSON.stringify(viewsDB));
+};
+
+// 2. MÁY BẮT SỰ KIỆN: TỰ ĐỘNG TĂNG VIEW KHI ỨNG VIÊN XEM TIN
+document.addEventListener('DOMContentLoaded', () => {
+    // Cách 1: Bắt URL khi ứng viên vào hẳn trang chi tiết việc làm
+    if (window.location.pathname.includes('chitietvieclam.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobId = urlParams.get('id');
+        if (jobId) {
+            // Đợi 1 giây rồi mới cộng view (Tránh tình trạng F5 liên tục hoặc spam)
+            setTimeout(() => {
+                incrementJobView(jobId);
+            }, 1000);
+        }
+    }
+});
+
+// Cách 2: Bắt sự kiện Click đối với các Modal xem nhanh
+document.addEventListener('click', function(e) {
+    const target = e.target.closest('a') || e.target.closest('button') || e.target.closest('[onclick]');
+    if (!target) return;
+
+    // Nếu bấm vào nút có href chứa link việc làm
+    if (target.tagName === 'A' && target.href && target.href.includes('chitietvieclam.html?id=')) {
+        const url = new URL(target.href, window.location.origin);
+        const id = url.searchParams.get('id');
+        if (id) incrementJobView(id);
+    }
+});
+
+// 3. NÂNG CẤP DASHBOARD DOANH NGHIỆP ĐỂ ĐỌC VIEW THẬT
+window.updateEmployerDashboardStats = function() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+
+    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
+    let myJobs = customJobs.filter(j => j.ownerEmail === user.username || j.employerEmail === user.username);
+    let activeJobs = myJobs.filter(j => approvedIds.includes(String(j.id)));
+
+    if(document.getElementById('emp-stat-jobs')) document.getElementById('emp-stat-jobs').innerText = activeJobs.length;
+    
+    // TÍNH TỔNG LƯỢT XEM THẬT
+    let totalViews = 0; 
+    activeJobs.forEach(j => { totalViews += getJobViews(j.id); });
+    if(document.getElementById('emp-stat-views')) document.getElementById('emp-stat-views').innerText = totalViews;
+    
+    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    let myJobIds = myJobs.map(j => String(j.id));
+    let pendingCVs = applications.filter(a => myJobIds.includes(String(a.jobId)) && a.status === 'pending');
+    if(document.getElementById('emp-stat-cvs')) document.getElementById('emp-stat-cvs').innerText = pendingCVs.length;
+
+    // CHIẾN DỊCH GẦN ĐÂY: HIỂN THỊ VIEW THẬT
+    const campaignBox = document.getElementById('emp-recent-campaigns');
+    if (campaignBox) {
+        let recent = [...myJobs].sort((a, b) => b.id - a.id).slice(0, 10);
+        campaignBox.innerHTML = recent.length === 0 ? '<div class="text-center py-20 text-slate-400 text-base font-medium">Chưa có tin tuyển dụng nào được tạo.</div>' : 
+            recent.map(j => {
+                const isAppr = approvedIds.includes(String(j.id));
+                const cvCount = applications.filter(a => String(a.jobId) === String(j.id)).length;
+                const realViews = isAppr ? getJobViews(j.id) : 0; // LẤY VIEW THẬT TỪ DATABASE
+                
+                return `
+                <div class="p-5 border border-slate-100 rounded-2xl bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300 mb-4 cursor-pointer" onclick="switchAdminView('manage-jobs')">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-base text-slate-800 truncate pr-4">${j.title}</h4>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full ${isAppr ? 'bg-green-100 text-green-700 border border-green-200':'bg-amber-100 text-amber-700 border border-amber-200'}">${isAppr ? '<i class="fas fa-check-circle mr-1"></i> Đang chạy':'<i class="fas fa-clock mr-1"></i> Chờ duyệt'}</span>
+                    </div>
+                    <div class="flex items-center gap-6 text-sm text-slate-600">
+                        <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100"><i class="fas fa-eye text-blue-500"></i> ${realViews} lượt xem</span>
+                        <span class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 ${cvCount > 0 ? 'text-emerald-600 font-bold border-emerald-100 bg-emerald-50' : ''}"><i class="fas fa-file-alt text-emerald-500"></i> ${cvCount} ứng tuyển</span>
+                        <span class="text-slate-400 ml-auto hidden sm:block"><i class="fas fa-calendar-alt mr-1"></i> ${new Date(j.id).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                </div>`;
+            }).join('');
+    }
+};
+
+// 4. NÂNG CẤP BẢNG QUẢN LÝ TIN ĐỂ LỌC VÀ SẮP XẾP THEO VIEW THẬT
+window.loadEmployerJobs = function() {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const tbody = document.getElementById('employer-jobs-tbody');
+    if(!tbody) return;
+
+    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
+    let myJobs = customJobs.filter(j => j.ownerEmail === user.username || j.employerEmail === user.username);
+
+    const keyword = (document.getElementById('search-emp-jobs')?.value || '').toLowerCase().trim();
+    if (keyword) myJobs = myJobs.filter(j => j.title.toLowerCase().includes(keyword));
+
+    const sortCol = window.empFilters && window.empFilters.jobs ? window.empFilters.jobs.sortCol : 'id';
+    const sortDir = window.empFilters && window.empFilters.jobs ? window.empFilters.jobs.sortDir : 'desc';
+    
+    myJobs.sort((a, b) => {
+        let vA = a[sortCol], vB = b[sortCol];
+        if (sortCol === 'views') { vA = getJobViews(a.id); vB = getJobViews(b.id); }
+        if (vA < vB) return sortDir === 'asc' ? -1 : 1;
+        if (vA > vB) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    if (myJobs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12 text-slate-400 font-medium">Không tìm thấy tin tuyển dụng nào.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = myJobs.map(j => {
+        const isAppr = approvedIds.includes(String(j.id));
+        const realViews = isAppr ? getJobViews(j.id) : 0; // LẤY VIEW THẬT TỪ DATABASE
+        
+        return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="py-5 px-6 font-bold text-slate-800">${j.title}</td>
+            <td class="py-5 px-6 text-slate-600 text-sm">${j.salary || 'Thỏa thuận'}</td>
+            <td class="py-5 px-6">
+                <span class="px-3 py-1.5 rounded-full text-[11px] font-bold border ${isAppr ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+                    ${isAppr ? 'Đang hiển thị' : 'Chờ duyệt'}
+                </span>
+            </td>
+            <td class="py-5 px-6 text-slate-500 text-sm"><i class="fas fa-eye mr-1 opacity-50"></i> ${realViews}</td>
+            <td class="py-5 px-6 text-right">
+                <div class="flex justify-end gap-2">
+                    <button onclick="editJob(${j.id})" class="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition border border-blue-100 shadow-sm" title="Chỉnh sửa tin">
+                        <i class="fas fa-edit text-sm"></i>
+                    </button>
+                    <button onclick="deleteJob(${j.id})" class="p-2.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition border border-red-100 shadow-sm" title="Xóa tin vĩnh viễn">
+                        <i class="fas fa-trash-alt text-sm"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+};
