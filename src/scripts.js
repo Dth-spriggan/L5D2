@@ -1065,29 +1065,84 @@ window.closeApplyModal = function() {
     }
 };
 
-// Hàm giả lập Submit CV
+// Hàm Giả lập Submit CV & Lưu vào Database (Bản hợp nhất)
 window.submitApplication = function(event) {
-    event.preventDefault(); // Ngăn load lại trang
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault(); 
+    }
     
-    const btn = document.getElementById('submit-cv-btn');
-    const originalText = btn.innerHTML;
-    
-    // Đổi trạng thái nút thành Đang tải (Loading)
-    btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi CV...`;
-    btn.disabled = true;
-    btn.classList.add('opacity-70', 'cursor-not-allowed');
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert("Vui lòng đăng nhập để ứng tuyển!");
+        return;
+    }
+    const user = JSON.parse(userStr);
 
-    // Giả lập sau 1.5 giây thì gửi thành công
+    // 1. KIỂM TRA ĐÃ CHỌN HOẶC TẢI CV LÊN CHƯA (Logic chuyển từ vieclam.html sang)
+    const cvSelect = document.getElementById("cv-select");
+    const fileInput = document.getElementById("cv-upload");
+    const selectedCV = cvSelect ? cvSelect.value : null;
+    const uploadedFile = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+    if (!selectedCV && !uploadedFile) {
+        alert("⚠️ Vui lòng chọn CV đã lưu hoặc tải lên CV mới để ứng tuyển!");
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let jobId = Number(urlParams.get('id'));
+    if (!jobId) jobId = 1; // Mặc định ID nếu mở file trực tiếp không có tham số
+
+    // Hiệu ứng nút bấm đang xoay
+    const btn = document.querySelector('button[onclick="submitApplication()"]');
+    let originalText = 'Nộp CV Ứng Tuyển';
+    if (btn) {
+        originalText = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang gửi CV...`;
+        btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+    }
+
     setTimeout(() => {
-        alert('🎉 Chúc mừng! CV của bạn đã được gửi tới Nhà tuyển dụng thành công!');
-        closeApplyModal();
+        // --- LOGIC LƯU ĐƠN ỨNG TUYỂN VÀO HỆ THỐNG ---
+        let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
         
-        // Trả lại trạng thái nút
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        // Kiểm tra xem ứng viên đã nộp job này chưa (chống spam nộp nhiều lần)
+        const existingApp = applications.find(a => a.userId === user.username && a.jobId === jobId);
+
+        if (!existingApp) {
+            applications.push({
+                id: Date.now(),
+                userId: user.username,
+                jobId: jobId,
+                status: 'pending', // Mặc định là đang chờ Nhà tuyển dụng duyệt
+                date: new Date().toLocaleDateString('vi-VN')
+            });
+            localStorage.setItem('user_applications', JSON.stringify(applications));
+            
+            // Nếu người dùng tải file mới, hỏi xem có muốn lưu vào kho CV không
+            if (uploadedFile) {
+                if (confirm("🎉 CV của bạn đã nộp thành công!\n\nBạn có muốn lưu CV này vào Hồ sơ để dùng cho các lần sau không?")) {
+                    if (typeof window.saveCV === 'function') window.saveCV(uploadedFile);
+                }
+            } else {
+                alert('🎉 Chúc mừng! CV của bạn đã được gửi tới Nhà tuyển dụng thành công!');
+            }
+        } else {
+            alert('⚠️ Bạn đã nộp CV cho công việc này rồi! Vui lòng chờ Nhà tuyển dụng phản hồi.');
+        }
+
+        if (typeof window.closeApplyModal === 'function') window.closeApplyModal();
+        
+        // Trả lại nút bấm
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
     }, 1500);
-};// =================================================================
+};
+// =================================================================
 // 13. XỬ LÝ MODAL BÁO CÁO TIN GIẢ MẠO
 // =================================================================
 
@@ -1646,134 +1701,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 // =================================================================
-// 21. LOGIC THEO DÕI CÔNG TY VÀ HIỂN THỊ Ở TRANG USER
+// 21. QUẢN LÝ CÔNG VIỆC ĐÃ ỨNG TUYỂN (USER)
 // =================================================================
-
-// 21.1 Hàm xử lý Nút Bấm "Theo dõi" ở trang Chi tiết Công ty
-window.toggleFollowCompany = function() {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) {
-        alert("Vui lòng Đăng nhập để theo dõi công ty!");
-        window.location.href = 'login.html';
-        return;
-    }
-    const user = JSON.parse(userStr);
-    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const companyId = Number(urlParams.get('id'));
-    if (!companyId) return;
-
-    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    followedIds = followedIds.map(id => Number(id));
-
-    if (!followedIds.includes(companyId)) {
-        followedIds.push(companyId);
-        localStorage.setItem(storageKey, JSON.stringify(followedIds));
-    } else {
-        followedIds = followedIds.filter(id => id !== companyId);
-        localStorage.setItem(storageKey, JSON.stringify(followedIds));
-    }
-    checkFollowStatus(); // Cập nhật lại UI nút bấm
-};
-
-// 21.2 Cập nhật giao diện Nút "Theo dõi"
-window.checkFollowStatus = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const companyId = Number(urlParams.get('id'));
-    const btn = document.getElementById('btn-follow-company');
-    const icon = document.getElementById('follow-icon');
-    const text = document.getElementById('follow-text');
-
-    if (!btn || !icon || !text || !companyId) return;
-
-    let isFollowed = false;
-    const userStr = localStorage.getItem('currentUser');
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
-        const followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-        isFollowed = followedIds.map(id => Number(id)).includes(companyId);
-    }
-
-    if (isFollowed) {
-        // Trạng thái: ĐÃ THEO DÕI
-        text.innerText = "Đã theo dõi";
-        
-        // Biến hình thành dấu tích (check) và xoay nhẹ
-        icon.classList.remove('fa-plus');
-        icon.classList.add('fa-check');
-        icon.style.transform = 'rotate(360deg) scale(1.2)';
-        
-        // Đổi màu nút sang dạng xanh nhạt
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
-        btn.classList.add('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
-    } else {
-        // Trạng thái: CHƯA THEO DÕI
-        text.innerText = "Theo dõi công ty";
-        
-        // Trả về dấu cộng
-        icon.classList.remove('fa-check');
-        icon.classList.add('fa-plus');
-        icon.style.transform = 'rotate(0deg) scale(1)';
-        
-        // Trả về màu xanh đậm ban đầu
-        btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
-        btn.classList.remove('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
-    }
-};
-
-// 21.3 Hiển thị danh sách Công ty đã theo dõi trong UserUI
-window.loadFollowedCompanies = function() {
+window.loadAppliedJobs = function() {
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) return;
     const user = JSON.parse(userStr);
-    const container = document.getElementById('followed-companies-container');
+    const container = document.getElementById('applied-jobs-container');
     if(!container) return;
 
-    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
-    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    followedIds = followedIds.map(id => Number(id));
+    // Lấy danh sách CV đã nộp của User này
+    const applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    const myApps = applications.filter(a => a.userId === user.username);
 
-    if (followedIds.length === 0) {
-        container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa theo dõi công ty nào.</div>';
+    if (myApps.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa ứng tuyển công việc nào.</div>';
         return;
     }
 
-    if (typeof mockCompaniesDB === 'undefined') return;
-    const compsToRender = mockCompaniesDB.filter(c => followedIds.includes(Number(c.id)));
-    
-    container.innerHTML = compsToRender.map(comp => `
-        <div class="border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:shadow-md transition bg-white relative group">
-            <img src="${comp.logo}" class="w-16 h-16 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
-            <div class="flex-1">
-                <a href="congty.html?id=${comp.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 pr-20">${comp.name}</a>
-                <div class="flex gap-3 text-xs text-gray-500 font-medium">
-                    <span>🏢 ${comp.industry}</span>
-                    <span>📍 ${comp.address.split(',').pop().trim()}</span>
+    if (typeof window.mockJobs === 'undefined') return;
+
+    // Sắp xếp đơn mới nhất lên đầu
+    myApps.sort((a, b) => b.id - a.id);
+
+    container.innerHTML = myApps.map(app => {
+        const job = window.mockJobs.find(j => j.id === app.jobId);
+        if (!job) return ''; 
+
+        // THANH TRẠNG THÁI
+        let statusHtml = '';
+        let statusClass = '';
+        let actionBtns = ''; // Biến chứa nút bấm
+
+        if (app.status === 'approved') {
+            statusHtml = '<i class="fas fa-check-circle mr-1"></i> CV Đã được duyệt';
+            statusClass = 'bg-green-100 text-green-700 border-green-200';
+        } else if (app.status === 'rejected') {
+            statusHtml = '<i class="fas fa-times-circle mr-1"></i> Bị từ chối';
+            statusClass = 'bg-red-100 text-red-700 border-red-200';
+        } else {
+            statusHtml = '<i class="fas fa-clock mr-1"></i> Đang chờ duyệt';
+            statusClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            
+            // CHỈ KHI "CHỜ DUYỆT" MỚI HIỆN NÚT RÚT & SỬA CV
+            actionBtns = `
+                <div class="mt-3 flex gap-2 justify-start sm:justify-end">
+                    <button onclick="updateApplication(${app.id}, ${job.id})" class="text-xs px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg font-bold transition"><i class="fas fa-sync-alt mr-1"></i> Nộp lại CV</button>
+                    <button onclick="withdrawApplication(${app.id})" class="text-xs px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-bold transition"><i class="fas fa-trash-alt mr-1"></i> Rút hồ sơ</button>
                 </div>
+            `;
+        }
+
+        return `
+        <div class="border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <img src="${job.logo}" class="w-16 h-16 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
+            <div class="flex-1 w-full">
+                <a href="vieclam.html?id=${job.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 truncate">${job.title}</a>
+                <p class="text-sm text-gray-500 mb-3 truncate">${job.company}</p>
+                <div class="flex flex-wrap gap-2 text-xs font-medium mb-3">
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary}</span>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
+                </div>
+                <div class="text-xs text-gray-400"><i class="fas fa-calendar-alt mr-1"></i> Ứng tuyển ngày: ${app.date}</div>
             </div>
-            <button onclick="removeFollowedCompany(${comp.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition border border-red-100" title="Bỏ theo dõi">
-                Bỏ theo dõi
-            </button>
-        </div>
-    `).join('');
+            <div class="w-full sm:w-auto text-left sm:text-right mt-2 sm:mt-0 shrink-0">
+                <div class="inline-block px-3 py-1.5 rounded-lg border font-bold text-sm ${statusClass} w-full text-center sm:w-auto">
+                    ${statusHtml}
+                </div>
+                ${actionBtns}
+            </div>
+        </div>`;
+    }).join('');
 };
 
-window.removeFollowedCompany = function(companyId) {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return;
-    const user = JSON.parse(userStr);
-    const storageKey = `followedCompanies_${user.username || user.email || 'default'}`;
+// --- HÀM RÚT HỒ SƠ (XÓA BỎ) ---
+window.withdrawApplication = function(appId) {
+    if (!confirm('⚠️ Bạn có chắc chắn muốn rút lại CV? Nhà tuyển dụng sẽ không còn thấy hồ sơ của bạn cho vị trí này nữa.')) return;
     
-    let followedIds = JSON.parse(localStorage.getItem(storageKey)) || [];
-    followedIds = followedIds.map(id => Number(id)).filter(id => id !== Number(companyId));
-    localStorage.setItem(storageKey, JSON.stringify(followedIds));
+    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    // Lọc bỏ đơn ứng tuyển có ID tương ứng
+    applications = applications.filter(a => a.id !== appId);
+    localStorage.setItem('user_applications', JSON.stringify(applications));
     
-    if (typeof window.showToast === 'function') window.showToast('Đã bỏ theo dõi công ty!');
-    window.loadFollowedCompanies(); 
+    alert('✅ Đã rút hồ sơ thành công!');
+    loadAppliedJobs(); // Load lại giao diện ngay lập tức
 };
 
+// --- HÀM NỘP LẠI CV (CHỈNH SỬA) ---
+window.updateApplication = function(appId, jobId) {
+    if (!confirm('💡 Để nộp lại CV mới, hệ thống sẽ hủy đơn ứng tuyển hiện tại và chuyển bạn đến trang Công việc để chọn lại file CV. Bạn có đồng ý không?')) return;
+    
+    // 1. Âm thầm xóa đơn cũ
+    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    applications = applications.filter(a => a.id !== appId);
+    localStorage.setItem('user_applications', JSON.stringify(applications));
+    
+    // 2. Chở người dùng về lại trang Job để họ bấm nộp lại
+    window.location.href = `vieclam.html?id=${jobId}`;
+};
 
 // =================================================================
 // 22. LOGIC ĐÁNH GIÁ CÔNG TY (REVIEW - CÓ QUYỀN CHÍNH CHỦ)
@@ -1957,15 +1982,13 @@ window.editReview = function(index) {
     contentInput.focus();
 };
 
-// =================================================================
 // BỔ SUNG GỌI HÀM VÀO SỰ KIỆN KHỞI TẠO CHUNG
-// =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Sửa lại đoạn switchPanel ở Phần 17 (trong scripts.js) để nhận Tab Followed
     if (typeof window.switchPanel !== 'undefined') {
         const oldSwitch = window.switchPanel;
         window.switchPanel = function(name) {
-            ['info','facebook','linkedin', 'saved', 'settings', 'followed'].forEach(p => {
+            // FIX TẠI ĐÂY: Đổi 'followed' thành 'applied'
+            ['info','facebook','linkedin', 'saved', 'settings', 'applied'].forEach(p => {
                 const panel = document.getElementById('panel-' + p);
                 const nav = document.getElementById('nav-' + p);
                 if(panel) panel.classList.add('hidden-btn');
@@ -1978,7 +2001,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.history.replaceState(null, '', `?tab=${name}`);
             
             if(name === 'saved' && typeof window.loadSavedJobs === 'function') window.loadSavedJobs();
-            if(name === 'followed' && typeof window.loadFollowedCompanies === 'function') window.loadFollowedCompanies();
+            // FIX TẠI ĐÂY: Trỏ sang hàm mới
+            if(name === 'applied' && typeof window.loadAppliedJobs === 'function') window.loadAppliedJobs();
         };
     }
 
