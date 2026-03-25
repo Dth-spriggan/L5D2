@@ -1,0 +1,30 @@
+### 1. [ỨNG VIÊN] - Tạo báo cáo tin tuyển dụng lừa đảo
+POST http://localhost:3000/api/reports
+Content-Type: application/json
+
+{
+    "reporter_id": 1,
+    "job_id": 1,
+    "reason": "Lùa gà"
+}
+
+### --------------------------------------------------------
+
+### 2. [ADMIN] - Lấy danh sách tất cả các báo cáo để kiểm duyệt
+GET http://localhost:3000/api/reports
+Content-Type: application/json
+
+### --------------------------------------------------------
+
+### 3. [ADMIN] - Cập nhật trạng thái báo cáo (Xử lý vi phạm)
+# Giả sử cái báo cáo vừa tạo ở trên có id là 1
+PUT http://localhost:3000/api/reports/2/status
+Content-Type: application/json
+
+{
+    "status": "resolved" 
+    # Trạng thái có thể là: 'resolved' (Đã xử lý/Khóa tin) hoặc pending
+}
+
+### 4. [ADMIN] - Xóa một báo cáo theo ID
+DELETE http://localhost:3000/api/reports/2
