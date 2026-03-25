@@ -232,7 +232,9 @@
     <p class="text-xs text-gray-400 text-center mb-2">hoặc</p>
 
     <!-- GIỮ NGUYÊN UI UPLOAD -->
-    <div class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-100 transition">
+    <!-- KHU VỰC UPLOAD CV CÓ NÚT BỎ CHỌN -->
+<div class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4">
+    <div class="flex flex-col items-center justify-center text-center">
         <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
@@ -244,11 +246,35 @@
             Hỗ trợ định dạng .PDF, .DOC, .DOCX, .JPG, .JPEG, .PNG dưới 5MB
         </p>
 
-        <!-- 🔥 thêm id -->
-        <input id="cv-upload" type="file"
-            class="mt-3 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full"
-             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        <!-- Input file ẩn -->
+        <input id="cv-upload" type="file" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        
+        <!-- Nút chọn file -->
+        <button type="button" onclick="document.getElementById('cv-upload').click()" 
+            class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+            <i class="fas fa-upload mr-1"></i> Chọn file CV
+        </button>
+        
+        <!-- Hiển thị tên file đã chọn + nút bỏ chọn -->
+        <div id="cv-file-info" class="hidden mt-3 w-full">
+            <div class="flex items-center justify-between bg-white rounded-lg p-2 border border-blue-200">
+                <div class="flex items-center gap-2 truncate">
+                    <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span id="cv-file-name" class="text-sm text-gray-700 truncate"></span>
+                </div>
+                <button type="button" onclick="clearSelectedCV()" 
+                    class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-full transition flex-shrink-0"
+                    title="Bỏ chọn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
+</div>
 </div>
 
                 <div class="mb-5">
@@ -395,89 +421,235 @@ function loadCVToSelect() {
     });
 }
 
-
 // ===== MỞ MODAL APPLY =====
 function openApplyModal() {
     var modal = document.getElementById("apply-modal");
     modal.classList.remove("hidden");
     modal.classList.add("flex");
-
-    loadCVToSelect(); // 🔥 load CV khi mở
+    loadCVToSelect();
+    resetApplyForm();
 }
-
 
 // ===== ĐÓNG MODAL =====
 function closeApplyModal() {
     var modal = document.getElementById("apply-modal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
+    resetApplyForm();
 }
 
-
-// ===== XỬ LÝ NÚT =====
+// ===== XỬ LÝ NÚT LƯU TIN (TOGGLE - KHÔNG ALERT) =====
 function handleJobAction(action) {
     if (action === 'apply') {
         openApplyModal();
     }
 
     if (action === 'save') {
-        alert("Đã lưu tin!");
+        toggleSaveJob();
     }
 }
 
+// ===== HÀM TOGGLE LƯU TIN (KHÔNG ALERT) =====
+function toggleSaveJob() {
+    const userStr = localStorage.getItem('currentUser');
+    
+    if (!userStr) {
+        alert("Vui lòng đăng nhập để lưu việc làm!");
+        window.location.href = 'login.html';
+        return;
+    }
 
-// ===== SUBMIT FORM =====
-function submitApplication() {
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentJobId = Number(urlParams.get('id'));
+
+    if (!currentJobId) return;
+
+    let savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+    savedJobs = savedJobs.map(id => Number(id));
+
+    const isCurrentlySaved = savedJobs.includes(currentJobId);
+
+    if (!isCurrentlySaved) {
+        // Lưu tin
+        savedJobs.push(currentJobId);
+        localStorage.setItem(storageKey, JSON.stringify(savedJobs));
+        updateSaveButtonUI(true);
+    } else {
+        // Bỏ lưu
+        savedJobs = savedJobs.filter(id => id !== currentJobId);
+        localStorage.setItem(storageKey, JSON.stringify(savedJobs));
+        updateSaveButtonUI(false);
+    }
+}
+
+// ===== CẬP NHẬT UI NÚT LƯU TIN (CHỈ TÔ MÀU TIM) =====
+function updateSaveButtonUI(isSaved) {
+    const btn = document.getElementById('save-job-btn');
+    if (!btn) return;
+
+    if (isSaved) {
+        // Trạng thái đã lưu - Tim màu xanh, chữ "Đã lưu"
+        btn.innerHTML = `
+            <svg class="w-5 h-5 text-blue-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+            </svg>
+            <span>Đã lưu</span>
+        `;
+    } else {
+        // Trạng thái chưa lưu - Tim màu xám, chữ "Lưu tin"
+        btn.innerHTML = `
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+            </svg>
+            <span>Lưu tin</span>
+        `;
+    }
+}
+
+// ===== KIỂM TRA TRẠNG THÁI LƯU KHI LOAD TRANG =====
+function checkSavedStatus() {
+    const userStr = localStorage.getItem('currentUser');
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentJobId = Number(urlParams.get('id'));
+    
+    if (!userStr || !currentJobId) return;
+    
+    const user = JSON.parse(userStr);
+    const storageKey = `savedJobs_${user.username || user.email || 'default'}`;
+    const savedJobs = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const isSaved = savedJobs.map(id => Number(id)).includes(currentJobId);
+    
+    updateSaveButtonUI(isSaved);
+}
+
+// ===== XỬ LÝ UPLOAD CV VÀ HIỂN THỊ TÊN FILE =====
+function initCVUpload() {
+    const cvUpload = document.getElementById('cv-upload');
+    const cvFileInfo = document.getElementById('cv-file-info');
+    const cvFileName = document.getElementById('cv-file-name');
+    
+    if (!cvUpload) return;
+    
+    cvUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Kiểm tra dung lượng (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File quá lớn! Vui lòng chọn file dưới 5MB.');
+                cvUpload.value = '';
+                cvFileInfo.classList.add('hidden');
+                return;
+            }
+            
+            // Kiểm tra định dạng
+            const allowedTypes = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowedTypes.includes(fileExt)) {
+                alert('Định dạng file không hỗ trợ! Vui lòng chọn .PDF, .DOC, .DOCX, .JPG, .JPEG, .PNG');
+                cvUpload.value = '';
+                cvFileInfo.classList.add('hidden');
+                return;
+            }
+            
+            // Hiển thị tên file và nút bỏ chọn
+            cvFileName.textContent = file.name;
+            cvFileInfo.classList.remove('hidden');
+            
+            // Reset select CV đã lưu (ưu tiên upload)
+            const cvSelect = document.getElementById('cv-select');
+            if (cvSelect) cvSelect.value = '';
+        } else {
+            cvFileInfo.classList.add('hidden');
+        }
+    });
+}
+
+// ===== HÀM BỎ CHỌN CV ĐÃ UPLOAD =====
+function clearSelectedCV() {
+    const cvUpload = document.getElementById('cv-upload');
+    const cvFileInfo = document.getElementById('cv-file-info');
+    
+    if (cvUpload) {
+        cvUpload.value = '';
+        cvFileInfo.classList.add('hidden');
+    }
+}
+
+// ===== RESET FORM SAU KHI NỘP =====
+function resetApplyForm() {
+    const cvSelect = document.getElementById('cv-select');
+    if (cvSelect) cvSelect.value = '';
+    
+    const cvUpload = document.getElementById('cv-upload');
+    if (cvUpload) cvUpload.value = '';
+    
+    const cvFileInfo = document.getElementById('cv-file-info');
+    if (cvFileInfo) cvFileInfo.classList.add('hidden');
+    
+    const textarea = document.querySelector('#apply-modal textarea');
+    if (textarea) textarea.value = '';
+}
+
+// ===== SUBMIT FORM ỨNG TUYỂN =====
+function submitApplication(event) {
+    if (event) event.preventDefault();
+    
     var selectedCV = document.getElementById("cv-select").value;
     var fileInput = document.getElementById("cv-upload");
     var uploadedFile = fileInput.files[0];
 
-    // Validate
     if (!selectedCV && !uploadedFile) {
-        alert("Vui lòng chọn CV hoặc upload CV!");
+        alert("Vui lòng chọn CV từ danh sách hoặc tải lên CV mới!");
         return;
     }
 
-    // 👉 Nếu chọn CV có sẵn
     if (selectedCV) {
-        alert("Ứng tuyển bằng CV đã lưu!");
+        alert("Ứng tuyển bằng CV đã lưu thành công!");
         closeApplyModal();
+        resetApplyForm();
         return;
     }
 
-    // 👉 Nếu upload file mới
     if (uploadedFile) {
-        var confirmSave = confirm("Bạn có muốn lưu CV này không?");
-
+        var confirmSave = confirm("Bạn có muốn lưu CV này vào thư viện để dùng cho lần sau không?");
         if (confirmSave) {
             saveCV(uploadedFile);
-            alert("Đã lưu và ứng tuyển thành công!");
+            alert("Đã lưu CV và ứng tuyển thành công!");
         } else {
             alert("Ứng tuyển thành công!");
         }
-
         closeApplyModal();
+        resetApplyForm();
     }
 }
+
+// ===== LƯU CV VÀO LOCALSTORAGE =====
 function saveCV(file) {
     var list = JSON.parse(localStorage.getItem("savedCVs") || "[]");
 
     var newCV = {
         id: Date.now(),
         name: file.name,
-        type: "upload", // 🔥 BẮT BUỘC
+        type: "upload",
         updatedAt: new Date().toLocaleString()
     };
 
     list.push(newCV);
-
     localStorage.setItem("savedCVs", JSON.stringify(list));
 }
 
-
-// ===== AUTO LOAD (PHÒNG TRƯỜNG HỢP) =====
+// ===== KHỞI TẠO KHI TRANG LOAD XONG =====
 document.addEventListener("DOMContentLoaded", function () {
     loadCVToSelect();
+    checkSavedStatus();
+    initCVUpload();
 });
 </script>
 </body>
