@@ -2094,17 +2094,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const tbody = document.getElementById('admin-users-tbody');
         if(!tbody) return;
+        
         if(users.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Chưa có người dùng nào.</td></tr>';
-        tbody.innerHTML = users.map((u, i) => `
+        
+        tbody.innerHTML = users.map((u, i) => {
+            // 1. XỬ LÝ LOẠI TÀI KHOẢN (Gắn Badge màu sắc phân biệt)
+            let roleBadge = '';
+            if (u.username === 'admin') {
+                roleBadge = '<span class="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-purple-200"><i class="fas fa-shield-alt mr-1"></i> Quản trị viên</span>';
+            } else if (u.type === 'employer') {
+                roleBadge = '<span class="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-200"><i class="fas fa-building mr-1"></i> Doanh nghiệp</span>';
+            } else {
+                roleBadge = '<span class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-blue-200"><i class="fas fa-user mr-1"></i> Ứng viên</span>';
+            }
+
+            // 2. XỬ LÝ LẤY EMAIL ĐÚNG (Vì Ứng viên dùng Email làm Username)
+            let displayEmail = u.email || '';
+            if (!displayEmail && u.username !== 'admin') {
+                displayEmail = u.username;
+            }
+
+            // 3. BẢO VỆ ADMIN: Không cho phép xóa tài khoản Admin
+            const deleteBtn = u.username === 'admin' 
+                ? `<button disabled class="text-gray-300 cursor-not-allowed px-3 py-1 rounded" title="Không thể xóa Admin"><i class="fas fa-trash"></i></button>`
+                : `<button onclick="deleteUser(${i})" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded transition" title="Xóa tài khoản này"><i class="fas fa-trash"></i></button>`;
+
+            return `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
-                <td class="py-3 px-6 font-bold text-gray-800">${u.username}</td>
-                <td class="py-3 px-6 text-gray-600">${u.fullName || 'Chưa cập nhật'}</td>
-                <td class="py-3 px-6 text-gray-600">${u.email || ''}</td>
-                <td class="py-3 px-6 text-center">
-                    <button onclick="deleteUser(${i})" class="text-red-500 hover:bg-red-50 px-3 py-1 rounded transition" title="Xóa tài khoản"><i class="fas fa-trash"></i></button>
+                <td class="py-4 px-6">${roleBadge}</td>
+                <td class="py-4 px-6 font-bold text-gray-800">${u.fullName || 'Chưa cập nhật'}</td>
+                <td class="py-4 px-6 text-gray-600">${displayEmail}</td>
+                <td class="py-4 px-6 text-center">
+                    ${deleteBtn}
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     }
 
 // --- QUẢN LÝ CÔNG TY (CÓ TÍNH NĂNG DUYỆT) ---
