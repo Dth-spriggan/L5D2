@@ -142,30 +142,87 @@ body { font-family: 'DM Sans', sans-serif; background: #f8f7f4; }
                                 <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover group-hover:border-blue-500 transition shadow-sm">
                                 <svg class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div id="dropdown-menu" class="absolute top-full right-0 mt-1 w-72 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 z-50 overflow-hidden text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                <div class="absolute -top-2 left-0 w-full h-2 bg-transparent"></div>
-                                <div class="p-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
-                                    <img id="dropdown-avatar" src="./assets/logouser.png" alt="Avatar" class="w-12 h-12 rounded-full object-cover border border-gray-200 bg-white shadow-sm">
-                                    <div class="flex-col overflow-hidden">
-                                        <h4 id="dropdown-name" class="font-bold text-gray-900 text-base leading-tight truncate">...</h4>
-                                        <p id="dropdown-email" class="text-xs text-gray-500 mt-0.5 truncate">...</p>
+                            <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
+                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tính lương Gross - Net</a>
+                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Cẩm nang tìm việc</a>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+
+                <div class="flex items-center gap-4 lg:gap-6">
+                    
+                    <a id="employer-btn-desktop" href="#" onclick="handleEmployerAction(event)" class="hidden md:flex flex-col text-right hover:opacity-80 transition group">
+                        <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Bạn là nhà tuyển dụng?</span>
+                        <span class="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition">Đăng tuyển ngay <span class="text-blue-600">»</span></span>
+                    </a>
+
+                    <div id="employer-divider" class="hidden md:block bg-gray-200" style="width: 1px; height: 32px;"></div>
+
+                    <div id="auth-container" class="flex items-center h-full">
+                        <div id="guest-menu" class="flex items-center gap-3">
+                            <a href="login.html" class="text-sm md:text-base text-gray-700 font-bold hover:text-blue-600 transition">Đăng nhập</a>
+                            <a href="register.html" class="text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-sm rounded-lg px-4 py-2">Đăng ký</a>
+                        </div>
+
+                        <div id="user-menu" class="hidden items-center gap-2 md:gap-4">
+                            
+                            <a id="header-back-btn" href="javascript:history.back()" class="hidden md:flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition" title="Trở về trang trước">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            </a>
+
+                            <div class="relative flex items-center">
+                                <button onclick="toggleUserNotifications()" class="relative p-2 text-gray-500 hover:text-blue-600 transition rounded-full hover:bg-gray-100 focus:outline-none">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                                    <span id="user-noti-dot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                </button>
+                                
+                                <div id="user-noti-dropdown" class="absolute right-0 top-full mt-2 w-72 md:w-80 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 opacity-0 invisible hidden z-50 overflow-hidden transform origin-top-right transition-all">
+                                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                        <span class="font-bold text-gray-800">Thông báo của bạn</span>
+                                    </div>
+                                    <div id="user-noti-content" class="p-6 text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                        <p class="text-sm text-gray-500">Bạn chưa có thông báo nào.</p>
                                     </div>
                                 </div>
-                                <div class="p-2">
-                                    <a href="userui.html" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Hồ sơ cá nhân
-                                    </a>
-                                    <a href="userui.html?tab=saved" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> Việc làm đã lưu
-                                    </a>
-                                    <a href="userui.html?tab=settings" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Cài đặt tài khoản
-                                    </a>
-                                </div>
-                                <div class="p-2 border-t border-gray-100">
-                                    <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-bold text-left">
-                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Đăng xuất
-                                    </button>
+                            </div>
+
+                            <div class="relative group h-16 flex items-center">
+                                <button id="avatar-btn" class="outline-none cursor-pointer flex items-center gap-1.5 pl-1">
+                                    <img id="header-avatar" src="./assets/logouser.png" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover group-hover:border-blue-500 transition shadow-sm">
+                                    <svg class="w-3.5 h-3.5 text-gray-500 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                
+                                <div id="dropdown-menu" class="absolute top-full right-0 mt-1 w-72 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 z-50 overflow-hidden text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                    <div class="absolute -top-2 left-0 w-full h-2 bg-transparent"></div>
+                                    
+                                    <div class="p-4 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+                                        <img id="dropdown-avatar" src="./assets/logouser.png" alt="Avatar" class="w-12 h-12 rounded-full object-cover border border-gray-200 bg-white shadow-sm">
+                                        <div class="flex-col overflow-hidden">
+                                            <h4 id="dropdown-name" class="font-bold text-gray-900 text-base leading-tight truncate">...</h4>
+                                            <p id="dropdown-email" class="text-xs text-gray-500 mt-0.5 truncate">...</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-2">
+                                        <a href="userui.html" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Hồ sơ cá nhân
+                                        </a>
+                                        <a href="userui.html?tab=saved" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> Việc làm đã lưu
+                                        </a>
+                                        <a href="userui.html?tab=settings" class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-medium">
+                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Cài đặt tài khoản
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="p-2 border-t border-gray-100">
+                                        <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-bold text-left">
+                                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Đăng xuất
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
