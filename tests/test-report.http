@@ -23,5 +23,8 @@ Content-Type: application/json
 
 {
     "status": "resolved" 
-    # Trạng thái có thể là: 'resolved' (Đã xử lý/Khóa tin) hoặc 'rejected' (Báo cáo láo, bỏ qua)
+    # Trạng thái có thể là: 'resolved' (Đã xử lý/Khóa tin) hoặc pending
 }
+
+### 4. [ADMIN] - Xóa một báo cáo theo ID
+DELETE http://localhost:3000/api/reports/2

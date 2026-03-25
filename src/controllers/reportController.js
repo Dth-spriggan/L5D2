@@ -24,20 +24,20 @@ const reportController = {
     getAllReports: async (req, res) => {
         try {
             const reports = await Report.findAll({
-                order: [['created_at', 'DESC']] // Thằng nào báo cáo mới nhất thì xếp lên đầu
+                order: [['created_at', 'DESC']]
             });
             res.status(200).json(reports);
         } catch (error) {
-            res.error(error);
+            console.error(error); // ← đã sửa res.error → console.error
             res.status(500).json({ message: 'Lỗi khi tải danh sách báo cáo!' });
         }
     },
 
-    // 3. [Admin] Cập nhật trạng thái báo cáo (Ví dụ: Đổi sang 'resolved')
+    // 3. [Admin] Cập nhật trạng thái báo cáo
     updateReportStatus: async (req, res) => {
         try {
             const { id } = req.params;
-            const { status } = req.body; // truyền lên 'resolved' hoặc 'rejected'
+            const { status } = req.body;
 
             const report = await Report.findByPk(id);
             if (!report) {
@@ -52,7 +52,26 @@ const reportController = {
             console.error(error);
             res.status(500).json({ message: 'Lỗi server khi cập nhật trạng thái!' });
         }
+    },
+
+    // 4. [Admin] Xóa báo cáo
+    deleteReport: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const report = await Report.findByPk(id);
+
+            if (!report) {
+                return res.status(404).json({ message: 'Không tìm thấy báo cáo để xóa!' });
+            }
+
+            await report.destroy();
+            res.status(200).json({ message: 'Đã xóa báo cáo thành công!' });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Lỗi server khi xóa báo cáo!' });
+        }
     }
+
 };
 
 module.exports = reportController;
