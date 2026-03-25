@@ -3918,7 +3918,7 @@ window.loadEmployerCVs = function() {
                     </div>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 md:text-right min-w-[200px]">
-                    <p class="text-[10px] text-slate-400 font-black uppercase mb-1">Vị trí ứng tuyển</p>
+                    <p class="text-[10px] text-slate-400 font-black uppercase mb-1">Công việc ứng tuyển</p>
                     <p class="font-bold text-slate-700">${job ? job.title : 'N/A'}</p>
                     <div class="mt-2">${statusTag}</div>
                 </div>
