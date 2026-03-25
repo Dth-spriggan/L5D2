@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Doanh Nghiệp - MidCV</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./style.css">
 </head>
 <body class="bg-slate-50 font-sans text-gray-800 flex h-screen overflow-hidden">
@@ -33,7 +35,7 @@
             </button>
             
             <button onclick="switchAdminView('manage-jobs')" id="nav-manage-jobs" class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
-                <span class="text-xl">📝</span> Quản lý tin
+                <span class="text-xl">🔧</span> Quản lý tin
             </button>
             
             <button onclick="switchAdminView('post-job')" id="nav-post-job" class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
@@ -42,6 +44,7 @@
             
             <button onclick="switchAdminView('candidates')" id="nav-candidates" class="w-full flex items-center justify-between px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition admin-nav-btn">
                 <div class="flex items-center gap-3"><span class="text-xl">📁</span> Hồ sơ ứng viên</div>
+                <span id="cv-badge" class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
             </button>
             
             <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Cài đặt</p>
@@ -92,43 +95,82 @@
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
             
-            <div id="view-overview" class="admin-view block p-4 lg:p-8 overflow-y-auto h-full">
+            <div id="view-overview" class="admin-view p-4 lg:p-8 overflow-y-auto h-full block">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-black text-slate-800 mb-1">Tổng quan hoạt động</h2>
+                    <p class="text-slate-500 text-sm">Theo dõi hiệu quả tuyển dụng thời gian thực</p>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-                        <div class="text-slate-500 text-sm font-bold mb-1">Tin đang mở</div>
-                        <div class="text-4xl font-black text-slate-800">03</div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl"><i class="fas fa-briefcase"></i></div>
+                        <div>
+                            <div class="text-slate-500 text-xs font-bold mb-1 uppercase tracking-wider">TIN ĐANG HIỂN THỊ</div>
+                            <div class="text-3xl font-black text-slate-800" id="emp-stat-jobs">0</div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-l-4 border-l-green-500">
-                        <div class="text-slate-500 text-sm font-bold mb-1">CV Ứng tuyển mới</div>
-                        <div class="text-4xl font-black text-slate-800">12</div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl"><i class="fas fa-file-alt"></i></div>
+                        <div>
+                            <div class="text-slate-500 text-xs font-bold mb-1 uppercase tracking-wider">CV CHỜ DUYỆT</div>
+                            <div class="text-3xl font-black text-slate-800" id="emp-stat-cvs">0</div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 border-l-4 border-l-purple-500">
-                        <div class="text-slate-500 text-sm font-bold mb-1">Lượt xem tin (Tuần)</div>
-                        <div class="text-4xl font-black text-slate-800">348</div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl"><i class="fas fa-eye"></i></div>
+                        <div>
+                            <div class="text-slate-500 text-xs font-bold mb-1 uppercase tracking-wider">LƯỢT XEM TIN (Ước tính)</div>
+                            <div class="text-3xl font-black text-slate-800" id="emp-stat-views">0</div>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                        <h3 class="font-bold text-slate-800">Chiến dịch tuyển dụng gần đây</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800"><i class="fas fa-chart-line text-blue-500 mr-2"></i>Thống kê tương tác (7 ngày)</h3>
+                        </div>
+                        <div id="employer-chart-container" class="relative h-64 w-full flex flex-col justify-end bg-slate-50/30 rounded-xl p-4 border border-slate-100">
+                        </div>
                     </div>
-                    <div class="p-6 text-center text-slate-500 italic">Tính năng thống kê chi tiết đang được cập nhật...</div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full max-h-[350px]">
+                        <div class="flex justify-between items-center mb-6 shrink-0">
+                            <h3 class="font-bold text-slate-800"><i class="fas fa-bullhorn text-amber-500 mr-2"></i>Chiến dịch gần đây</h3>
+                        </div>
+                        <div id="emp-recent-campaigns" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                            </div>
+                    </div>
                 </div>
             </div>
 
             <div id="view-manage-jobs" class="admin-view hidden p-4 lg:p-8 overflow-y-auto h-full">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Quản lý Tin tuyển dụng</h2>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
-                                <th class="py-3 px-6">Tiêu đề công việc</th>
-                                <th class="py-3 px-6 text-center">Trạng thái</th>
-                                <th class="py-3 px-6 text-center">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="employer-jobs-tbody" class="text-sm">
-                            </tbody>
-                    </table>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800 mb-1">Quản lý Tin tuyển dụng</h2>
+                        <p class="text-slate-500 text-sm">Xem trạng thái và hiệu quả các tin đang đăng</p>
+                    </div>
+                    <div class="relative w-full md:w-80 group">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
+                        <input type="text" id="search-emp-jobs" oninput="loadEmployerJobs()" placeholder="Tìm theo tiêu đề tin..." class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm">
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="py-4 px-6 text-sm font-black text-slate-500 uppercase cursor-pointer hover:text-blue-600 transition" onclick="sortEmpJobs('title')">Vị trí tuyển dụng <i class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="py-4 px-6 text-sm font-black text-slate-500 uppercase cursor-pointer hover:text-blue-600 transition" onclick="sortEmpJobs('salary')">Lương <i class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="py-4 px-6 text-sm font-black text-slate-500 uppercase">Trạng thái</th>
+                                    <th class="py-4 px-6 text-sm font-black text-slate-500 uppercase cursor-pointer hover:text-blue-600 transition" onclick="sortEmpJobs('views')">Tương tác <i class="fas fa-sort ml-1 opacity-30"></i></th>
+                                    <th class="py-4 px-6 text-right text-sm font-black text-slate-500 uppercase">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employer-jobs-tbody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -224,12 +266,17 @@
             </div>
 
             <div id="view-candidates" class="admin-view hidden p-4 lg:p-8 overflow-y-auto h-full">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">Quản lý Hồ sơ Ứng viên</h2>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-10 text-center">
-                    <i class="fas fa-folder-open text-5xl text-slate-300 mb-4"></i>
-                    <h3 class="text-lg font-bold text-slate-700 mb-2">Chưa có hồ sơ nào</h3>
-                    <p class="text-slate-500">Các ứng viên nộp CV sẽ hiển thị ở khu vực này.</p>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800 mb-1">Hồ sơ ứng viên</h2>
+                        <p class="text-slate-500 text-sm">Duyệt và phản hồi các CV đã nộp</p>
+                    </div>
+                    <div class="relative w-full md:w-80 group">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
+                        <input type="text" id="search-emp-cvs" oninput="loadEmployerCVs()" placeholder="Tìm tên ứng viên hoặc vị trí..." class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm">
+                    </div>
                 </div>
+                <div id="employer-cvs-container" class="space-y-4 pb-20"></div>
             </div>
 
             <div id="view-settings" class="admin-view hidden p-4 lg:p-8 overflow-y-auto h-full">
@@ -298,7 +345,6 @@
                     </form>
                 </div>
             </div>
-
         </main>
     </div>
 
