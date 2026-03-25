@@ -182,23 +182,41 @@
                     </div>
                     <form id="form-edit-job" onsubmit="submitEditJob(event)" class="p-6 space-y-6">
                         <input type="hidden" id="edit-job-id">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Tiêu đề công việc <span class="text-red-500">*</span></label>
                                 <input type="text" id="edit-job-title" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
+                            
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Lĩnh vực / Kỹ năng <span class="text-red-500">*</span> <span class="text-xs font-normal text-gray-500">(Cách nhau bằng dấu ;)</span></label>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Vị trí / Cấp bậc <span class="text-red-500">*</span></label>
+                                <input type="text" id="edit-job-position" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Số lượng cần tuyển <span class="text-red-500">*</span></label>
+                                <input type="number" id="edit-job-quantity" required min="1" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Lĩnh vực / Kỹ năng <span class="text-red-500">*</span></label>
                                 <input type="text" id="edit-job-industry" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Mức lương</label>
                                 <input type="text" id="edit-job-salary" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Địa điểm làm việc</label>
-                                <input type="text" id="edit-job-location" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Tỉnh / Thành phố <span class="text-red-500">*</span></label>
+                                <select id="edit-job-province" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option value="">-- Chọn tỉnh thành --</option>
+                                    </select>
                             </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Địa chỉ chi tiết</label>
+                                <input type="text" id="edit-job-location-detail" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Mô tả công việc <span class="text-red-500">*</span></label>
                                 <textarea id="edit-job-desc" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
@@ -228,34 +246,49 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Tiêu đề công việc <span class="text-red-500">*</span></label>
-                                <input type="text" id="job-title" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: Lập trình viên Frontend">
+                                <input type="text" id="job-title" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Lĩnh vực / Kỹ năng <span class="text-red-500">*</span> <span class="text-xs font-normal text-gray-500">(Cách nhau bằng dấu ;)</span></label>
-                                <input type="text" id="job-industry" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: ReactJS; TailwindCSS; Figma">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Vị trí / Cấp bậc <span class="text-red-500">*</span></label>
+                                <input type="text" id="job-position" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
-                            
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Số lượng cần tuyển <span class="text-red-500">*</span></label>
+                                <input type="number" id="job-quantity" required min="1" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Lĩnh vực / Kỹ năng <span class="text-red-500">*</span></label>
+                                <input type="text" id="job-industry" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Mức lương</label>
-                                <input type="text" id="job-salary" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: 15 - 20 Triệu">
+                                <input type="text" id="job-salary" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Địa điểm làm việc</label>
-                                <input type="text" id="job-location" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: Hà Nội">
+
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Tỉnh / Thành phố <span class="text-red-500">*</span></label>
+                                <select id="job-province" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option value="">-- Chọn tỉnh thành --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Địa chỉ chi tiết</label>
+                                <input type="text" id="job-location-detail" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Mô tả công việc <span class="text-red-500">*</span></label>
-                                <textarea id="job-desc" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="Nhập mô tả chi tiết công việc..."></textarea>
+                                <textarea id="job-desc" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Yêu cầu ứng viên <span class="text-red-500">*</span></label>
-                                <textarea id="job-req" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="Nhập yêu cầu kinh nghiệm, kỹ năng..."></textarea>
+                                <textarea id="job-req" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Quyền lợi <span class="text-red-500">*</span></label>
-                                <textarea id="job-benefit" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="Nhập quyền lợi, phúc lợi..."></textarea>
+                                <textarea id="job-benefit" rows="4" required class="w-full px-4 py-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
                             </div>
                         </div>
                         <div class="pt-6 border-t border-slate-100 text-right">

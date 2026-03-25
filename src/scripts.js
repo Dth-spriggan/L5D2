@@ -4081,3 +4081,187 @@ window.deleteJob = function(jobId) {
     if (typeof loadEmployerJobs === 'function') loadEmployerJobs();
     if (typeof updateEmployerDashboardStats === 'function') updateEmployerDashboardStats();
 };
+// =================================================================
+// CẬP NHẬT DATABASE: VỊ TRÍ, SỐ LƯỢNG, 63 TỈNH THÀNH & CHI TIẾT ĐỊA CHỈ
+// =================================================================
+
+// 1. TỰ ĐỘNG BƠM 63 TỈNH THÀNH VÀO CÁC Ô SELECT
+const PROVINCES = ["Hà Nội", "TP. Hồ Chí Minh", "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước", "Bình Thuận", "Cà Mau", "Cần Thơ", "Cao Bằng", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Kiên Giang", "Kon Tum", "Lai Châu", "Lâm Đồng", "Lạng Sơn", "Lào Cai", "Long An", "Nam Định", "Nghệ An", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Quảng Bình", "Quảng Nam", "Quảng Ngãi", "Quảng Ninh", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Tiền Giang", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const provinceSelects = [document.getElementById('job-province'), document.getElementById('edit-job-province')];
+    provinceSelects.forEach(select => {
+        if (select) {
+            select.innerHTML = '<option value="">-- Chọn tỉnh thành --</option>' + 
+                               PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
+        }
+    });
+});
+
+// 2. HÀM ĐĂNG TIN MỚI (Lấy thêm 4 trường dữ liệu)
+window.postNewJob = function(event) {
+    event.preventDefault();
+    const userStr = localStorage.getItem('currentUser');
+    if(!userStr) return;
+    const user = JSON.parse(userStr);
+
+    const title = document.getElementById('job-title').value;
+    const position = document.getElementById('job-position').value;
+    const quantity = document.getElementById('job-quantity').value;
+    const industryInput = document.getElementById('job-industry').value;
+    const salary = document.getElementById('job-salary').value || 'Thỏa thuận';
+    
+    const province = document.getElementById('job-province').value;
+    const locationDetail = document.getElementById('job-location-detail').value;
+    // Nối chuỗi để hiển thị đẹp gọn: "Số 120 Yên Lãng, Hà Nội"
+    const fullLocation = locationDetail ? `${locationDetail}, ${province}` : province;
+    
+    const desc = document.getElementById('job-desc').value;
+    const req = document.getElementById('job-req').value;
+    const benefit = document.getElementById('job-benefit').value;
+
+    const tagsArray = industryInput.split(';').map(t => t.trim()).filter(t => t !== '');
+    let customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
+    let myComp = customComps.find(c => c.ownerEmail === user.username) || { name: user.fullName, logo: "https://placehold.co/60" };
+
+    const newJob = {
+        id: Date.now(), 
+        title: title, 
+        position: position,       // DB: Vị trí
+        quantity: quantity,       // DB: Số lượng
+        province: province,       // DB: Tỉnh thành
+        locationDetail: locationDetail, // DB: Địa chỉ chi tiết
+        location: fullLocation,   // String gộp để hiển thị
+        company: myComp.name, 
+        salary: salary, 
+        salarySort: 10, 
+        logo: myComp.logo, 
+        tags: tagsArray.length > 0 ? tagsArray : ['Chưa phân loại'], 
+        description: desc.replace(/\n/g, '<br>'), 
+        requirements: req.replace(/\n/g, '<br>'), 
+        benefits: benefit.replace(/\n/g, '<br>'),
+        ownerEmail: user.username
+    };
+
+    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    customJobs.unshift(newJob);
+    localStorage.setItem('custom_jobs', JSON.stringify(customJobs));
+
+    alert("🎉 Đăng tin thành công! Tin của bạn đang chờ Admin kiểm duyệt.");
+    document.getElementById('form-post-job').reset();
+    if (typeof switchAdminView === 'function') switchAdminView('overview');
+};
+
+// 3. HÀM MỞ MODAL SỬA TIN (Đổ 4 trường mới vào Form)
+window.editJob = function(id) {
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const job = customJobs.find(j => String(j.id) === String(id));
+    if(!job) return alert("❌ Không tìm thấy dữ liệu tin tuyển dụng!");
+
+    const data = job.draft ? { ...job, ...job.draft } : (job.pendingUpdate ? { ...job, ...job.pendingUpdate } : job);
+
+    document.getElementById('edit-job-id').value = job.id;
+    document.getElementById('edit-job-title').value = data.title || '';
+    document.getElementById('edit-job-position').value = data.position || '';
+    document.getElementById('edit-job-quantity').value = data.quantity || '';
+    document.getElementById('edit-job-industry').value = (data.tags || []).join('; ');
+    document.getElementById('edit-job-salary').value = data.salary || '';
+    
+    // Gán đúng Tỉnh và Chi tiết
+    document.getElementById('edit-job-province').value = data.province || '';
+    document.getElementById('edit-job-location-detail').value = data.locationDetail || '';
+    
+    document.getElementById('edit-job-desc').value = (data.description || '').replace(/<br>/g, '\n');
+    document.getElementById('edit-job-req').value = (data.requirements || '').replace(/<br>/g, '\n');
+    document.getElementById('edit-job-benefit').value = (data.benefits || '').replace(/<br>/g, '\n');
+
+    if (typeof checkJobSubmitStatus === 'function') checkJobSubmitStatus(job);
+    document.getElementById('employer-edit-modal').classList.remove('hidden');
+};
+
+// 4. HÀM LƯU NHÁP KHI SỬA
+window.submitEditJob = function(event) {
+    if (event) event.preventDefault();
+    const id = document.getElementById('edit-job-id').value;
+    let customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const jobIndex = customJobs.findIndex(j => String(j.id) === String(id));
+    if(jobIndex === -1) return;
+
+    const tagsArray = document.getElementById('edit-job-industry').value.split(';').map(t => t.trim()).filter(t => t !== '');
+    const province = document.getElementById('edit-job-province').value;
+    const locationDetail = document.getElementById('edit-job-location-detail').value;
+
+    customJobs[jobIndex].draft = {
+        title: document.getElementById('edit-job-title').value,
+        position: document.getElementById('edit-job-position').value,
+        quantity: document.getElementById('edit-job-quantity').value,
+        province: province,
+        locationDetail: locationDetail,
+        location: locationDetail ? `${locationDetail}, ${province}` : province,
+        tags: tagsArray.length > 0 ? tagsArray : ['Chưa phân loại'],
+        salary: document.getElementById('edit-job-salary').value,
+        description: document.getElementById('edit-job-desc').value.replace(/\n/g, '<br>'),
+        requirements: document.getElementById('edit-job-req').value.replace(/\n/g, '<br>'),
+        benefits: document.getElementById('edit-job-benefit').value.replace(/\n/g, '<br>')
+    };
+
+    localStorage.setItem('custom_jobs', JSON.stringify(customJobs));
+    alert("✅ Đã lưu thay đổi vào bản nháp! Bạn nhớ bấm 'Gửi duyệt lại' để Admin phê duyệt nhé.");
+    if (typeof checkJobSubmitStatus === 'function') checkJobSubmitStatus(customJobs[jobIndex]);
+};
+
+// 5. HÀM PREVIEW ADMIN (Hiển thị Vị trí & Số lượng)
+window.previewJob = function(id) {
+    const job = (typeof window.mockJobs !== 'undefined') ? window.mockJobs.find(j => String(j.id) === String(id)) : null;
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const customData = customJobs.find(cj => String(cj.id) === String(id));
+    
+    let displayJob = job ? { ...job } : {};
+    if (customData) displayJob = { ...displayJob, ...customData };
+    if (customData && customData.pendingUpdate) Object.assign(displayJob, customData.pendingUpdate);
+    
+    if (!displayJob.title) return alert("Dữ liệu việc làm này không tồn tại hoặc đã bị lỗi!");
+
+    const contentDiv = document.getElementById('admin-preview-content');
+    const tagsHTML = (displayJob.tags || []).map(t => `<span class="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-lg border border-blue-100 font-medium">${t}</span>`).join('');
+
+    contentDiv.innerHTML = `
+        <div class="flex items-start gap-6 mb-8 pb-6 border-b border-gray-100">
+            <img src="${displayJob.logo || 'https://placehold.co/150'}" class="w-20 h-20 object-contain border border-gray-200 rounded-lg p-2 bg-white shrink-0">
+            <div>
+                <h2 class="text-2xl font-black text-gray-900 mb-2 leading-tight">${displayJob.title}</h2>
+                <p class="text-lg text-gray-600 font-bold mb-3">${displayJob.company || 'Công ty ẩn danh'}</p>
+                <div class="flex flex-wrap gap-3 text-sm font-medium mb-3">
+                    <span class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-md border border-indigo-100"><i class="fas fa-user-tie mr-1 opacity-60"></i> Cấp bậc: ${displayJob.position || 'Chưa cập nhật'}</span>
+                    <span class="bg-orange-50 text-orange-700 px-3 py-1.5 rounded-md border border-orange-100"><i class="fas fa-users mr-1 opacity-60"></i> Số lượng: ${displayJob.quantity || '1'} nhân sự</span>
+                </div>
+                <div class="flex flex-wrap gap-3 text-sm font-medium">
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md"><i class="fas fa-money-bill-wave mr-1 text-gray-400"></i> ${displayJob.salary || 'Thỏa thuận'}</span>
+                    <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i> ${displayJob.location || 'Chưa cập nhật'}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <h4 class="font-bold text-base mb-3 text-gray-900 flex items-center gap-2"><i class="fas fa-tags text-blue-500"></i> Kỹ năng yêu cầu</h4>
+            <div class="flex flex-wrap gap-2">${tagsHTML}</div>
+        </div>
+
+        <div class="text-sm text-gray-800 space-y-6">
+            <div>
+                <h4 class="font-bold text-lg mb-2 text-gray-900 flex items-center gap-2"><i class="fas fa-align-left text-blue-500"></i> Mô tả công việc</h4>
+                <p class="leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg border border-gray-100">${displayJob.description || 'Chưa cập nhật mô tả.'}</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-2 text-gray-900 flex items-center gap-2"><i class="fas fa-clipboard-check text-blue-500"></i> Yêu cầu ứng viên</h4>
+                <p class="leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg border border-gray-100">${displayJob.requirements || 'Chưa cập nhật yêu cầu.'}</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-2 text-gray-900 flex items-center gap-2"><i class="fas fa-gift text-blue-500"></i> Quyền lợi</h4>
+                <p class="leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg border border-gray-100">${displayJob.benefits || 'Chưa cập nhật quyền lợi.'}</p>
+            </div>
+        </div>
+    `;
+    const modal = document.getElementById('admin-preview-modal');
+    if (modal) modal.classList.remove('hidden');
+};
