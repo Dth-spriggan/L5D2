@@ -150,9 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. XỬ LÝ GIAO DIỆN NAVBAR (ĐĂNG NHẬP / ĐĂNG XUẤT)
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    const guestMenu = document.getElementById('guest-menu');
-    const userMenu = document.getElementById('user-menu');
-    
+
     // ---------------------------------------------------------
     // 1. ẨN NÚT TRỞ VỀ NẾU ĐANG Ở TRANG CHỦ (INDEX.HTML)
     // ---------------------------------------------------------
@@ -160,40 +158,75 @@ document.addEventListener('DOMContentLoaded', () => {
     if (backBtn) {
         const path = window.location.pathname.toLowerCase();
         if (path.endsWith('index.html') || path === '/' || path.endsWith('/')) {
-            backBtn.style.display = 'none'; // Giấu nút đi nếu là trang chủ
+            backBtn.style.display = 'none';
         }
     }
 
     // ---------------------------------------------------------
-    // 2. HIỂN THỊ MENU ĐĂNG NHẬP / AVATAR
+    // 2. HIỂN THỊ MENU ĐĂNG NHẬP / AVATAR & QUẢN LÝ NÚT DOANH NGHIỆP
     // ---------------------------------------------------------
-    // VÁ LỖI TẠI ĐÂY: Trả lại biến kiểm tra đăng nhập để Menu không bị ngáo!
-    const currentUserInfo = localStorage.getItem('currentUser'); 
-    
-    if (guestMenu && userMenu) {
-        if (currentUserInfo) {
-            // Đã đăng nhập -> Cất nút Đăng nhập, Hiện Avatar
-            guestMenu.classList.add('hidden');
-            userMenu.classList.remove('hidden');
-            userMenu.classList.add('flex'); 
-        } else {
-            // Chưa đăng nhập -> Hiện nút Đăng nhập, Cất Avatar
-            guestMenu.classList.remove('hidden');
-            userMenu.classList.add('hidden');
-            userMenu.classList.remove('flex');
+    const guestMenu = document.getElementById('guest-menu');
+    const userMenu = document.getElementById('user-menu');
+    const employerBtnDesktop = document.getElementById('employer-btn-desktop');
+    const employerDivider = document.getElementById('employer-divider');
+    const employerBtnMobile = document.getElementById('employer-btn-mobile');
+
+    const userStr = localStorage.getItem('currentUser');
+
+    if (userStr) {
+        // --- KHI ĐÃ ĐĂNG NHẬP ---
+        try {
+            const user = JSON.parse(userStr);
+
+            // 2.1 Bơm dữ liệu vào Avatar và Menu (Đã khôi phục)
+            const headerAvatar = document.getElementById('header-avatar');
+            const dropdownAvatar = document.getElementById('dropdown-avatar');
+            const dropdownName = document.getElementById('dropdown-name');
+            const dropdownEmail = document.getElementById('dropdown-email');
+
+            if (headerAvatar) headerAvatar.src = user.avatar || './assets/logouser.png';
+            if (dropdownAvatar) dropdownAvatar.src = user.avatar || './assets/logouser.png';
+            if (dropdownName) dropdownName.textContent = user.fullName || user.username;
+            if (dropdownEmail) dropdownEmail.textContent = user.email || user.username;
+
+        } catch (error) {
+            console.error("Lỗi đọc dữ liệu User:", error);
         }
+
+        // 2.2 Ép buộc Ẩn/Hiện bằng style.display (Đè bẹp class md:flex của Tailwind)
+        if (guestMenu) guestMenu.style.display = 'none';
+        if (userMenu) {
+            userMenu.style.display = 'flex';
+            userMenu.classList.remove('hidden');
+        }
+
+        // 2.3 Giấu nút Doanh nghiệp
+        if (employerBtnDesktop) employerBtnDesktop.style.display = 'none';
+        if (employerDivider) employerDivider.style.display = 'none';
+        if (employerBtnMobile) employerBtnMobile.style.display = 'none';
+
+    } else {
+        // --- KHI CHƯA ĐĂNG NHẬP ---
+        if (guestMenu) {
+            guestMenu.style.display = ''; // Trả về mặc định cho CSS tự lo
+            guestMenu.classList.remove('hidden');
+        }
+        if (userMenu) userMenu.style.display = 'none';
+
+        if (employerBtnDesktop) employerBtnDesktop.style.display = '';
+        if (employerDivider) employerDivider.style.display = '';
+        if (employerBtnMobile) employerBtnMobile.style.display = '';
     }
 
     // ---------------------------------------------------------
     // 3. BẢO VỆ TRANG USER UI & RENDER CAPTCHA
     // ---------------------------------------------------------
-    // Nếu rớt qua hàng rào nhưng là trang Hồ sơ (chưa đăng nhập) -> Về trang chủ
-    if (document.getElementById('avatarPreview') && !currentUserInfo) {
+    if (document.getElementById('avatarPreview') && !userStr) {
         window.location.replace('index.html');
     }
 
     if (document.getElementById("captchaBox")) {
-        window.generateCaptcha();
+        if (typeof window.generateCaptcha === 'function') window.generateCaptcha();
     }
     
     // ---------------------------------------------------------
@@ -215,21 +248,29 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (currentPath.includes('congty.html')) {
         setActiveMenu(navCongty);
     }
+
+    // ---------------------------------------------------------
+    // 5. BẬT/TẮT CHUÔNG THÔNG BÁO CHO USER
+    // ---------------------------------------------------------
+    window.toggleUserNotifications = function() {
+        const dropdown = document.getElementById('user-noti-dropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('hidden');
+            dropdown.classList.toggle('opacity-0');
+            dropdown.classList.toggle('invisible');
+        }
+    };
 });
 
 // ---------------------------------------------------------
-// 4. HÀM CHẶN SỰ KIỆN CLICK VÀO NÚT "ĐĂNG TUYỂN NGAY"
+// HÀM CHẶN SỰ KIỆN CLICK VÀO NÚT "ĐĂNG TUYỂN NGAY" (Dự phòng)
 // ---------------------------------------------------------
 window.handleEmployerAction = function(event) {
-    event.preventDefault(); // Ngăn trình duyệt load trang mới
-    
+    event.preventDefault(); 
     const currentUser = localStorage.getItem('currentUser');
-    
     if (currentUser) {
-        // Hiện thông báo ngay lập tức, không load trang
         alert('CẢNH BÁO: Bạn đang đăng nhập với tư cách Ứng viên!\nVui lòng Đăng xuất tài khoản cá nhân trước khi sử dụng chức năng Nhà Tuyển Dụng.');
     } else {
-        // Chưa đăng nhập thì cho phép qua trang Doanh nghiệp bình thường
         window.location.href = 'tuyendung.html';
     }
 };
@@ -239,26 +280,6 @@ window.logout = function() {
     localStorage.removeItem('currentUser'); 
     alert('Đã đăng xuất thành công!');
     window.location.href = 'index.html'; 
-};
-
-// =================================================================
-// 2. XỬ LÝ MENU TRƯỢT TRÊN ĐIỆN THOẠI (Hamburger Menu)
-// =================================================================
-window.toggleMobileMenu = function() {
-    const sidebar = document.getElementById('mobile-sidebar');
-    const overlay = document.getElementById('mobile-menu-overlay');
-
-    if (!sidebar || !overlay) return;
-
-    const isClosed = sidebar.classList.contains('-translate-x-full');
-
-    if (isClosed) {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-    } else {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-    }
 };
 
 // =================================================================
@@ -1359,18 +1380,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_AVATAR = './assets/logouser.png';
 
     function loadUser() { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } }
+    
     function saveUser(data) {
         try {
             const current = loadUser() || {};
             const updatedUser = { ...current, ...data };
-            // KIỂM TRA ÁN PHẠT TRƯỚC KHI CẤP QUYỀN
-        if (user.isBanned) {
-            alert("⛔ TÀI KHOẢN CỦA BẠN ĐÃ BỊ KHÓA!\n\nLý do: " + (userInDB.banReason || "Vi phạm quy định của hệ thống.") + "\n\nVui lòng liên hệ CSKH qua số (024) 37663311 hoặc email admin@midcv.vn để được hỗ trợ.");
-            return; // Chặn đứng, không cho chạy lệnh setItem bên dưới!
-        }
-
-        // Lệnh cấp quyền cũ của bạn
-        localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Lưu thông tin mới nhất vào phiên đăng nhập hiện tại
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
             const users = JSON.parse(localStorage.getItem('users')) || [];
             const userIndex = users.findIndex(u => u.username === current.username);
             if (userIndex !== -1) {
@@ -2252,12 +2270,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Biến lưu trữ đồ thị để chống lỗi ghi đè (Memory Leak)
     window.userChartInstance = null;
-    window.industryChartInstance = null;
 
     function renderAdminCharts(jobs) {
         const ctxUser = document.getElementById('userGrowthChart');
-        const ctxInd = document.getElementById('industryChart');
-        if (!ctxUser || !ctxInd) return;
+        if (!ctxUser) return;
 
         // =========================================================
         // 1. BIỂU ĐỒ ĐƯỜNG: HOẠT ĐỘNG 7 NGÀY QUA (DỮ LIỆU THẬT)
@@ -2273,7 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             last7Days.push(`${d.getDate()}/${d.getMonth() + 1}`);
         }
 
-        // Đếm số Việc làm tạo trong 7 ngày (Dựa vào ID là timestamp)
+        // Đếm số Việc làm tạo trong 7 ngày
         const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
         customJobs.forEach(j => {
             if (j.id) {
@@ -2323,52 +2339,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
             }
         });
-
-        // =========================================================
-        // 2. BIỂU ĐỒ TRÒN: NHU CẦU KỸ NĂNG/NGÀNH NGHỀ (TÍNH TẤT CẢ THẺ)
-        // =========================================================
-        const industryCounts = {};
         
-        // Chỉ lấy những việc làm Đang hiển thị Public (Loại bỏ tin Bị ẩn/Từ chối)
-        const deletedIds = JSON.parse(localStorage.getItem('admin_deleted_jobs')) || [];
-        const approvedIds = JSON.parse(localStorage.getItem('admin_approved_jobs')) || [];
-        
-        let validJobs = jobs.filter(j => !deletedIds.includes(j.id) && (approvedIds.includes(j.id) || !customJobs.some(cj => cj.id === j.id)));
-
-        // NÂNG CẤP: Quét qua TẤT CẢ các thẻ thay vì chỉ lấy thẻ đầu tiên
-        validJobs.forEach(j => {
-            if (j.tags && j.tags.length > 0) {
-                j.tags.forEach(tag => {
-                    let cleanTag = tag.trim();
-                    industryCounts[cleanTag] = (industryCounts[cleanTag] || 0) + 1;
-                });
-            } else {
-                industryCounts['Chưa phân loại'] = (industryCounts['Chưa phân loại'] || 0) + 1;
-            }
-        });
-
-        // Sắp xếp lấy Top 5 kỹ năng/ngành nghề được yêu cầu nhiều nhất
-        const sortedIndustries = Object.entries(industryCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        const labels = sortedIndustries.map(item => item[0]);
-        const data = sortedIndustries.map(item => item[1]);
-
-        if (window.industryChartInstance) window.industryChartInstance.destroy();
-        window.industryChartInstance = new Chart(ctxInd, {
-            type: 'doughnut',
-            data: {
-                labels: labels.length > 0 ? labels : ['Chưa có dữ liệu'],
-                datasets: [{
-                    data: data.length > 0 ? data : [1],
-                    backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#cbd5e1'],
-                    borderWidth: 2, hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'right' } },
-                cutout: '65%' 
-            }
-        });
+        // Đã gỡ bỏ toàn bộ logic Biểu đồ tròn và quét Tag ở đây!
     }
 
     // --- LÕI TÌM KIẾM & SẮP XẾP TOÀN CỤC CHO ADMIN ---
@@ -3374,5 +3346,73 @@ window.syncEmployerHeader = function() {
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('doanhnghiep.html')) {
         setTimeout(syncEmployerHeader, 100);
+    }
+});
+// =================================================================
+// KHÔI PHỤC HÀM XỬ LÝ ĐĂNG NHẬP (BẢN CHỐNG LỖI 2.0)
+// =================================================================
+window.processUserLogin = function(event) {
+    // FIX LỖI: Tự động kiểm tra xem có event được truyền vào không thì mới chặn
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault(); 
+    }
+    
+    // Tìm ô nhập tài khoản và mật khẩu (Hỗ trợ các ID phổ biến)
+    const usernameInput = document.getElementById('username') || document.getElementById('login-username');
+    const passwordInput = document.getElementById('password') || document.getElementById('login-password');
+    
+    if (!usernameInput || !passwordInput) {
+        console.error("Lỗi UI: Không tìm thấy ô nhập tài khoản/mật khẩu!");
+        return;
+    }
+
+    const userVal = usernameInput.value.trim();
+    const passVal = passwordInput.value;
+
+    if (!userVal || !passVal) {
+        return alert("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
+    }
+
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    
+    // Tìm tài khoản (Hỗ trợ đăng nhập bằng cả username hoặc email)
+    const user = users.find(u => (u.username === userVal || u.email === userVal) && u.password === passVal);
+
+    if (user) {
+        // 🛑 CHỐT CHẶN: Kiểm tra xem tài khoản có đang bị khóa không
+        if (user.isBanned) {
+            alert("⛔ TÀI KHOẢN CỦA BẠN ĐÃ BỊ KHÓA!\n\nLý do: " + (user.banReason || "Vi phạm quy định của hệ thống.") + "\n\nVui lòng liên hệ CSKH qua số (024) 37663311 để được hỗ trợ.");
+            return; // Chặn đứng, không cho đăng nhập
+        }
+
+        // Cấp quyền và lưu vào hệ thống
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        // Điều hướng dựa theo loại tài khoản
+        if (user.username === 'admin') {
+            window.location.replace('admin.html');
+        } else if (user.type === 'employer') {
+            window.location.replace('doanhnghiep.html');
+        } else {
+            window.location.replace('index.html');
+        }
+    } else {
+        alert("Tài khoản hoặc mật khẩu không chính xác!");
+    }
+};
+
+// -----------------------------------------------------------------
+// BỌC ALIAS: Đảm bảo bắt được Form bằng mọi giá
+// -----------------------------------------------------------------
+window.login = window.processUserLogin;
+window.handleLogin = window.processUserLogin;
+window.submitLogin = window.processUserLogin;
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('login.html')) {
+        const loginForm = document.getElementById('login-form') || document.querySelector('form');
+        if (loginForm) {
+            loginForm.onsubmit = window.processUserLogin;
+        }
     }
 });
