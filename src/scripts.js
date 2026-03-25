@@ -4265,3 +4265,61 @@ window.previewJob = function(id) {
     const modal = document.getElementById('admin-preview-modal');
     if (modal) modal.classList.remove('hidden');
 };
+// =================================================================
+// PHỤC HỒI: TỰ ĐỘNG HIỂN THỊ LOGO NHÀ TUYỂN DỤNG TOP (DỮ LIỆU THẬT)
+// =================================================================
+window.renderTopEmployersHome = function() {
+    const container = document.getElementById('top-employers-container');
+    if (!container) return;
+
+    // 1. Gộp tất cả công ty (Gốc + Doanh nghiệp tự đăng)
+    const mockComps = typeof window.mockCompaniesDB !== 'undefined' ? window.mockCompaniesDB : [];
+    const customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
+    let allComps = [...mockComps, ...customComps];
+
+    // 2. Gộp tất cả việc làm để đếm
+    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const allJobs = [...mockJobs, ...customJobs];
+    const approvedIds = (JSON.parse(localStorage.getItem('admin_approved_jobs')) || []).map(id => String(id));
+
+    // 3. Thuật toán đếm Job thực tế cho từng công ty
+    allComps = allComps.map(comp => {
+        const cName = (comp.name || '').toLowerCase();
+        const activeCount = allJobs.filter(j => {
+            const isAppr = mockJobs.includes(j) ? true : approvedIds.includes(String(j.id));
+            if (!isAppr) return false;
+            const jName = (j.company || '').toLowerCase();
+            return jName.includes(cName) || cName.includes(jName);
+        }).length;
+        return { ...comp, activeCount };
+    });
+
+    // 4. Sắp xếp: Ai nhiều Job nhất lên đầu, lấy Top 6
+    allComps.sort((a, b) => b.activeCount - a.activeCount);
+    const top6 = allComps.slice(0, 6);
+
+    if (top6.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400">Đang cập nhật dữ liệu...</div>';
+        return;
+    }
+
+    // 5. Vẽ giao diện (Giữ nguyên style Grayscale xịn xò của bạn)
+    container.innerHTML = top6.map(comp => `
+        <a href="congty.html?id=${comp.id}" class="border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center hover:shadow-md transition cursor-pointer bg-gray-50 hover:bg-white group relative h-32 overflow-hidden shadow-sm">
+            <span class="absolute top-1.5 right-1.5 bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full z-10 border border-blue-200">
+                ${comp.activeCount} job
+            </span>
+            <img src="${comp.logo || 'https://placehold.co/100x50'}" alt="${comp.name}" class="max-h-12 w-full object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">
+            <span class="text-[10px] font-bold text-gray-400 mt-3 text-center truncate w-full px-1 group-hover:text-gray-700 transition uppercase tracking-tighter">${comp.name}</span>
+        </a>
+    `).join('');
+};
+
+// Tự động kích hoạt khi vào trang chủ
+document.addEventListener('DOMContentLoaded', () => {
+    // Check xem có phải đang ở trang chủ không
+    if (window.location.pathname.endsWith('/') || window.location.pathname.includes('index.html')) {
+        setTimeout(renderTopEmployersHome, 300);
+    }
+});
