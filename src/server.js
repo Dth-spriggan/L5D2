@@ -23,7 +23,8 @@ const routes = require('./routes/index');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+const reportRoutes = require('./routes/reportRoutes');
+app.use('/api/reports', reportRoutes);
 // ==========================================================
 // 3. THIẾT LẬP QUAN HỆ MỚI (Dây cáp nối thẳng vào Company & User)
 // ==========================================================
