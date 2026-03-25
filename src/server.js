@@ -13,7 +13,7 @@ const User = require('./models/user');       // Ứng viên (Email, Pass, Profil
 const Company = require('./models/company'); // Nhà tuyển dụng (Email, Pass, Co_Info nằm đây hết)
 const Job = require('./models/job');
 const Application = require('./models/application');
-//const SavedJob = require('./models/savedJob');
+const SavedJob = require('./models/SavedJob');
 const EscrowContract = require('./models/escrowContract');
 const Transaction = require('./models/transaction');
 
@@ -40,13 +40,10 @@ EscrowContract.belongsTo(Company, { as: 'escrow_employer', foreignKey: 'employer
 
 
 // --- NHÁNH ỨNG VIÊN (USER) ---
-// Ứng viên nộp đơn (Application)
-User.hasMany(Application, { foreignKey: 'candidateId' });
-Application.belongsTo(User, { as: 'candidate', foreignKey: 'candidateId' });
+// Ứng viên lưu công việc
+User.hasMany(SavedJob, { foreignKey: 'user_id' });          // ← bỏ comment
+SavedJob.belongsTo(User, { foreignKey: 'user_id' });  
 
-// Ứng viên lưu công việc (SavedJob)
-// User.hasMany(SavedJob, { foreignKey: 'candidateId' });
-// SavedJob.belongsTo(User, { as: 'candidate_saved', foreignKey: 'candidateId' });
 
 // Ứng viên đóng vai Freelancer trong hợp đồng Escrow
 User.hasMany(EscrowContract, { foreignKey: 'freelancerId' });
@@ -63,8 +60,8 @@ Job.hasMany(Application, { foreignKey: 'jobId' });
 Application.belongsTo(Job, { foreignKey: 'jobId' });
 
 // // Job & SavedJob
-// Job.hasMany(SavedJob, { foreignKey: 'jobId' });
-// SavedJob.belongsTo(Job, { foreignKey: 'jobId' });
+Job.hasMany(SavedJob, { foreignKey: 'job_id' });            // ← bỏ comment
+SavedJob.belongsTo(Job, { as: 'job', foreignKey: 'job_id' }); // ← bỏ comment
 
 // Job & Escrow (1 Job có 1 Hợp đồng)
 Job.hasOne(EscrowContract, { foreignKey: 'jobId' });

@@ -10,6 +10,8 @@ const jobRoutes = require('./jobRoutes');           // Trạm Quản lý tin tuy
 const cvRoutes = require('./cvRoutes');             // Trạm Quản lý CV
 const applicationRoutes = require('./applicationRoutes'); // Trạm Ứng tuyển
 const escrowRoutes = require('./escrowRoutes');     // Trạm Thanh toán đảm bảo (Khét lẹt!)
+const savedJobRoutes = require('./savedJobRoutes');
+
 
 // ==========================================
 // 2. CẮM ĐIỆN PHÂN LUỒNG TỪNG MODULE
@@ -33,5 +35,8 @@ router.use('/applications', applicationRoutes);
 
 // 💰 Luồng Thanh toán đảm bảo
 router.use('/escrow', escrowRoutes);
+
+//Luồng Saved Jobs
+router.use('/saved-jobs', savedJobRoutes);
 
 module.exports = router;
