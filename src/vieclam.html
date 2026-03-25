@@ -591,6 +591,19 @@ function resetApplyForm() {
 function submitApplication(event) {
     if (event) event.preventDefault();
     
+    // 1. Kiểm tra đăng nhập (Bắt buộc phải có để biết ai nộp)
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+        alert("Vui lòng đăng nhập để ứng tuyển!");
+        window.location.href = 'login.html';
+        return;
+    }
+    const user = JSON.parse(userStr);
+
+    // 2. Tóm lấy ID công việc từ thanh địa chỉ (URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get('id');
+
     var selectedCV = document.getElementById("cv-select").value;
     var fileInput = document.getElementById("cv-upload");
     var uploadedFile = fileInput.files[0];
@@ -600,24 +613,34 @@ function submitApplication(event) {
         return;
     }
 
-    if (selectedCV) {
-        alert("Ứng tuyển bằng CV đã lưu thành công!");
-        closeApplyModal();
-        resetApplyForm();
-        return;
-    }
+    // 3. CHUẨN BỊ DỮ LIỆU ĐỂ LƯU THẬT
+    let applications = JSON.parse(localStorage.getItem('user_applications')) || [];
+    
+    // Gói gém đơn ứng tuyển
+    const newApp = {
+        id: Date.now(), // Mã đơn duy nhất
+        jobId: String(jobId), // Mã công việc
+        userId: user.username, // Email/Username người nộp
+        cvName: selectedCV || (uploadedFile ? uploadedFile.name : "CV mới"),
+        status: 'pending', // Mặc định là Chờ duyệt
+        date: new Date().toLocaleString('vi-VN')
+    };
 
+    // 4. ĐẨY VÀO LOCALSTORAGE (Bước này lúc nãy bạn bị thiếu)
+    applications.push(newApp);
+    localStorage.setItem('user_applications', JSON.stringify(applications));
+
+    // 5. Xử lý lưu CV vào thư viện nếu người dùng tải file mới
     if (uploadedFile) {
         var confirmSave = confirm("Bạn có muốn lưu CV này vào thư viện để dùng cho lần sau không?");
         if (confirmSave) {
             saveCV(uploadedFile);
-            alert("Đã lưu CV và ứng tuyển thành công!");
-        } else {
-            alert("Ứng tuyển thành công!");
         }
-        closeApplyModal();
-        resetApplyForm();
     }
+
+    alert("🎉 Ứng tuyển thành công! Nhà tuyển dụng đã nhận được hồ sơ của bạn.");
+    closeApplyModal();
+    resetApplyForm();
 }
 
 // ===== LƯU CV VÀO LOCALSTORAGE =====

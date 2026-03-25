@@ -1701,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 // =================================================================
-// 21. QUẢN LÝ CÔNG VIỆC ĐÃ ỨNG TUYỂN (USER)
+// 21. QUẢN LÝ CÔNG VIỆC ĐÃ ỨNG TUYỂN (USER) - FIX LỖI MẤT DỮ LIỆU
 // =================================================================
 window.loadAppliedJobs = function() {
     const userStr = localStorage.getItem('currentUser');
@@ -1710,28 +1710,39 @@ window.loadAppliedJobs = function() {
     const container = document.getElementById('applied-jobs-container');
     if(!container) return;
 
-    // Lấy danh sách CV đã nộp của User này
+    // 1. Lấy danh sách CV đã nộp của User này
     const applications = JSON.parse(localStorage.getItem('user_applications')) || [];
-    const myApps = applications.filter(a => a.userId === user.username);
+    const myApps = applications.filter(a => String(a.userId) === String(user.username));
 
     if (myApps.length === 0) {
         container.innerHTML = '<div class="text-center py-10 text-gray-500 bg-gray-50 border border-gray-100 rounded-lg">Bạn chưa ứng tuyển công việc nào.</div>';
         return;
     }
 
-    if (typeof window.mockJobs === 'undefined') return;
+    // 2. LẤY TẤT CẢ NGUỒN VIỆC LÀM (QUAN TRỌNG: Gộp cả Job mẫu và Job tự đăng)
+    const mockJobs = typeof window.mockJobs !== 'undefined' ? window.mockJobs : [];
+    const customJobs = JSON.parse(localStorage.getItem('custom_jobs')) || [];
+    const allJobs = [...mockJobs, ...customJobs];
 
     // Sắp xếp đơn mới nhất lên đầu
     myApps.sort((a, b) => b.id - a.id);
 
     container.innerHTML = myApps.map(app => {
-        const job = window.mockJobs.find(j => j.id === app.jobId);
-        if (!job) return ''; 
+        // FIX: So sánh ID bằng kiểu String để không bị hụt dữ liệu
+        const job = allJobs.find(j => String(j.id) === String(app.jobId));
+        
+        // Nếu không tìm thấy Job (có thể do doanh nghiệp đã xóa job)
+        if (!job) return `
+            <div class="border border-red-100 rounded-xl p-5 bg-red-50/30 flex justify-between items-center opacity-70 mb-4">
+                <div class="text-sm text-red-600 font-medium italic"><i class="fas fa-exclamation-triangle mr-2"></i> Công việc này đã bị gỡ hoặc không còn tồn tại.</div>
+                <button onclick="withdrawApplication(${app.id})" class="text-xs text-red-600 hover:underline font-bold">Xóa lịch sử</button>
+            </div>
+        `;
 
         // THANH TRẠNG THÁI
         let statusHtml = '';
         let statusClass = '';
-        let actionBtns = ''; // Biến chứa nút bấm
+        let actionBtns = '';
 
         if (app.status === 'approved') {
             statusHtml = '<i class="fas fa-check-circle mr-1"></i> CV Đã được duyệt';
@@ -1743,24 +1754,24 @@ window.loadAppliedJobs = function() {
             statusHtml = '<i class="fas fa-clock mr-1"></i> Đang chờ duyệt';
             statusClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
             
-            // CHỈ KHI "CHỜ DUYỆT" MỚI HIỆN NÚT RÚT & SỬA CV
+            // FIX: Truyền jobId vào dấu nháy đơn để tránh lỗi số quá dài
             actionBtns = `
                 <div class="mt-3 flex gap-2 justify-start sm:justify-end">
-                    <button onclick="updateApplication(${app.id}, ${job.id})" class="text-xs px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg font-bold transition"><i class="fas fa-sync-alt mr-1"></i> Nộp lại CV</button>
+                    <button onclick="updateApplication(${app.id}, '${job.id}')" class="text-xs px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg font-bold transition"><i class="fas fa-sync-alt mr-1"></i> Nộp lại CV</button>
                     <button onclick="withdrawApplication(${app.id})" class="text-xs px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-bold transition"><i class="fas fa-trash-alt mr-1"></i> Rút hồ sơ</button>
                 </div>
             `;
         }
 
         return `
-        <div class="border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <img src="${job.logo}" class="w-16 h-16 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
-            <div class="flex-1 w-full">
+        <div class="border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition bg-white flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-4">
+            <img src="${job.logo || 'https://placehold.co/100'}" class="w-16 h-16 object-contain border border-gray-100 rounded-lg bg-white p-1 shrink-0">
+            <div class="flex-1 w-full text-left">
                 <a href="vieclam.html?id=${job.id}" class="font-bold text-gray-900 text-lg hover:text-blue-600 transition block mb-1 truncate">${job.title}</a>
                 <p class="text-sm text-gray-500 mb-3 truncate">${job.company}</p>
                 <div class="flex flex-wrap gap-2 text-xs font-medium mb-3">
-                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary}</span>
-                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location}</span>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">💰 ${job.salary || 'Thỏa thuận'}</span>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">📍 ${job.location || 'Toàn quốc'}</span>
                 </div>
                 <div class="text-xs text-gray-400"><i class="fas fa-calendar-alt mr-1"></i> Ứng tuyển ngày: ${app.date}</div>
             </div>
