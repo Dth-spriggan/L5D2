@@ -4288,6 +4288,7 @@ window.previewJob = function(id) {
     const modal = document.getElementById('admin-preview-modal');
     if (modal) modal.classList.remove('hidden');
 };
+<<<<<<< HEAD
 // =================================================================
 // TỰ ĐỘNG RENDER NHÀ TUYỂN DỤNG HÀNG ĐẦU DẠNG LOGO (TRANG CHỦ)
 // =================================================================
@@ -4569,3 +4570,5 @@ window.loadEmployerJobs = function() {
         </tr>`;
     }).join('');
 };
+=======
+>>>>>>> parent of 30cd978 (.)
