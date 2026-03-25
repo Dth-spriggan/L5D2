@@ -1,246 +1,81 @@
-POST http://localhost:3000/api/auth/register
+### =========================================================
+### CẤU HÌNH BIẾN CHUNG
+### =========================================================
+@baseUrl = http://localhost:3000/api
+
+
+### =========================================================
+### 1. ĐĂNG KÝ TÀI KHOẢN NHÀ TUYỂN DỤNG (Bảng Company)
+### =========================================================
+POST {{baseUrl}}/auth/register-employer
 Content-Type: application/json
 
 {
-    "email": "test@example.com",
-    "password": "password123",
-    "name": "Test User",
-    "role": "Candidate"
+    "company_name": "Công ty Cổ phần Vua Lì Đòn",
+    "tax_code": "0123456789",
+    "email": "hr@vualidon.com",
+    "password": "password1234"
 }
 
 
-
-### Lấy 6 cái Job mới nhất cho Trang Chủ
-GET http://localhost:3000/api/jobs?limit=6
-
-
-### ==========================================
-### BỘ TEST API JOBS 
-### ==========================================
-
-### 1. TẠO TIN TUYỂN DỤNG MỚI (Nhét sẵn employerId để qua vòng gửi xe)
-POST http://localhost:3000/api/jobs
+### =========================================================
+### 2. ĐĂNG NHẬP (Lấy Token tự động cho Employer)
+### =========================================================
+# @name loginEmployer
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "title": "Bán khô gà",
-  "description": "Domee Shi.",
-  "salary_gross": 36000000,
-  "job_type": "PART_TIME",
+    "email": "hr@vualidon.com",
+    "password": "password1234"
+}
+
+### Tự động gắp Token từ kết quả đăng nhập trên nhét vào biến này
+@tokenEmployer = {{loginEmployer.response.body.token}}
+
+
+### =========================================================
+### 3. TẠO CÔNG VIỆC MỚI (Dùng Token của Employer)
+### =========================================================
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+Authorization: Bearer {{tokenEmployer}}
+
+{
+  "title": "Lập trình viên Frontend (ReactJS)",
+  "description": "- Tham gia phát triển các tính năng UI/UX cho nền tảng web.\n- Tối ưu hóa hiệu năng, đảm bảo trang web chạy mượt mà.",
+  "job_type": "Toàn thời gian",
   "location": "Hà Nội",
-  "employerId": 7 
-}
-
-### ------------------------------------------
-
-### 2. LẤY DANH SÁCH & TÌM KIẾM
-GET http://localhost:3000/api/jobs?page=1&limit=5&status=PENDING_REVIEW
-
-### ------------------------------------------
-
-### 3. CẬP NHẬT TIN TUYỂN DỤNG (Nhớ đổi ID 1 thành ID thật)
-PUT http://localhost:3000/api/jobs/3
-Content-Type: application/json
-
-{
-  "title": "Tuyển dụng rapper",
-  "description": "Biết bợ căng"
-}
-
-### ------------------------------------------
-
-### 4. ADMIN DUYỆT TIN
-PUT http://localhost:3000/api/admin/jobs/5/approve
-
-### ------------------------------------------
-
-### 5. ADMIN TỪ CHỐI TIN
-PUT http://localhost:3000/api/admin/jobs/1/reject
-
-### ------------------------------------------
-
-### 6. XÓA MỀM (Cho vào thùng rác)
-DELETE http://localhost:3000/api/jobs/1
-
-### ------------------------------------------
-
-### 7. KHÔI PHỤC TIN (Móc từ thùng rác ra)
-POST http://localhost:3000/api/jobs/1/restore
-
-### ------------------------------------------
-
-### 8. XÓA CỨNG (Bay màu vĩnh viễn)
-DELETE http://localhost:3000/api/jobs/4/force
-
-###-------------------------------------------------------------
-### ==========================================
-### 🚀 BỘ TEST API QUẢN LÝ CV (NHÁNH FEATURE-CV)
-### ==========================================
-
-### 1. 👱‍♂️ [ỨNG VIÊN] TẢI CV LÊN (Upload)
-# Bắn phát này đầu tiên để tạo data trong Database
-POST http://localhost:3000/api/cvs
-Content-Type: application/json
-
-{
-  "candidate_id": 4,
-  "cv_title": "BLVXoilac.pdf",
-  "file_url": "https://s3.amazonaws.com/topcv/cv_anhdev_fullstack.pdf"
-}
-
-### ------------------------------------------
-
-### 2. 👱‍♂️ [ỨNG VIÊN] XEM DANH SÁCH CV CỦA TÔI
-# Truyền id của ứng viên số 2 vào để xem nó có nôn ra cái CV vừa up không
-GET http://localhost:3000/api/cvs/me?candidate_id=2
-
-### ------------------------------------------
-
-### 3. 👱‍♂️ [ỨNG VIÊN] ĐỔI TÊN CV HOẶC UP FILE MỚI
-# Nhìn vào kết quả của bước 2, lấy cái "id" của CV dán vào thay cho số 1 ở link dưới
-PUT http://localhost:3000/api/cvs/3
-Content-Type: application/json
-
-{
-  "cv_title": "CV_Chinh_Thuc_Vip_Pro.pdf",
-  "file_url": "https://s3.amazonaws.com/topcv/cv_anhdev_update.pdf"
-}
-
-### ------------------------------------------
-
-### 4. 👱‍♂️ [ỨNG VIÊN] BẬT CHẾ ĐỘ "ĐANG TÌM VIỆC"
-# Sửa số 1 thành ID CV của ông
-PUT http://localhost:3000/api/cvs/3/toggle-search
-Content-Type: application/json
-
-{
-  "is_searchable": true
-}
-
-### ------------------------------------------
-
-### 5. 👱‍♂️ [ỨNG VIÊN] XÓA CV (Test Xóa Mềm)
-# Bóp cò phát này xong, ông gọi lại API số 2 xem cái CV nó có tàng hình không nhé!
-DELETE http://localhost:3000/api/cvs/4
-
-
-### ==========================================
-### 👑 GÓC CỦA ADMIN (QUẢN TRỊ VIÊN)
-### ==========================================
-
-### 6. 👑 [ADMIN] XEM TOÀN BỘ CV TRONG HỆ THỐNG
-GET http://localhost:3000/api/cvs/admin/all
-
-### ------------------------------------------
-
-### 7. 👑 [ADMIN] XÓA CỨNG VĨNH VIỄN (TIÊU HỦY)
-# Lấy ID của một cái CV bất kỳ thay vào số 1, bắn phát này là mất tích khỏi DBeaver luôn
-DELETE http://localhost:3000/api/cvs/admin/8/force
-
-### ------------------------------------------
-
-### 8. 👱‍♂️ [ỨNG VIÊN] KHÔI PHỤC CV (UNDO XÓA MỀM)
-# Lấy ID của cái CV sếp vừa bấm XÓA MỀM ở bước 5, thay vào số 1 ở link dưới rồi bóp cò!
-POST http://localhost:3000/api/cvs/4/restore
-
-
-
-
-### BỘ TEST API AUTH
-###===========================================
-###TOKEN Ứng viên: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IkNhbmRpZGF0ZSIsImlhdCI6MTc3MzY3OTYwNCwiZXhwIjoxNzczNzY2MDA0fQ.t3OVlUUg6lJS0zVOGcFQb4zR6ZbVxdfjwKCHh4HK6KY
-###TOKEN Nhà tuyển dụng: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczNjc5NzE0LCJleHAiOjE3NzM3NjYxMTR9.B2NHNGBaJvTPldXG2tAjNPppNmmBuQN6ja4oiV5X_SU
-
-### 1. ĐĂNG KÝ TÀI KHOẢN ỨNG VIÊN
-POST http://localhost:3000/api/auth/register
-Content-Type: application/json
-
-{
-  "email": "anhoii@example.com",
-  "password": "25112005",
-  "fullName": "NTG",
-  "role": "Candidate",
-  "phone": "0987654321"
-}
-
-### 2. ĐĂNG KÝ TÀI KHOẢN HR (NHÀ TUYỂN DỤNG)
-POST http://localhost:3000/api/auth/register
-Content-Type: application/json
-
-{
-  "email": "hr_mixifood@example.com",
-  "password": "password123",
-  "fullName": "HR MixiFood",
-  "role": "Employer",
-  "phone": "0912345678"
+  "salary_min": 15,
+  "salary_max": 25,
+  "requirements": "- Có ít nhất 1 năm kinh nghiệm thực chiến với ReactJS.\n- Ưu tiên sinh viên tốt nghiệp loại Giỏi.",
+  "benefits": "- Mức lương cạnh tranh 15 - 25 triệu tùy năng lực.\n- Được cấp Macbook Pro M2 để làm việc.",
+  "level": "Nhân viên",
+  "quantity": 2,
+  "skills": ["ReactJS", "Tailwind"]
 }
 
 
-### 3. ĐĂNG NHẬP Ứng viên (Lấy Token ở dưới Terminal)
-POST http://localhost:3000/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "anhoii@example.com",
-  "password": "25112005"
-}
-
-### 3. ĐĂNG NHẬP (Lấy Token ở dưới Terminal)
-POST http://localhost:3000/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "hr_mixifood@example.com",
-  "password": "password123"
-}
+### =========================================================
+### 4. XEM TẤT CẢ VIỆC LÀM (PUBLIC - Ai cũng xem được)
+### =========================================================
+# API này chỉ hiện các Job có status là 'ACTIVE' (nếu nãy sếp tạo nó đang là PENDING_REVIEW thì ở đây sẽ ko thấy nhé, trừ khi sếp vào db đổi tay thành ACTIVE để test)
+GET {{baseUrl}}/jobs
 
 
-
-### BỘ TEST API APPLICATIONS (NỘP ĐƠN)
-
-
-### 1. ỨNG VIÊN NỘP CV VÀO JOB (Nhớ thay token của ứng viên)
-POST http://localhost:3000/api/applications
-Content-Type: application/json
-Authorization: Bearer <COPY_TOKEN_CỦA_ỨNG_VIÊN_DÁN_VÀO_ĐÂY>
-
-{
-  "jobId": 1,
-  "cvUrl": "https://res.cloudinary.com/demo/cv_duc_nhat.pdf",
-  "coverLetter": "Cho em xin một chân đè tem hộp khô gà nhé!"
-}
+### =========================================================
+### 5. NHÀ TUYỂN DỤNG XEM VIỆC MÌNH ĐÃ ĐĂNG
+### =========================================================
+# API này sẽ hiển thị TOÀN BỘ Job của ông HR này (kể cả đang PENDING chờ duyệt)
+GET {{baseUrl}}/jobs/my-jobs
+Authorization: Bearer {{tokenEmployer}}
 
 
-### 2. HR XEM DANH SÁCH ỨNG VIÊN CỦA 1 JOB
-GET http://localhost:3000/api/applications/job/5
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
+### =========================================================
+### 6. ADMIN XEM TOÀN BỘ HỆ THỐNG ĐỂ DUYỆT
+### =========================================================
+# Lấy tuốt tuồn tuột mọi Job của mọi công ty. (Nhớ dùng token của tài khoản có quyền)
+GET {{baseUrl}}/jobs/admin/all
+Authorization: Bearer {{tokenEmployer}} 
 
-
-### 3. HR ĐỔI TRẠNG THÁI ĐƠN SANG "REVIEWING"
-PUT http://localhost:3000/api/applications/1/status
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
-
-{
-  "newStatus": "REVIEWING"
-}
-
-
-### 4. HR ĐỔI TRẠNG THÁI ĐƠN SANG "REJECTED" (Đánh trượt)
-PUT http://localhost:3000/api/applications/1/status
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
-
-{
-  "newStatus": "REJECTED"
-}
-
-
-### 5. HR HOÀN TÁC (UNDO) TRẠNG THÁI LỠ TAY
-POST http://localhost:3000/api/applications/1/undo
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6IkVtcGxveWVyIiwiaWF0IjoxNzczODUwNTU4LCJleHAiOjE3NzM5MzY5NTh9.IXX7rUCY0TvdaBx4owhhClQq0-JutKAp-Al9b42LXrE
-
-
-### 6. ỨNG VIÊN RÚT ĐƠN (Chỉ rút được khi HR chưa xem)
-DELETE http://localhost:3000/api/applications/1
-Authorization: Bearer <COPY_TOKEN_CỦA_ỨNG_VIÊN_DÁN_VÀO_ĐÂY>
+### (Ghi chú phần 6: Chỗ này tôi tạm mượn tokenEmployer để test cho sếp thấy luồng API nó chạy, sau này sếp tạo tài khoản Admin thì login lấy tokenAdmin đập vào đây nhé).

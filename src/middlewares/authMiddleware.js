@@ -1,22 +1,24 @@
 const jwt = require('jsonwebtoken');
 
 exports.verifyToken = (req, res, next) => {
-    // 1. Tìm thẻ bài (Token) ứng viên gửi lên
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, message: 'Bạn chưa đăng nhập (Không thấy Token)!' });
-    }
-
-    const token = authHeader.split(' ')[1];
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.status(403).json({ message: "Không tìm thấy token!" });
 
     try {
-        // 2. Dịch thẻ bài (Dùng đúng cái chìa khóa sếp tạo ở authController)
-        const decoded = jwt.verify(token, 'super_secret_key'); 
-        
-        // 3. Dịch thành công -> Gắn thông tin ứng viên vào req.user để Controller xài
-        req.user = decoded; 
-        next(); // Mở cổng cho đi tiếp vào Controller
-    } catch (error) {
-        return res.status(403).json({ success: false, message: 'Token không hợp lệ hoặc đã hết hạn!' });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Trong này có { id, role }
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: "Token không hợp lệ!" });
     }
+};
+
+exports.isCandidate = (req, res, next) => {
+    if (req.user.role !== 'Candidate') return res.status(403).json({ message: "Chỉ dành cho Ứng viên!" });
+    next();
+};
+
+exports.isEmployer = (req, res, next) => {
+    if (req.user.role !== 'Employer') return res.status(403).json({ message: "Chỉ dành cho Nhà tuyển dụng!" });
+    next();
 };

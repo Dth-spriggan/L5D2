@@ -1,0 +1,81 @@
+### ==========================================
+### 1. TEST HỆ THỐNG ỨNG VIÊN (CANDIDATE)
+### ==========================================
+
+### 1.1 Đăng ký Ứng viên mới
+POST http://localhost:3000/api/auth/register-candidate
+Content-Type: application/json
+
+{
+    "fullName": "Trương Đức Nhật",
+    "email": "nhat251111@gmail.com",
+    "password": "123"
+}
+
+### 1.2 Đăng nhập Ứng viên (Để lấy Token)
+# @name loginCandidate
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "nhat251111@gmail.com",
+    "password": "123"
+}
+
+### 1.3 Cập nhật Profile (Lưu ý: Giờ nó nằm chung trong User luôn)
+@tokenCandidate = {{loginCandidate.response.body.token}}
+
+PUT http://localhost:3000/api/profile/candidate
+Authorization: Bearer {{tokenCandidate}}
+Content-Type: application/json
+
+{
+    "bio": "Chuyên gia fix bug đêm khuya",
+    "skills": "NodeJS, React, Docker",
+    "phone": "0912345678"
+}
+
+
+### ==========================================
+### 2. TEST HỆ THỐNG NHÀ TUYỂN DỤNG (EMPLOYER)
+### ==========================================
+
+### 2.1 Đăng ký Nhà tuyển dụng mới
+POST http://localhost:3000/api/auth/register-employer
+Content-Type: application/json
+
+{
+    "company_name": "Mixi Corp",
+    "tax_code": "0123456789",
+    "email": "hr@mixicorp.com",
+    "password": "123"
+}
+
+### 2.2 Đăng nhập Nhà tuyển dụng
+# @name loginEmployer
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "hr@mixicorp.com",
+    "password": "123"
+}
+
+### 2.3 Cập nhật thông tin Công ty
+@tokenEmployer = {{loginEmployer.response.body.token}}
+
+PUT http://localhost:3000/api/profile/employer
+Authorization: Bearer {{tokenEmployer}}
+Content-Type: application/json
+
+{
+    "address": "Số 1 Trần Duy Hưng, Hà Nội",
+    "website_url": "https://mixicorp.vn",
+    "description": "Công ty chuyên phân phối niềm vui"
+}
+
+
+### ==========================================
+### 3. TEST TÍNH NĂNG LƯU JOB (SAVED JOBS) chưa có gì
+### ==========================================
+
