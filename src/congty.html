@@ -41,20 +41,11 @@
                                 <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
                                 <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
                                 <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
-                                <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
+                                <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV</a>
                             </div>
                         </div>
 
-                        <div class="relative group h-full flex items-center">
-                            <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
-                                Công cụ <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tính lương Gross - Net</a>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Cẩm nang tìm việc</a>
-                            </div>
-                        </div>
+                        
                     </nav>
                 </div>
 
@@ -139,94 +130,97 @@
         </div>
     </header>
 
-    <main class="flex-grow pb-12">
-        <div class="w-full h-64 md:h-80 relative bg-gray-200">
-            <img id="detail-company-cover" src="https://via.placeholder.com/1920x400?text=Cover+Image" alt="Cover" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<main class="w-full flex-grow pb-12">
+        
+        <div class="relative w-full h-56 md:h-80 bg-gray-200 overflow-hidden">
+            <img id="detail-company-cover" src="https://placehold.co/1920x400" class="w-full h-full object-cover">
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-20">
-            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row gap-6 md:items-center border border-gray-100">
-                <div class="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-white p-2 shadow-sm border border-gray-100 shrink-0">
-                    <img id="detail-company-logo" src="https://via.placeholder.com/150" alt="Logo" class="w-full h-full object-contain rounded-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24">
+            
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 lg:p-8 mb-8 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
+                <div class="w-32 h-32 md:w-40 md:h-40 bg-white rounded-2xl shadow-lg border-4 border-white overflow-hidden shrink-0 -mt-16 md:-mt-20 p-2 flex items-center justify-center relative z-20">
+                    <img id="detail-company-logo" src="https://placehold.co/150" class="max-w-full max-h-full object-contain rounded-xl">
                 </div>
-                <div class="flex-grow">
-                    <h1 id="detail-company-name" class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Tên Công Ty</h1>
-                    <div class="flex flex-wrap gap-4 text-sm text-gray-600 font-medium">
-                        <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> <span id="detail-company-industry">Lĩnh vực</span></span>
-                        <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> <span id="detail-company-size">Quy mô</span></span>
-                        <span class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> <a id="detail-company-website" href="#" target="_blank" class="text-blue-600 hover:underline">Website</a></span>
+                
+                <div class="flex-1 mt-2">
+                    <h1 id="detail-company-name" class="text-3xl font-black text-gray-900 mb-4 leading-tight">Đang tải tên công ty...</h1>
+                    <div class="flex flex-wrap gap-3 justify-center md:justify-start text-sm font-medium">
+                        <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-blue-100"><i class="fas fa-building"></i> <span id="detail-company-industry">Lĩnh vực</span></span>
+                        <span class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-gray-200"><i class="fas fa-map-marker-alt text-red-500"></i> <span id="detail-company-address">Địa chỉ</span></span>
+                        <a href="#" id="detail-company-website" target="_blank" class="bg-indigo-50 text-indigo-600 hover:underline px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-indigo-100"><i class="fas fa-globe"></i> Website</a>
                     </div>
                 </div>
-                <div class="shrink-0 w-full md:w-auto mt-4 md:mt-0">
-    <button id="btn-follow-company" onclick="toggleFollowCompany()" class="group w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold transition-all duration-300 shadow-md flex items-center justify-center gap-3">
-        <i id="follow-icon" class="fas fa-plus transition-all duration-300"></i>
-        <span id="follow-text">Theo dõi công ty</span>
-    </button>
-</div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-8">
-                    
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Giới thiệu công ty</h2>
-                        <div id="detail-company-about" class="text-gray-600 leading-relaxed text-sm space-y-4">
-                            Đang tải thông tin...
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-3"><i class="fas fa-info-circle text-blue-500 mr-2"></i>Giới thiệu công ty</h3>
+                        <div id="detail-company-about" class="prose max-w-none text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                            Đang tải...
                         </div>
                     </div>
 
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Tuyển dụng</h2>
-                        <div id="detail-company-jobs" class="flex flex-col gap-4">
-                            <p class="text-gray-500 text-sm">Đang tải danh sách việc làm...</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+                        <div class="flex justify-between items-center mb-6 border-b pb-3">
+                            <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-briefcase text-emerald-500 mr-2"></i>Việc làm đang tuyển</h3>
                         </div>
+                        <div id="detail-company-jobs" class="space-y-4">
+                            </div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-8">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Đánh giá công ty</h2>
-                        
-                        <div id="company-reviews-container" class="flex flex-col gap-4 mb-6 max-h-80 overflow-y-auto pr-2">
-                            <p class="text-gray-500 text-sm italic">Đang tải đánh giá...</p>
-                        </div>
-
-                        <form onsubmit="submitReview(event)" class="border-t border-gray-100 pt-5 mt-2">
-    <h4 class="font-bold text-gray-800 mb-2">Viết đánh giá của bạn</h4>
-    
-    <div class="flex gap-1 mb-3 text-2xl text-gray-300" id="star-rating-select">
-        <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(1)"></i>
-        <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(2)"></i>
-        <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(3)"></i>
-        <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(4)"></i>
-        <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" onclick="selectStar(5)"></i>
-    </div>
-    
-    <input type="hidden" id="input-rating-val" value="0">
-    
-    <textarea id="input-review-content" required rows="3" placeholder="Chia sẻ trải nghiệm làm việc hoặc phỏng vấn của bạn..." class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700 resize-none text-sm"></textarea>
-    <button type="submit" class="mt-3 bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-6 rounded-lg transition text-sm">Gửi đánh giá</button>
-</form>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6 border-b pb-3"><i class="fas fa-star text-amber-400 mr-2"></i>Đánh giá từ ứng viên</h3>
+                        <form onsubmit="submitReview(event)" class="mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <div class="mb-3 flex items-center gap-2">
+                                <span class="text-sm font-bold text-gray-700">Đánh giá của bạn:</span>
+                                <div id="star-rating-select" class="flex gap-1 text-lg cursor-pointer">
+                                    <i class="fas fa-star text-gray-300 hover:text-amber-400 transition" onclick="selectStar(1)"></i>
+                                    <i class="fas fa-star text-gray-300 hover:text-amber-400 transition" onclick="selectStar(2)"></i>
+                                    <i class="fas fa-star text-gray-300 hover:text-amber-400 transition" onclick="selectStar(3)"></i>
+                                    <i class="fas fa-star text-gray-300 hover:text-amber-400 transition" onclick="selectStar(4)"></i>
+                                    <i class="fas fa-star text-gray-300 hover:text-amber-400 transition" onclick="selectStar(5)"></i>
+                                </div>
+                                <input type="hidden" id="input-rating-val" value="0">
+                            </div>
+                            <textarea id="input-review-content" rows="3" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-3" placeholder="Chia sẻ trải nghiệm phỏng vấn hoặc làm việc tại đây..."></textarea>
+                            <div class="text-right">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-lg transition shadow-md">Gửi đánh giá</button>
+                            </div>
+                        </form>
+                        <div id="company-reviews-container" class="space-y-4"></div>
                     </div>
-
                 </div>
 
                 <div class="space-y-8">
-                    
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-blue-600 pl-3">Thông tin liên hệ</h2>
-                        <div class="flex items-start gap-3 text-sm text-gray-600 mb-4">
-                            <svg class="w-5 h-5 text-gray-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span id="detail-company-address">Địa chỉ công ty...</span>
-                        </div>
-                        <div class="w-full h-48 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096814183571!2d105.80211131540227!3d21.028811893153835!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab424a50fff9%3A0xbe3a7f3670c0a45f!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBHaWFvIHRow7RuZyBW4bqtbiB04bqjaQ!5e0!3m2!1svi!2s!4v1679415843024!5m2!1svi!2s" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                        </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                        <h3 class="font-bold text-gray-900 mb-4 border-b pb-2">Thông tin liên hệ</h3>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-globe text-blue-500 mt-1 w-4 text-center"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">Website</p>
+                                    <a href="#" id="sidebar-website" target="_blank" class="text-blue-600 hover:underline">Chưa cập nhật</a>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-building text-blue-500 mt-1 w-4 text-center"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">Lĩnh vực hoạt động</p>
+                                    <p id="sidebar-industry">Chưa cập nhật</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-map-marker-alt text-red-500 mt-1 w-4 text-center"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">Trụ sở chính</p>
+                                    <p id="sidebar-address">Chưa cập nhật</p>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </main>
@@ -247,8 +241,7 @@
                     <ul class="space-y-3 text-sm">
                         <li><a href="listvieclam.html" class="hover:text-blue-400 transition">Việc làm mới nhất</a></li>
                         <li><a href="listcongty.html" class="hover:text-blue-400 transition">Top công ty nổi bật</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tính lương Gross - Net</a></li>
+                        <li><a href="listcv.html" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
                     </ul>
                 </div>
                 <div>
@@ -256,7 +249,7 @@
                     <ul class="space-y-3 text-sm">
                         <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng nhập Doanh nghiệp</a></li>
                         <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng tin tuyển dụng</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
+                        <li><a href="tuyendung.html " class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
                     </ul>
                 </div>
                 <div>
