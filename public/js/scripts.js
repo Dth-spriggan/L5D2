@@ -1,65 +1,70 @@
 // =================================================================
-// 0.0 HÀNG RÀO BẢO VỆ (CHẠY NGAY LẬP TỨC TRƯỚC KHI RENDER HTML)
+// CẤU HÌNH API GỐC (Trỏ thẳng vào Backend Express cổng 3000)
+// Lưu ý: Trong server.js sếp cấu hình app.use('/api', routes);
+// =================================================================
+const API_BASE_URL = 'http://localhost:3000/api';
+// =================================================================
+// 0.0 HÀNG RÀO BẢO VỆ (BẢN FIX CHỐT HẠ - CHỐNG TREO JSON)
 // =================================================================
 (function routeGuard() {
-    const currentPath = window.location.pathname.toLowerCase();
-    const userStr = localStorage.getItem('currentUser');
-    
-    let role = 'guest'; // Mặc định là khách chưa đăng nhập
-
-    if (userStr) {
-        const currentUser = JSON.parse(userStr);
+    try {
+        const currentPath = window.location.pathname.toLowerCase();
+        const userStr = localStorage.getItem('currentUser');
         
-        // 🛑 CHỐT CHẶN TỐI THƯỢNG: KIỂM TRA ÁN PHẠT THỜI GIAN THỰC
-        const allUsers = JSON.parse(localStorage.getItem('users')) || [];
-        const userInDB = allUsers.find(u => u.username === currentUser.username);
-        
-        if (userInDB && userInDB.isBanned) {
-            // Tước quyền đăng nhập ngay lập tức
-            localStorage.removeItem('currentUser');
-            alert("⛔ TÀI KHOẢN CỦA BẠN ĐÃ BỊ KHÓA!\n\nLý do: " + (userInDB.banReason || "Vi phạm quy định của hệ thống.") + "\n\nVui lòng liên hệ CSKH qua số (024) 37663311 hoặc email admin@midcv.vn để được hỗ trợ.");
-            
-            // Đá văng ra trang chủ (hoặc load lại nếu đang ở trang chủ)
-            if (!currentPath.includes('index.html') && currentPath !== '/' && !currentPath.endsWith('/')) {
+        // 1. Kiểm tra rác trong LocalStorage
+        if (!userStr || userStr === "undefined" || userStr === "null") {
+            // Nếu là khách mà cố vào trang cấm thì đá ra index
+            if (currentPath.includes('admin.html') || currentPath.includes('doanhnghiep.html') || currentPath.includes('userui.html')) {
                 window.location.replace('index.html');
-            } else {
-                window.location.reload();
             }
-            return; // Dừng toàn bộ script bên dưới
+            return; 
         }
 
-        // Nhận diện thân phận nếu tài khoản trong sạch
-        if (currentUser.username === 'admin') role = 'admin';
-        else if (currentUser.type === 'employer') role = 'employer';
+        // 2. Parse dữ liệu an toàn trong try...catch
+        const currentUser = JSON.parse(userStr);
+        let role = 'guest';
+
+        // 3. Phân vai dựa trên dữ liệu API trả về (Dùng field 'role' hoặc 'type')
+        if (currentUser.username === 'admin' || currentUser.role === 'admin') role = 'admin';
+        else if (currentUser.type === 'employer' || currentUser.role === 'employer') role = 'employer';
         else role = 'candidate';
-    }
 
-    // 1. LUẬT CỦA DOANH NGHIỆP: "Nội bất xuất"
-    if (role === 'employer') {
-        if (!currentPath.includes('doanhnghiep.html')) window.location.replace('doanhnghiep.html');
-    }
-    
-    // 2. LUẬT CỦA ADMIN: Không mò vào trang Doanh nghiệp
-    else if (role === 'admin') {
-        if (currentPath.includes('doanhnghiep.html')) window.location.replace('index.html');
-    }
+        // --- HỆ THỐNG LUẬT DI TRÚ ---
 
-    // 3. LUẬT CỦA ỨNG VIÊN: Cấm vào Admin / Doanh nghiệp
-    else if (role === 'candidate') {
-        if (currentPath.includes('admin.html') || currentPath.includes('doanhnghiep.html')) window.location.replace('index.html');
-    }
+        // Luật Doanh nghiệp: Chỉ được ở trong trang doanhnghiep.html
+        if (role === 'employer') {
+            if (!currentPath.includes('doanhnghiep.html')) {
+                window.location.replace('doanhnghiep.html');
+            }
+        }
+        
+        // Luật Admin: Không vào trang doanh nghiệp
+        else if (role === 'admin') {
+            if (currentPath.includes('doanhnghiep.html')) {
+                window.location.replace('admin.html'); // Admin thì về đại bản doanh
+            }
+        }
 
-    // 4. LUẬT CỦA KHÁCH VÃNG LAI
-    else if (role === 'guest') {
-        if (currentPath.includes('admin.html') || currentPath.includes('doanhnghiep.html')) window.location.replace('index.html');
-    }
+        // Luật Ứng viên & Khách: Cấm vào Admin/Doanh nghiệp
+        else {
+            if (currentPath.includes('admin.html') || currentPath.includes('doanhnghiep.html')) {
+                window.location.replace('index.html');
+            }
+        }
 
-    // 5. LUẬT CỦA NGƯỜI ĐÃ ĐĂNG NHẬP: Chặn quay lại Form Login/Register
-    if (role !== 'guest') {
-        if (currentPath.includes('login.html') || currentPath.includes('register.html') || currentPath.includes('tuyendung.html')) {
+        // Luật Chống quay đầu: Đã đăng nhập thì không cho vào trang Login/Register
+        const authPages = ['login.html', 'register.html', 'tuyendung.html'];
+        if (authPages.some(page => currentPath.includes(page))) {
             if (role === 'employer') window.location.replace('doanhnghiep.html');
+            else if (role === 'admin') window.location.replace('admin.html');
             else window.location.replace('index.html');
         }
+
+    } catch (error) {
+        console.error("❌ Lỗi nghiêm trọng tại RouteGuard:", error);
+        // Nếu dữ liệu hỏng, xóa sạch để cứu trình duyệt
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
     }
 })();
 // =================================================================
@@ -366,58 +371,42 @@ window.generateCaptcha = function() {
     document.getElementById("captchaInput").value = "";
 };
 
-window.register = function() {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    
-    const username = document.getElementById("username").value.trim();
-    const name = document.getElementById("fullName").value.trim();
-    const dob = document.getElementById("dob").value;
-    const phone = document.getElementById("phone").value.trim();
-    const pass = document.getElementById("password").value;
-    const confirm = document.getElementById("confirmPassword").value;
-    const captchaInput = document.getElementById("captchaInput").value;
+window.register = async function(event) {
+    if (event) event.preventDefault();
 
-    if (!username || !name || !dob || !phone || !pass || !confirm || !captchaInput) {
-        alert("Vui lòng điền đầy đủ thông tin!");
-        return;
+    // Móc dữ liệu từ Form (Đảm bảo ID trong HTML khớp nhé sếp)
+    const emailVal = document.getElementById("username").value.trim(); 
+    const fullNameVal = document.getElementById("fullName").value.trim();
+    const passwordVal = document.getElementById("password").value;
+    const phoneVal = document.getElementById("phone").value.trim();
+    const dobVal = document.getElementById("dob").value; // Nếu có cột dob trong Model thì thêm vào
+
+    // Validation cơ bản
+    if (!emailVal || !passwordVal || !fullNameVal) return alert("Vui lòng điền các trường bắt buộc!");
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register-candidate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: emailVal,
+                password: passwordVal,
+                fullName: fullNameVal,
+                phone: phoneVal,
+                role: 'candidate' // Mặc định là ứng viên
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert("🎉 Chúc mừng " + fullNameVal + " đã đăng ký thành công!");
+            window.location.href = "login.html";
+        } else {
+            alert("❌ " + (data.message || "Email này đã có người sử dụng!"));
+        }
+    } catch (error) {
+        alert("Lỗi kết nối máy chủ!");
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(username)) {
-        alert("Email không đúng định dạng! Vui lòng nhập đúng dạng example@email.com");
-        return;
-    }
-
-    if (users.find(u => u.username === username)) {
-        alert("Email này đã được đăng ký!");
-        return;
-    }
-
-    if (pass !== confirm) {
-        alert("Mật khẩu không khớp!");
-        return;
-    }
-
-    if (parseInt(captchaInput) !== captchaResult) {
-        alert("Mã Captcha không đúng!");
-        window.generateCaptcha();
-        return;
-    }
-
-    let newUser = { 
-        username: username, 
-        password: pass, 
-        type: "personal",
-        fullName: name,
-        dob: dob,
-        phone: phone
-    };
-
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
-    window.location.href = "login.html";
 };
 // =================================================================
 // 5. XỬ LÝ MENU CON TRÊN MOBILE (ACCORDION)
@@ -2930,54 +2919,72 @@ document.addEventListener('DOMContentLoaded', () => {
 // 25. XỬ LÝ AUTH DOANH NGHIỆP & ĐĂNG TIN TÌM VIỆC
 // =================================================================
 
-window.employerRegister = function(event) {
+window.employerRegister = async function(event) {
     event.preventDefault();
     const compName = document.getElementById('emp-reg-name').value.trim();
     const email = document.getElementById('emp-reg-email').value.trim();
     const pass = document.getElementById('emp-reg-pass').value;
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    if (users.find(u => u.username === email)) {
-        alert("Email này đã được đăng ký!"); return;
+    if (!compName || !email || !pass) return alert("Vui lòng nhập đầy đủ thông tin doanh nghiệp!");
+
+   try {
+        const response = await fetch(`${API_BASE_URL}/company/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: compName, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // SỬA Ở ĐÂY: Dùng SweetAlert2 hoặc Alert thường để báo trạng thái chờ duyệt
+            alert("🎉 Đăng ký thành công!\n\nHồ sơ doanh nghiệp '" + compName + "' đã được gửi tới Ban quản trị. Vui lòng chờ phê duyệt để có thể bắt đầu đăng tin tuyển dụng.");
+            
+            // Chuyển sang tab Đăng nhập để họ làm quen giao diện
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('login');
+            }
+        } else {
+            alert("❌ Đăng ký thất bại: " + (data.message || "Email đã tồn tại hoặc dữ liệu không hợp lệ."));
+        }
+    } catch (error) {
+        console.error("Lỗi API Employer Register:", error);
+        alert("❌ Hệ thống đang bận, sếp vui lòng thử lại sau nhé!");
     }
-
-    // 1. Tạo User cấp Doanh nghiệp
-    let newUser = { username: email, password: pass, type: "employer", fullName: compName, email: email };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // 2. Tạo Hồ sơ Công ty (Trạng thái: Chờ duyệt)
-    let customComps = JSON.parse(localStorage.getItem('custom_companies')) || [];
-    let newComp = {
-        id: Date.now(), 
-        name: compName,
-        logo: "https://via.placeholder.com/150/2563eb/ffffff?text=" + compName.substring(0,3).toUpperCase(),
-        cover: "https://images.unsplash.com/photo-1497366216548-37526070297c",
-        industry: "Chưa cập nhật", size: "Chưa cập nhật", website: "",
-        address: "Chưa cập nhật", about: "Công ty chưa cập nhật thông tin giới thiệu.", 
-        ownerEmail: email // Đánh dấu chủ sở hữu
-    };
-    customComps.push(newComp);
-    localStorage.setItem('custom_companies', JSON.stringify(customComps));
-
-    alert("Đăng ký thành công! Tài khoản và Công ty của bạn đang chờ Admin xét duyệt.\nBạn có thể đăng nhập ngay để thiết lập trang Công ty.");
-    window.switchTab('login');
 };
 
-window.employerLogin = function(event) {
+window.employerLogin = async function(event) {
     event.preventDefault();
     const email = document.getElementById('emp-login-email').value.trim();
-    const pass = document.getElementById('emp-login-pass').value;
+    const password = document.getElementById('emp-login-pass').value;
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    const validUser = users.find(u => u.username === email && u.password === pass && u.type === "employer");
+    if (!email || !password) return alert("Vui lòng nhập đầy đủ thông tin!");
 
-    if (validUser) {
-        alert("Đăng nhập Doanh nghiệp thành công!");
-        localStorage.setItem("currentUser", JSON.stringify(validUser));
-        window.location.href = "doanhnghiep.html";
-    } else {
-        alert("Sai thông tin hoặc tài khoản này không phải Doanh nghiệp!");
+    try {
+        // Giả định sếp có viết API riêng cho Doanh nghiệp đăng nhập, VD: /auth/employer-login hoặc /company/login
+        const response = await fetch(`${API_BASE_URL}/company/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Ép thêm type 'employer' để Frontend phân biệt được giao diện
+            const employerData = { ...data.company, type: 'employer' };
+            
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('currentUser', JSON.stringify(employerData));
+            
+            alert("✅ Đăng nhập Doanh nghiệp thành công!");
+            window.location.href = "doanhnghiep.html";
+        } else {
+            alert("❌ Sai thông tin hoặc tài khoản chưa được duyệt: " + (data.message || ""));
+        }
+    } catch (error) {
+        console.error("Lỗi API Employer Login:", error);
+        alert("❌ Mất kết nối tới Máy chủ Backend!");
     }
 };
 
@@ -3415,53 +3422,81 @@ document.addEventListener('DOMContentLoaded', () => {
 // =================================================================
 // KHÔI PHỤC HÀM XỬ LÝ ĐĂNG NHẬP (BẢN CHỐNG LỖI 2.0)
 // =================================================================
-window.processUserLogin = function(event) {
-    // FIX LỖI: Tự động kiểm tra xem có event được truyền vào không thì mới chặn
+window.processUserLogin = async function(event) {
     if (event && typeof event.preventDefault === 'function') {
         event.preventDefault(); 
     }
     
-    // Tìm ô nhập tài khoản và mật khẩu (Hỗ trợ các ID phổ biến)
     const usernameInput = document.getElementById('username') || document.getElementById('login-username');
     const passwordInput = document.getElementById('password') || document.getElementById('login-password');
     
-    if (!usernameInput || !passwordInput) {
-        console.error("Lỗi UI: Không tìm thấy ô nhập tài khoản/mật khẩu!");
-        return;
-    }
+    if (!usernameInput || !passwordInput) return;
 
-    const userVal = usernameInput.value.trim();
-    const passVal = passwordInput.value;
+    const email = usernameInput.value.trim();
+    const password = passwordInput.value;
 
-    if (!userVal || !passVal) {
+    if (!email || !password) {
         return alert("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
     }
 
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    
-    // Tìm tài khoản (Hỗ trợ đăng nhập bằng cả username hoặc email)
-    const user = users.find(u => (u.username === userVal || u.email === userVal) && u.password === passVal);
+    // Đổi chữ nút thành Đang xử lý...
+    const btn = event ? event.submitter : null;
+    let originalText = '';
+    if (btn) {
+        originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        btn.disabled = true;
+    }
 
-    if (user) {
-        // 🛑 CHỐT CHẶN: Kiểm tra xem tài khoản có đang bị khóa không
-        if (user.isBanned) {
-            alert("⛔ TÀI KHOẢN CỦA BẠN ĐÃ BỊ KHÓA!\n\nLý do: " + (user.banReason || "Vi phạm quy định của hệ thống.") + "\n\nVui lòng liên hệ CSKH qua số (024) 37663311 để được hỗ trợ.");
-            return; // Chặn đứng, không cho đăng nhập
-        }
+    try {
+        // GỌI API: Nhớ check lại routes/index.js xem sếp đặt đường dẫn là gì nhé!
+        // Ở đây tôi giả định là /auth/login
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }) // Nếu backend sếp dùng trường 'username' thì đổi 'email' thành 'username'
+        });
 
-        // Cấp quyền và lưu vào hệ thống
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        // Điều hướng dựa theo loại tài khoản
-        if (user.username === 'admin') {
-            window.location.replace('admin.html');
-        } else if (user.type === 'employer') {
-            window.location.replace('doanhnghiep.html');
-        } else {
-            window.location.replace('index.html');
-        }
+        const data = await response.json();
+
+        if (response.ok) {
+    if (data.isBanned) {
+        alert("⛔ TÀI KHOẢN CỦA BẠN ĐÃ BỊ KHÓA!\nLý do: " + (data.banReason || "Vi phạm quy định"));
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+        return;
+    }
+
+    // ✅ LƯU ĐẦY ĐỦ CÁC TRƯỜNG MÀ APP CẦN
+    const currentUser = {
+        fullName: data.name,          // Cho navbar, profile hiển thị tên
+        username: email,              // Làm khóa chính (savedJobs_, user_applications...)
+        email: email,                 // Cho dropdown email
+        phone: data.phone || '',       // Cho dropdown điện thoại
+        role: data.role,              // Cho routeGuard phân quyền
+        name: data.name,              // Dự phòng
+        avatar: ''                    // Mặc định rỗng, user tự upload sau
+    };
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    alert("✅ Đăng nhập thành công!");
+
+    // ⚠️ API trả về "Candidate" (chữ C hoa) - phải khớp chính xác
+    const role = (data.role || '').toLowerCase();
+    if (role === 'admin') {
+        window.location.replace('admin.html');
     } else {
-        alert("Tài khoản hoặc mật khẩu không chính xác!");
+        window.location.replace('index.html');
+    }
+} else {
+    alert("❌ Đăng nhập thất bại: " + (data.message || "Sai tài khoản hoặc mật khẩu!"));
+    if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+}
+    } catch (error) {
+        console.error("Lỗi API Login:", error);
+        alert("❌ Máy chủ đang bận hoặc mất kết nối (Kiểm tra lại Terminal xem Node.js còn chạy không)!");
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
     }
 };
 
