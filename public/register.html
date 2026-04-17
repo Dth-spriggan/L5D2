@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập Ứng viên - MidCV</title>
+    <title>Đăng ký Ứng viên - MidCV</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./css/style.css">
     <script>
         if (localStorage.getItem('currentUser')) {
             // Dùng replace() thay vì href để người dùng không bị kẹt khi bấm nút "Back" của trình duyệt
@@ -66,20 +66,11 @@
                                 <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
                                 <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Thư viện Mẫu CV</a>
                                 <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tạo CV mới</a>
-                                <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV <span class="text-xs text-red-500 font-normal ml-1">(Chỉ User)</span></a>
+                                <a href="#" onclick="requireAuth(event, 'quanlycv.html')" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Quản lý CV </a>
                             </div>
                         </div>
 
-                        <div class="relative group h-full flex items-center">
-                            <button class="text-gray-700 hover:text-blue-600 font-medium flex items-center gap-1 focus:outline-none transition">
-                                Công cụ <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <div class="absolute left-0 top-full w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="absolute -top-4 left-0 w-full h-4 bg-transparent"></div>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Tính lương Gross - Net</a>
-                                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-t border-gray-50 mt-1 pt-2">Cẩm nang tìm việc</a>
-                            </div>
-                        </div>
+                        
                     </nav>
                 </div>
 
@@ -112,29 +103,18 @@
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row items-center gap-12 w-full">
         <div class="lg:w-1/2 text-center lg:text-left">
             <h1 class="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
-                Tạo bệ phóng sự nghiệp <br>
-                <span class="text-blue-600">Vững chắc & Thành công</span>
+                Kiến tạo tương lai <br>
+                <span class="text-blue-600">Cùng MidCV</span>
             </h1>
             <p class="text-lg text-slate-600 mb-8">
-                Tiếp cận hàng ngàn cơ hội việc làm hấp dẫn. Tạo CV chuyên nghiệp và kết nối trực tiếp với các nhà tuyển dụng hàng đầu trên hệ thống MidCV.
+                Tạo tài khoản ứng viên ngay hôm nay để nhận thông báo việc làm phù hợp, theo dõi trạng thái ứng tuyển và tạo CV miễn phí.
             </p>
-            <div class="grid grid-cols-2 gap-4 text-left">
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                    <h3 class="font-bold text-blue-600 text-2xl mb-1">10K+</h3>
-                    <p class="text-sm text-slate-500">Việc làm mới mỗi ngày</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                    <h3 class="font-bold text-blue-600 text-2xl mb-1">Top 1</h3>
-                    <p class="text-sm text-slate-500">Nền tảng tạo CV</p>
-                </div>
-            </div>
         </div>
 
         <div class="lg:w-1/2 w-full max-w-md mx-auto lg:mx-0">
             <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
-                <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900">Chào mừng trở lại!</h2>
-                    <p class="text-sm text-gray-500 mt-2">Đăng nhập tài khoản Ứng viên</p>
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Tạo tài khoản mới</h2>
                 </div>
 
                 <div>
@@ -142,18 +122,45 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input id="username" type="email" placeholder="example@email.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div style="margin-bottom: 24px;">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-                        <input id="password" type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div style="margin-bottom: 16px;">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                        <input id="fullName" type="text" placeholder="Nguyễn Văn A" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    
-                    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150 shadow-md">
-                        Đăng nhập
+                    <div class="grid grid-cols-2 gap-4" style="margin-bottom: 16px;">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+                            <input id="dob" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                            <input id="phone" type="tel" placeholder="0987..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4" style="margin-bottom: 16px;">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                            <input id="password" type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận MK</label>
+                            <input id="confirmPassword" type="password" placeholder="••••••••" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mã xác nhận (Captcha)</label>
+                        <div class="flex gap-4 items-center">
+                            <div id="captchaBox" class="bg-gray-200 px-4 py-2 rounded-lg font-bold tracking-widest text-lg select-none w-24 text-center"></div>
+                            <input id="captchaInput" type="text" placeholder="Nhập số bên trái" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <button onclick="register()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md">
+                        Đăng ký tài khoản
                     </button>
                 </div>
 
-                <p class="mt-8 text-center text-sm text-gray-600">
-                    Chưa có tài khoản? <a href="register.html" class="font-bold text-blue-600 hover:text-blue-800">Đăng ký ngay</a>
+                <p class="mt-6 text-center text-sm text-gray-600">
+                    Đã có tài khoản? <a href="login.html" class="font-bold text-blue-600 hover:text-blue-800">Đăng nhập</a>
                 </p>
             </div>
         </div>
@@ -168,7 +175,7 @@
                     <div class="text-sm text-gray-400 space-y-2">
                         <p>📍 Địa chỉ: Số 120 Yên Lãng, Đống Đa, Hà Nội</p>
                         <p>📞 Điện thoại: (024) 37663311</p>
-                        <p>📧 Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="563e39222439163b3f323520782038">[email&#160;protected]</a></p>
+                        <p>📧 Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="60080f14120f200d090403164e160e">[email&#160;protected]</a></p>
                     </div>
                 </div>
                 <div>
@@ -176,8 +183,7 @@
                     <ul class="space-y-3 text-sm">
                         <li><a href="listvieclam.html" class="hover:text-blue-400 transition">Việc làm mới nhất</a></li>
                         <li><a href="listcongty.html" class="hover:text-blue-400 transition">Top công ty nổi bật</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tính lương Gross - Net</a></li>
+                        <li><a href="listcv.html" class="hover:text-blue-400 transition">Mẫu CV chuyên nghiệp</a></li>
                     </ul>
                 </div>
                 <div>
@@ -185,7 +191,7 @@
                     <ul class="space-y-3 text-sm">
                         <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng nhập Doanh nghiệp</a></li>
                         <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Đăng tin tuyển dụng</a></li>
-                        <li><a href="#" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
+                        <li><a href="tuyendung.html" class="hover:text-blue-400 transition">Tìm kiếm hồ sơ</a></li>
                     </ul>
                 </div>
                 <div>
@@ -213,6 +219,6 @@
     </div>
 </footer>
 
-<script src="./scripts.js"></script>
+<script src="./js/scripts.js"></script>
 </body>
 </html>
