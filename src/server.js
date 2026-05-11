@@ -1,4 +1,5 @@
 require('dotenv').config(); 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
@@ -22,6 +23,8 @@ const routes = require('./routes/index');
 // 2. Middlewares
 app.use(cors());
 app.use(express.json());
+// Cấp phép cho Express đọc file Frontend trong thư mục 'public'
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
 const reportRoutes = require('./routes/reportRoutes');
 app.use('/api/reports', reportRoutes);
